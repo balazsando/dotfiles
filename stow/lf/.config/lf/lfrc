@@ -1,0 +1,48 @@
+set hidden
+set ignorecase
+set icons
+set number
+set preview
+set relativenumber
+
+set previewer ~/.config/lf/previewer
+
+cmd unarchive ${{
+  case "$f" in
+      *.zip) unzip "$f" ;;
+      *.rar) unrar x "$f" ;;
+      *.tar.gz) tar -xzvf "$f" ;;
+      *.tar.bz2) tar -xjvf "$f" ;;
+      *.tar) tar -xvf "$f" ;;
+      *.7z) 7z e "$f" ;;
+      *) echo "Unsupported format" ;;
+  esac
+}}
+
+cmd mkdir ${{
+  printf "Directory Name: "
+  read ans
+  mkdir $ans
+}}
+
+cmd mkfile ${{
+  printf "File Name: "
+  read ans
+  $EDITOR $ans
+}}
+
+cmd reloc ${{
+  zsh -ic 'relocate "$1"' _ "$f"
+}}
+
+map R reloc
+map au unarchive
+map gr cd ~/repos
+map gv cd ~/videos
+map gc cd ~/.config
+map gD cd ~/Documents
+map gd cd ~/Downloads
+map gp cd ~/Pictures
+map mf mkfile
+map md mkdir
+map i $~/.config/lf/previewer "$f" | less -R

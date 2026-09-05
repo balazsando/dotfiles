@@ -1,0 +1,30 @@
+#!/bin/bash
+
+file="$1"
+
+[ -z "$file" ] && exit 0
+[ ! -e "$file" ] && exit 0
+
+# directory
+if [ -d "$file" ]; then
+  eza --icons --level=2 "$file"
+  exit 0
+fi
+
+ext="${file##*.}"
+
+case "$ext" in
+zip)
+  unzip -l "$file" | bat --style=plain --color=always 2>/dev/null
+  ;;
+7z)
+  7z l "$file" | bat --style=plain --color=always 2>/dev/null
+  ;;
+rar)
+  unrar l "$file" | bat --style=plain --color=always 2>/dev/null
+  ;;
+*)
+
+  bat --style=plain --color=always "$file" 2>/dev/null
+  ;;
+esac

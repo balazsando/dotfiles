@@ -1,0 +1,10 @@
+# Python packages managed via pip (user-installed, not system-level)
+# These are supplements NOT already managed by pipx or uv tool.
+#
+# NOTE: Do NOT add system Python packages here (cloud-init, python-apt,
+# ubuntu-pro-client, dbus-python, etc.) — those belong to the OS.
+#
+# pynvim is installed via package manager in step_packages (not pipx — it's a library, not CLI tool).
+# posting is managed by uv tool (step_uv_tools).
+#
+# Add any extra pure pip user packages below:

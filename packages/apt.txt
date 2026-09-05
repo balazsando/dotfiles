@@ -1,0 +1,59 @@
+# apt.txt — System-level packages installed by install.sh
+# CLI tools (bat, fd, ripgrep, jq, zoxide, gh) are managed by mise — NOT listed here.
+
+# ─── Build & system essentials ───────────────────────────────────────────────
+build-essential
+ca-certificates
+curl
+wget
+git
+sudo
+tar
+
+# ─── Node / npm (early bootstrap: BW CLI, nvim provider, tree-sitter) ────────
+npm
+
+# ─── Shell & terminal ────────────────────────────────────────────────────────
+zsh
+bash-completion
+tmux
+less
+locales
+man-db
+manpages
+jq
+
+# ─── System utilities ────────────────────────────────────────────────────────
+htop
+lsof
+socat
+p7zip-full
+unzip
+zip
+xclip
+
+# ─── Network & remote ────────────────────────────────────────────────────────
+openssh-client
+openssh-server
+
+# ─── Secrets & credential storage ────────────────────────────────────────────
+libsecret-1-0
+libsecret-tools
+libnss3-tools
+
+# ─── Container runtime ───────────────────────────────────────────────────────
+docker.io
+
+# ─── Dotfile management ──────────────────────────────────────────────────────
+stow
+
+# ─── PDF generation / Java AWT / PDFBox runtime ─────────────────────────────
+libxi6
+libxrender1
+libxtst6
+fontconfig-config
+libfontconfig1
+fonts-dejavu-core
+
+# ─── Fallback editor ─────────────────────────────────────────────────────────
+nano

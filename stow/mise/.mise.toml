@@ -1,0 +1,71 @@
+# .mise.toml — Declarative dev-tool and runtime management
+#
+# Install mise:   curl https://mise.run | sh
+# Install tools:  mise install
+# List tasks:     mise tasks ls
+
+# ─── Language runtimes ────────────────────────────────────────────────────────
+[tools]
+node               = "lts"
+python             = "latest"
+go                 = "latest"
+# rust               = "latest"
+java               = "21"
+maven              = "latest"
+kotlin             = "latest"
+
+# ─── Python tooling ───────────────────────────────────────────────────────────
+uv                 = "latest"
+
+# ─── Editor & shell tools ─────────────────────────────────────────────────────
+neovim             = "latest"
+fzf                = "latest"
+eza                = "latest"
+
+# ─── CLI tools (migrated from apt) ────────────────────────────────────────────
+bat                = "latest"
+fd                 = "latest"
+ripgrep            = "latest"
+zoxide             = "latest"
+
+# ─── Git tools ────────────────────────────────────────────────────────────────
+lazygit            = "latest"
+gh                 = "latest"
+
+# ─── File manager ─────────────────────────────────────────────────────────────
+"aqua:gokcehan/lf" = "latest"
+
+# ─── Container / Kubernetes ───────────────────────────────────────────────────
+lazydocker         = "latest"
+k9s                = "latest"
+kubectl            = "latest"
+helm               = "latest"
+minikube           = "latest"
+
+# ─── Environment ──────────────────────────────────────────────────────────────
+[env]
+GOPATH             = "{{env.HOME}}/go"
+DOTFILES           = "{{env.HOME}}/dotfiles"
+
+[settings]
+aqua.github_attestations = false
+
+# ─── Tasks ────────────────────────────────────────────────────────────────────
+[tasks.bootstrap]
+description = "Full environment bootstrap (run once on a new machine)"
+run         = "bash $DOTFILES/install.sh"
+
+[tasks.stow]
+description = "Restow all dotfile packages"
+run         = "bash $DOTFILES/stow.sh"
+
+[tasks.sync]
+description = "Pull latest dotfiles and restow"
+run         = """
+git -C $DOTFILES pull --ff-only
+mise run stow
+"""
+
+[tasks.update-tools]
+description = "Upgrade all mise-managed tools to latest"
+run         = "mise upgrade"

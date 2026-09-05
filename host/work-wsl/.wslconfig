@@ -1,0 +1,52 @@
+# .wslconfig — Windows-side WSL2 performance configuration
+# Location: C:\Users\<YourUsername>\.wslconfig
+# Apply changes: wsl.exe --shutdown  (then restart your distro)
+#
+# See: https://learn.microsoft.com/en-us/windows/wsl/wsl-config
+
+[wsl2]
+
+# ─── Memory ───────────────────────────────────────────────────────────────────
+# Limit WSL2 VM memory to prevent Windows from being starved.
+# Rule of thumb: ~50% of total RAM, or leave 6–8 GB for Windows.
+# Default: up to 80% of total host RAM (can cause Windows memory pressure).
+memory=8GB
+
+# Swap file size. Set to 0 to disable (useful if you manage swap inside WSL).
+# Default: 25% of memory value
+swap=4GB
+
+# ─── CPU ──────────────────────────────────────────────────────────────────────
+# Limit logical CPUs assigned to WSL2. Default: all host CPUs.
+# Reducing this improves Windows responsiveness during heavy WSL2 builds.
+processors=12
+
+# ─── Networking ───────────────────────────────────────────────────────────────
+# mirrored: WSL2 shares the Windows network stack (same IP, better VPN compat).
+# NAT (default): isolated network — can cause issues behind corporate VPNs.
+networkingMode=mirrored
+
+# DNS tunneling: route WSL2 DNS through Windows resolver (helps in corporate VPN)
+dnsTunneling=true
+
+# Automatic proxy: inherit Windows proxy settings (critical for corporate envs)
+autoProxy=true
+
+# ─── Filesystem ───────────────────────────────────────────────────────────────
+# Sparse VHD: the virtual disk file shrinks when you delete large files.
+# Without this, the VHD only grows, never reclaims space on Windows.
+# Requires WSL 2.2.0+ (check: wsl --version)
+sparseVhd=true
+
+# ─── Firewall ─────────────────────────────────────────────────────────────────
+# Allow host-side firewall rules to apply to WSL2 traffic.
+firewall=true
+
+# ─── GUI (optional) ───────────────────────────────────────────────────────────
+# Uncomment if using WSLg (graphical Linux apps via X/Wayland)
+# guiApplications=true
+
+[experimental]
+# Auto-reclaim memory from the WSL2 VM when Linux frees it.
+# Prevents the VM from hogging RAM after a big build completes.
+autoMemoryReclaim=gradual

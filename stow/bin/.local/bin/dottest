@@ -1,0 +1,61 @@
+#!/usr/bin/env bash
+# dottest — run this dotfiles repo's install.sh in a throwaway Debian container.
+#
+#   dottest              dry-run, then drop to a shell
+#   dottest --run        full install, then drop to a shell
+#   dottest --shell      shell only, no install
+#   dottest --rebuild    rebuild the image first
+#
+# The repo is mounted read-only and copied inside, so the container can never
+# write to your working tree — which is what makes the "did anything leak back
+# into the repo?" check meaningful.
+
+set -euo pipefail
+
+DOTFILES="${DOTFILES:-$HOME/dotfiles}"
+IMAGE=dotfiles-test
+BASE=debian:13          # match the WSL distro
+MODE=dry
+
+for a in "$@"; do
+  case "$a" in
+    --run)     MODE=run ;;
+    --shell)   MODE=shell ;;
+    --rebuild) REBUILD=1 ;;
+    -h|--help) sed -n '2,12p' "$0" | sed 's/^# \{0,1\}//'; exit 0 ;;
+    *) echo "unknown option: $a" >&2; exit 1 ;;
+  esac
+done
+
+command -v docker >/dev/null || { echo "docker not found" >&2; exit 1; }
+[[ -f "$DOTFILES/install.sh" ]] || { echo "no install.sh in $DOTFILES" >&2; exit 1; }
+
+if [[ -n "${REBUILD:-}" ]] || ! docker image inspect "$IMAGE" >/dev/null 2>&1; then
+  echo "▶ building $IMAGE from $BASE"
+  # Only sudo — install.sh's first action needs it, but it is itself in apt.txt.
+  # curl/git/ca-certificates are deliberately NOT pre-installed: apt.txt is
+  # supposed to provide them, and pre-installing would hide it if it stopped.
+  # locales matches WSL, where the locale is already configured beforehand.
+  docker build -t "$IMAGE" - <<EOF
+FROM $BASE
+RUN apt-get update && apt-get install -y --no-install-recommends sudo locales \
+ && sed -i 's/^# *en_US.UTF-8/en_US.UTF-8/' /etc/locale.gen && locale-gen \
+ && rm -rf /var/lib/apt/lists/*
+ENV LANG=en_US.UTF-8 LC_ALL=en_US.UTF-8
+RUN useradd -m -u 1000 -s /bin/bash $USER \
+ && echo '$USER ALL=(ALL) NOPASSWD:ALL' > /etc/sudoers.d/$USER
+USER $USER
+WORKDIR /home/$USER
+EOF
+fi
+
+case "$MODE" in
+  dry)   CMD='bash install.sh --dry-run; exec bash' ;;
+  run)   CMD='bash install.sh; exec bash' ;;
+  shell) CMD='exec bash' ;;
+esac
+
+echo "▶ $IMAGE  ($MODE)  ←  $DOTFILES"
+exec docker run -it --rm \
+  -v "$DOTFILES":/src:ro \
+  "$IMAGE" bash -lc "cp -r /src ~/dotfiles && cd ~/dotfiles && $CMD"

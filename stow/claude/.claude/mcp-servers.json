@@ -1,0 +1,58 @@
+{
+  "mcpServers": {
+    "sonarqube": {
+      "type": "stdio",
+      "command": "${HOME}/.local/share/dotfiles/scripts/sonarqube-mcp.sh",
+      "env": {
+        "SONARQUBE_URL": "${SONARQUBE_URL}",
+        "SONARQUBE_TOKEN": "${SONARQUBE_TOKEN}"
+      }
+    },
+    "atlassian-rovo-mcp": {
+      "type": "stdio",
+      "command": "npx",
+      "args": [
+        "mcp-remote@0.8.3",
+        "https://mcp.atlassian.com/v1/mcp"
+      ],
+      "env": {
+        "ATLASSIAN_API_KEY": "${ATLASSIAN_API_KEY}"
+      }
+    },
+    "jira": {
+      "type": "stdio",
+      "command": "${HOME}/.local/share/dotfiles/scripts/jira-mcp.sh",
+      "env": {
+        "JIRA_EMAIL": "${JIRA_EMAIL}",
+        "JIRA_TOKEN": "${JIRA_TOKEN}",
+        "JIRA_URL": "${JIRA_URL}"
+      }
+    },
+    "gitlab": {
+      "type": "http",
+      "url": "${GITLAB_MCP_URL}"
+    },
+    "grafana": {
+      "type": "stdio",
+      "command": "uvx",
+      "args": [
+        "mcp-grafana"
+      ],
+      "env": {
+        "GRAFANA_URL": "${GRAFANA_URL}",
+        "GRAFANA_SERVICE_ACCOUNT_TOKEN": "${GRAFANA_MCP_TOKEN}"
+      }
+    },
+    "grafana-prep": {
+      "type": "stdio",
+      "command": "uvx",
+      "args": [
+        "mcp-grafana"
+      ],
+      "env": {
+        "GRAFANA_URL": "${GRAFANA_URL_PREP}",
+        "GRAFANA_SERVICE_ACCOUNT_TOKEN": "${GRAFANA_MCP_TOKEN_PREP}"
+      }
+    }
+  }
+}

@@ -1,0 +1,34 @@
+# features/<domain>.feature
+Feature: <Feature title — one capability>
+  In order to <business value>
+  As a <role>
+  I need to <capability>
+
+  Background:
+    Given <shared precondition for all scenarios>
+
+  Scenario: <Happy path title>
+    Given <initial state>
+    When  <action taken>
+    Then  <expected outcome>
+
+  Scenario: <Error / edge case title>
+    Given <initial state that causes error>
+    When  <same action>
+    Then  <expected error outcome>
+
+  @wip
+  Scenario: <In-progress scenario>
+    Given <not yet implemented>
+    When  <...>
+    Then  <...>
+
+  Scenario Outline: <Parameterized title>
+    Given there are <start> items
+    When  I process <input>
+    Then  the result should be <expected>
+
+    Examples:
+      | start | input | expected |
+      | 10    | 3     | 7        |
+      | 5     | 2     | 3        |

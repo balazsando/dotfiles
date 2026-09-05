@@ -1,0 +1,102 @@
+---
+description: Jira MCP shortcuts for ticket lookup and context crawling
+alwaysApply: true
+---
+
+# Jira MCP Workflow
+
+## Authentication
+
+All Jira REST API calls use `$JIRA_EMAIL` and `$JIRA_TOKEN` environment variables.
+
+- `$JIRA_EMAIL` — your Atlassian account email (e.g. `you@example.com`)
+- `$JIRA_TOKEN` — your raw Atlassian API token (starts with `ATATT...`)
+- `$JIRA_API_URL` — full base URL
+
+**Correct curl pattern:**
+
+```bash
+curl -s "$JIRA_API_URL..." \
+  -u "$JIRA_EMAIL:$JIRA_TOKEN" \
+  -H "Accept: application/json"
+```
+
+---
+
+## Find My Assigned Jira Tickets
+
+**Trigger phrases:**
+
+- "find my jira assigned tickets"
+- "show my jira tickets"
+- "list my assigned jira issues"
+
+**Implementation:**
+
+1. Use `$JIRA_EMAIL:$JIRA_TOKEN` for `-u` basic auth in curl
+2. Query Jira REST API v3 endpoint: `/rest/api/3/search`
+3. Use JQL query: `assignee = currentUser()`
+4. Order results by `-updated` (newest first)
+5. Display results with: Key, Summary, Status, Priority, Assignee
+6. Return maxResults: 50 (adjust as needed)
+
+**Output format:**
+
+```
+PROJ-123 | Summary text | Status | Priority | Assignee
+```
+
+---
+
+## Crawl Jira Ticket Context by Number
+
+**Trigger phrases:**
+
+- "jira ticket <TICKET_KEY>"
+- "show jira <TICKET_KEY>"
+- "jira context <TICKET_KEY>"
+- "jira <TICKET_KEY>"
+
+**Implementation:**
+
+1. Extract ticket key from user input (e.g., "PROJ-123")
+2. Use `$JIRA_EMAIL:$JIRA_TOKEN` for `-u` basic auth in curl
+3. Query endpoint: `/rest/api/3/issue/{issueIdOrKey}`
+4. Include expanded fields: `names`, `renderedFields`, `transitions`, `changelog`
+5. Fetch related data:
+   - Issue details (title, description, status, priority, assignee, reporter)
+   - Comments (thread-based conversation history)
+   - Worklogs (time entries)
+   - Transitions (available state changes)
+   - Linked issues (related tickets)
+   - Sprint info (if applicable)
+6. Format as markdown document for context injection
+
+**Output structure:**
+
+```
+# TICKET_KEY: Summary
+
+**Status:** Current Status | **Priority:** Level | **Assignee:** Name
+
+## Description
+[Rendered description text]
+
+## Comments
+[Thread-based comments with authors and timestamps]
+
+## Time Tracking
+[Total logged time, per entry breakdown]
+
+## Linked Issues
+[Related tickets and their relationship]
+
+## Available Actions
+[Next possible state transitions]
+```
+
+**Error handling:**
+
+- If `$JIRA_TOKEN` or `$JIRA_EMAIL` is not set: prompt user to export them in their shell profile
+- If ticket not found: suggest checking ticket key format (PROJECT-NUMBER)
+- If API call fails: show error and suggest checking token validity/Jira availability

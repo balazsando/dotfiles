@@ -1,0 +1,54 @@
+---
+description: Kubernetes environments, kubeconfig aliases, and Helm configuration repositories
+alwaysApply: true
+---
+
+# Work Kubernetes Environments
+
+When asked to check the Kubernetes or cluster situation in an environment, investigate a pod,
+deployment, or service, or work with Helm values, read and follow:
+
+- `~/.cursor/skills/kubectl/SKILL.md`
+- `~/.cursor/local/work-environments.md` — the environment matrix, namespaces, deployment
+  repository map, and the triage workflow
+
+Read those files when the task starts. Do not rely on memory alone.
+
+## Environment map is machine-local
+
+The specifics — which clusters exist, their namespaces, kubeconfig filenames, and the deployment
+repositories behind them — are **not** stored in this repository. They live in
+`~/.cursor/local/work-environments.md`, restored per machine.
+
+If that file is missing, say the environment map is not configured on this machine. **Do not
+guess** at a cluster name, namespace, config path, or repository — a plausible-looking guess about
+infrastructure is worse than saying it is unknown.
+
+## Invoking kubectl
+
+Kubeconfig-switching aliases (`k` + environment + optional stack suffix) are defined in
+`~/.config/zsh/secrets` and exist **only in an interactive shell**. A tool call does not source
+that file, so calling one fails with "command not found". Always set the kubeconfig explicitly:
+
+```bash
+KUBECONFIG="$HOME/.kube/<config-file>" kubectl get pods
+```
+
+Each kubeconfig carries its own default namespace, so `-n` is only needed to look outside it.
+Report the alias name to the user (that is how they navigate), but run the explicit form yourself.
+
+## Safety
+
+- Read operations (`get`, `describe`, `logs`, `top`, `events`) are fine to run unprompted.
+- **Never** run a mutating command (`apply`, `delete`, `scale`, `patch`, `rollout restart`,
+  `edit`) against **production** without explicit per-command confirmation. State plainly which
+  environment the command would hit before asking.
+- Changes belong in the deployment repository's `values-<env>.yaml` and its pipeline, not in a
+  direct `kubectl apply`. Propose the values change first; reach for imperative kubectl only for
+  genuine break-glass work the user has asked for.
+- Confirm which environment is active before acting on an inherited `$KUBECONFIG`:
+
+  ```bash
+  kubectl config current-context
+  echo "${KUBECONFIG:-<default ~/.kube/config>}"
+  ```

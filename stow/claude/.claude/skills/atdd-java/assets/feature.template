@@ -1,0 +1,36 @@
+# src/test/resources/features/<domain>.feature
+Feature: <Feature title — one capability>
+  <Optional free-form description.
+  Describe the business rule, not the implementation.
+  Markdown is supported.>
+
+  Background:
+    Given <shared precondition for all scenarios in this feature>
+
+  Scenario: <Happy path title>
+    Given <initial state>
+    When  <action>
+    Then  <expected outcome>
+    And   <additional assertion>
+
+  Scenario: <Error / edge case>
+    Given <state that causes error>
+    When  <same action>
+    Then  <expected error outcome>
+
+  @wip
+  Scenario: <In progress>
+    Given <pending>
+    When  <pending>
+    Then  <pending>
+
+  Scenario Outline: <Parameterized title>
+    Given there are <start> items
+    When  I process <input>
+    Then  the result should be <expected>
+
+    @smoke
+    Examples:
+      | start | input | expected |
+      | 10    | 3     | 7        |
+      | 5     | 2     | 3        |

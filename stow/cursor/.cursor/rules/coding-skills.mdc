@@ -1,0 +1,49 @@
+---
+description: Apply design-patterns and atdd-java skills for all coding tasks
+alwaysApply: true
+---
+
+# Coding Skills Workflow
+
+For every coding task (implementation, refactoring, bug fix, or test work), read and follow these skills before writing code:
+
+- `~/.cursor/skills/design-patterns/SKILL.md`
+- `~/.cursor/skills/atdd-java/SKILL.md`
+
+Read the full skill file when the task starts. Do not rely on memory alone.
+
+## Design Patterns
+
+Use the design-patterns skill when:
+
+- Choosing structure for new components or refactors
+- Evaluating whether a GoF or enterprise pattern fits
+- Reviewing abstraction boundaries
+
+Rules:
+
+- Prefer the simplest solution; do not force patterns
+- If no pattern adds value, say so and implement plainly
+- Use Java 21 idioms, composition over inheritance, constructor injection
+
+## ATDD (Java)
+
+Use the atdd-java skill when:
+
+- Implementing or changing user-facing behavior
+- Adding or updating tests for features, APIs, or domain logic
+- The project already uses Cucumber/Gherkin, or acceptance tests are appropriate
+
+Workflow:
+
+1. Write or update a failing `.feature` scenario first when practical
+2. Implement minimal step definitions and production code (red → green)
+3. Refactor only after tests pass
+
+If Cucumber is not present and the change is trivial, use the project's existing test style — but still follow given/when/then structure from the skill.
+
+## Task Start Checklist
+
+- [ ] Read design-patterns skill for structural decisions
+- [ ] Read atdd-java skill when behavior or tests are in scope
+- [ ] Match existing project conventions over skill defaults when they conflict

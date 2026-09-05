@@ -1,0 +1,16 @@
+[credential "https://github.com"]
+	helper = 
+	helper = !/usr/bin/gh auth git-credential
+[credential "https://gist.github.com"]
+	helper = 
+	helper = !/usr/bin/gh auth git-credential
+# No global credential helper on purpose — it would store every host's
+# credentials in plaintext. GitHub uses `gh`; anything else: ~/.gitconfig_local.
+[include]
+    path = ~/.gitconfig_local
+[core]
+	hooksPath = ~/.githooks
+[alias]
+    mr = "!f() { git fetch origin merge-requests/$1/head:mr-$1 && git checkout mr-$1; }; f"
+    diff2 = "!f() { mkdir -p .github; git fetch origin ${1:-develop}; git diff --no-color --full-index --binary origin/${1:-develop} HEAD > .github/.mr.diff; }; f"
+    mrdiff = "!f() { git checkout mr/$1; git diff2 ${2:-develop}; }; f"
