@@ -1,6 +1,6 @@
 ---
 name: design-patterns
-description: "Design patterns skill for judicious GoF and enterprise pattern application. Use when choosing or applying design patterns, refactoring toward patterns, evaluating architectural structure, reviewing pattern usage, or when the user asks about Strategy, Factory, Observer, Repository, Unit of Work, or other GoF/EA patterns. Prefers the simplest solution; Java 21 idioms; composition over inheritance."
+description: "Choosing, applying, or reviewing GoF and enterprise design patterns — Strategy, Factory, Observer, Repository, Unit of Work and the rest — refactoring toward a pattern, and evaluating architectural structure. Java 21 idioms; prefers the simplest solution and composition over inheritance."
 argument-hint: "problem description, codebase area, or pattern name to evaluate"
 ---
 

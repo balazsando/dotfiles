@@ -1,10 +1,15 @@
 {
   "mcpServers": {
     "sonarqube": {
-      "command": "${env:HOME}/.local/share/dotfiles/scripts/sonarqube-mcp.sh",
+      "command": "npx",
+      "args": [
+        "--yes",
+        "sonarqube-mcp-server@1.10.21"
+      ],
       "env": {
         "SONARQUBE_URL": "${env:SONARQUBE_URL}",
-        "SONARQUBE_TOKEN": "${env:SONARQUBE_TOKEN}"
+        "SONARQUBE_TOKEN": "${env:SONARQUBE_TOKEN}",
+        "NODE_EXTRA_CA_CERTS": "${env:NODE_EXTRA_CA_CERTS}"
       }
     },
     "atlassian-rovo-mcp": {
@@ -47,6 +52,16 @@
       "env": {
         "GRAFANA_URL": "${env:GRAFANA_URL_PREP}",
         "GRAFANA_SERVICE_ACCOUNT_TOKEN": "${env:GRAFANA_MCP_TOKEN_PREP}"
+      }
+    },
+    "grafana-prod": {
+      "command": "uvx",
+      "args": [
+        "mcp-grafana"
+      ],
+      "env": {
+        "GRAFANA_URL": "${env:GRAFANA_URL_PROD}",
+        "GRAFANA_SERVICE_ACCOUNT_TOKEN": "${env:GRAFANA_MCP_TOKEN_PROD}"
       }
     }
   }

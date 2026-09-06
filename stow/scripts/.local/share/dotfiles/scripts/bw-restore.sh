@@ -259,11 +259,21 @@ main() {
   if (( ${#ai_names[@]} == 0 )); then
     log_warn "No dotfiles/ai/* items in the vault — agents run without work context"
   else
-    mkdir -p "$HOME/.claude/local" "$HOME/.cursor/local"
+    mkdir -p "$HOME/.claude/local" "$HOME/.cursor"
+    if [[ ! -e "$HOME/.cursor/local" && ! -L "$HOME/.cursor/local" ]]; then
+      ln -s ../.claude/local "$HOME/.cursor/local"
+    elif [[ -d "$HOME/.cursor/local" && ! -L "$HOME/.cursor/local" ]]; then
+      # Pre-1.1.0 restores wrote a second copy here. Drop it once it is empty;
+      # never delete files that may not be duplicates.
+      rmdir "$HOME/.cursor/local" 2>/dev/null &&
+        ln -s ../.claude/local "$HOME/.cursor/local" ||
+        log_warn "~/.cursor/local is a non-empty directory — Cursor will read a stale overlay.
+           Remove it and re-run: rm -rf ~/.cursor/local && ln -s ../.claude/local ~/.cursor/local"
+    fi
+
     for item in "${ai_names[@]}"; do
       local _leaf="${item#dotfiles/ai/}"
       bw_restore_file "$item" "$HOME/.claude/local/$_leaf" 644 &
-      bw_restore_file "$item" "$HOME/.cursor/local/$_leaf" 644 &
     done
   fi
 

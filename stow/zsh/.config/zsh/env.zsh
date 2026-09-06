@@ -9,9 +9,13 @@ export EDITOR=nvim
 export VISUAL=nvim
 
 # --- Node TLS ---
-# Node ignores the OS trust store. Bundle is built from ~/certs by node-ca.sh.
-[[ -f "$HOME/.cache/dotfiles/ca-bundle.pem" ]] \
-  && export NODE_EXTRA_CA_CERTS="$HOME/.cache/dotfiles/ca-bundle.pem"
+# Node ignores the OS trust store, so the corporate chain must be passed
+# explicitly. Rebuild the ~/certs bundle here and export NODE_EXTRA_CA_CERTS:
+# node tooling and the MCP servers launched from this shell both inherit it.
+if [[ -r "$HOME/.local/share/dotfiles/scripts/node-ca.sh" ]]; then
+  source "$HOME/.local/share/dotfiles/scripts/node-ca.sh"
+  node_ca_setup || true
+fi
 
 # --- PATH ---
 export PATH="$HOME/.npm-global/bin:$GOPATH/bin:$HOME/.local/bin:$PATH"

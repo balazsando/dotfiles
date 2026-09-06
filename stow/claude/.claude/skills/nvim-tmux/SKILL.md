@@ -1,15 +1,10 @@
 ---
 name: nvim-tmux
-description: "Neovim + tmux skill. Use when writing, configuring, and debugging setups that combine Neovim and tmux: keybindings, splits, navigation, scripting sessions, sending commands between panes, and `.tmux.conf` / Neovim Lua integration."
+description: "Neovim and tmux together: keybindings, splits, pane navigation, scripting sessions, sending commands between panes, and .tmux.conf / Neovim Lua integration."
 argument-hint: "Describe the tmux/Neovim setup task (e.g., 'configure pane navigation', 'set up session layout', 'integrate clipboard')"
 ---
 
 # Neovim + tmux Skill
-
-## Purpose
-Write, configure, and debug setups that combine Neovim and tmux: keybindings, splits, navigation, scripting sessions, sending commands between panes, and `.tmux.conf` / Neovim Lua integration.
-
----
 
 ## Core Concepts
 

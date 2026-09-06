@@ -1,15 +1,10 @@
 ---
 name: lazyvim
-description: "LazyVim Neovim distribution skill. Use when configuring LazyVim, customizing or disabling default plugins, adding plugin specs, managing keymaps, enabling extras via :LazyExtras, configuring LSP/formatters/linters, writing lua/config/ files, or troubleshooting LazyVim setups."
+description: "Configuring LazyVim: plugin specs, customising or disabling defaults, keymaps, :LazyExtras, LSP/formatters/linters, lua/config files, and troubleshooting."
 argument-hint: "Describe the LazyVim task (e.g., 'add a plugin', 'override LSP settings', 'enable Java extra', 'change colorscheme', 'add custom keymap')"
 ---
 
 # LazyVim Skill
-
-## Purpose
-Configure, customize, and debug [LazyVim](https://www.lazyvim.org) — the Neovim distribution by folke built on top of lazy.nvim. Covers the config file structure, plugin overrides, extras, LSP/formatter/linter setup, and common patterns.
-
----
 
 ## Directory Structure
 

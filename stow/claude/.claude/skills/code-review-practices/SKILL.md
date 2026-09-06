@@ -1,6 +1,6 @@
 ---
 name: code-review-practices
-description: "Code review skill based on Google Engineering Practices. Use when reviewing a pull request, merge request, or diff; checking code quality, correctness, tests, naming, comments, style, security, or design; writing review feedback or comments; auditing code health. Covers the full reviewer workflow: navigate → inspect → comment."
+description: "Reviewing a pull request, merge request, or diff: correctness, tests, naming, comments, style, security, design, and code health. Covers the full reviewer workflow and how to write the feedback."
 argument-hint: "file path, diff, or PR description to review"
 ---
 

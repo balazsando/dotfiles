@@ -1,6 +1,6 @@
 ---
 name: kubectl
-description: 'kubectl CLI skill. Use when writing or reviewing kubectl commands, shell scripts using kubectl, Kubernetes resource management, debugging pods and deployments, managing kubeconfig contexts, working with namespaces, scaling deployments, viewing logs, port-forwarding, executing commands in containers, rolling updates, rollbacks, patching resources, applying manifests, or any kubectl operation. Also use when asked to check the Kubernetes or cluster situation in a work environment (test, preprod, prod), or when working with the kubeconfig-switching shell aliases or the Helm configuration repositories named in the machine-local environment map. Covers syntax, output formats, JSONPath, label selectors, common workflows, and quick-reference examples.'
+description: "Kubernetes and kubectl work: pods, deployments, namespaces, logs, port-forwarding, exec, rollouts and rollbacks, patching, manifests, kubeconfig contexts, JSONPath and label selectors. Also for checking a cluster's state in a work environment (test, preprod, prod), the kubeconfig-switching shell aliases, and the Helm config repositories in the machine-local environment map."
 argument-hint: 'What kubectl operation, resource, or environment do you need? (e.g. "get pods", "describe deployment", "check k8s situation in test", "connector preprod health")'
 ---
 

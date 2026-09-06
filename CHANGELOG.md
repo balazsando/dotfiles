@@ -7,6 +7,88 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [1.1.0] — 2026-09-06
+
+Restructures the AI assistant configuration: skills and agents are authored once and shared
+between Claude Code and Cursor instead of maintained as two drifting copies, with a guard that
+fails the stow when a copy reappears.
+
+### Added
+
+- `check-ai-parity.sh` — fails, naming the offenders, if any skill or agent exists under
+  `stow/cursor/.cursor/`. `stow.sh` runs it before stowing, so the sharing contract is enforced
+  at deploy time rather than by convention.
+- `stow.sh` prunes dangling symlinks after stowing, then removes the directories they emptied.
+  Stow only unstows what a package still contains, so deleting a file left its link behind — and
+  a stale skill link is indistinguishable from a live one to the assistant that reads it. `-n`
+  reports what it would prune.
+- Root `CLAUDE.md` and `.cursor/rules/no-leaks.mdc` — the repository is public, so what may never
+  enter a tracked file is now stated in the repository itself rather than assumed.
+- `/release` (`.claude/commands/`, mirrored in `.cursor/commands/`) — prepares a version:
+  changelog entry from the real diff, `VERSION` and README badge together, a README/ARCHITECTURE
+  drift check, and the verification run. It prepares files only; committing and tagging stay
+  with the user.
+- `/sonar-fix` and `/bug-fix` — the two commands that own their steps inline and carry a scoped
+  commit exception (`sonar-cleanup/*`, `bugfix/*`; one local commit, never pushed). Backed by two
+  new skills, `sonarqube-validation` and `app-bug-detection`, which own all access to the
+  `sonarqube` and `grafana-prod` MCP servers.
+- Skills `java-standards` (the Java/Spring/Maven rules lifted out of the router),
+  `bitwarden-cli` (session handling, the encrypted-note size ceiling, batching, TLS behind a
+  corporate CA), and `claude-config` (where a rule belongs across router / command / agent /
+  skill, and the Claude–Cursor sharing contract).
+- `grafana-prod` MCP server — a third, read-only Grafana instance, the only one
+  `app-bug-detection` queries.
+
+### Changed
+
+- Skills and agents now live only in `stow/claude/.claude/`. Cursor discovers `~/.claude/skills/`
+  and `~/.claude/agents/` natively, so the 40-odd duplicated files under `stow/cursor/.cursor/`
+  were deleted rather than re-synced. The cursor package keeps only what is platform-specific:
+  the `.mdc` router rule, thin command dispatchers, and `mcp.json`.
+- The global `CLAUDE.md` is a router, not a manual: a situation → skill table, the command/agent/
+  skill layering contract, git operations, and MCP configuration. Domain rules that were inlined
+  there moved into skills. `global-instructions.mdc` mirrors the same contract for Cursor, and
+  the `coding-skills`, `jira-workflow`, and `k8s-environments` rules it absorbed were removed.
+- Agents are named `<command>-agent`, matching the command that dispatches them, so the
+  dispatch target is derivable rather than remembered.
+- `bw-restore.sh` writes machine-local AI context once, to `~/.claude/local/`, and symlinks
+  `~/.cursor/local` to it. It previously restored every file twice, letting the two overlays
+  diverge. An existing non-empty `~/.cursor/local` directory is left in place with a warning
+  rather than deleted.
+- The `sonarqube` MCP server runs from a pinned `npx` package instead of a Docker launcher
+  script; `sonarqube-mcp.sh` is deleted. `NODE_EXTRA_CA_CERTS` is passed through so it can reach
+  an internal host.
+- `env.zsh` sources `node-ca.sh` and rebuilds the CA bundle on shell start instead of exporting
+  a path that may not exist yet. MCP servers launched from that shell inherit a bundle that is
+  actually current.
+- Long skills split their depth into `references/`: `dotfiles`, `stow`, and `grafana` now load a
+  short SKILL.md and reach for the detail only when needed. Skill descriptions were rewritten to
+  say when to load the skill rather than restate its table of contents.
+
+### Fixed
+
+- `node-ca.sh` used a glob to concatenate `~/certs/*.crt`. It is sourced from every interactive
+  shell, and zsh errors loudly on a no-match, so a machine with no certificates printed an error
+  on every prompt. Uses `find -exec` now.
+- The tmux `M-d` split binding shelled out to `tmux display -p` inside a `run-shell` the shell
+  had already expanded, so the comparison ran on empty operands and the split direction was
+  arbitrary. Uses tmux format substitution, and compares against the client size rather than
+  assuming a 2:1 cell aspect.
+
+### Documentation
+
+- `docs/ARCHITECTURE.md` gains an **AI assistant configuration** section — one authoring
+  location and why the shadowing failure is invisible, the four-layer instruction split, and the
+  machine-local overlay — plus the dangling-link pruning under **Stow Strategy**. Its MCP section
+  no longer describes the deleted SonarQube launcher.
+- Both layout blocks were out of step with the repository and with each other: `ARCHITECTURE.md`
+  was missing the root `CLAUDE.md`, `.claude/commands/`, `check-ai-parity.sh`, `CHANGELOG.md`
+  and `VERSION`; `README.md` was missing `host/work-wsl/` and `packages/pip.txt`. Both now list
+  what is there.
+- `README.md` documents the Claude/Cursor sharing contract and what may not enter a tracked file.
+
+---
+
 ## [1.0.1] — 2026-09-05
 
 Hotfix release.

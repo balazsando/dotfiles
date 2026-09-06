@@ -1,6 +1,6 @@
 ---
 name: msgraph-go
-description: "Microsoft Graph and Azure SDK for Go integration skill. Use when integrating Microsoft Teams (send messages, list channels, read conversations), SharePoint (list sites, read/write documents, drive items), Microsoft 365 users, or any Microsoft Graph resource into a Go project. Covers authentication (azidentity: ClientSecretCredential, DeviceCodeCredential, ManagedIdentityCredential), msgraph-sdk-go client setup, OData pagination, error handling, and Bubble Tea async patterns for TUI apps."
+description: "Microsoft Graph from Go: Teams (send messages, list channels, read conversations), SharePoint (sites, documents, drive items), M365 users. Covers azidentity credentials, msgraph-sdk-go client setup, OData pagination, error handling, and Bubble Tea async patterns for TUI apps."
 argument-hint: "Describe the Microsoft resource to integrate (e.g., 'send Teams message', 'read SharePoint documents', 'list users')"
 ---
 

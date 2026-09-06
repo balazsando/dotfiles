@@ -1,0 +1,39 @@
+---
+description: Never publish credentials or company infrastructure detail from this public repository
+alwaysApply: true
+---
+
+# dotfiles — project rules
+
+This repository is **public** and configures a machine that works against private corporate
+infrastructure. Nothing that identifies that infrastructure may enter a tracked file.
+
+## Never publish credentials or infrastructure detail
+
+Sensitive in tracked files, commit messages, tags, MR descriptions, and generated docs:
+
+- **Credentials** — tokens, API keys, passwords, session keys, private keys, certificates.
+- **Network** — internal hostnames and domains, IPs, cluster, namespace and kubeconfig names,
+  registry and VPN endpoints, service URLs.
+- **Organisation** — company and product names in a work context, Jira project keys, board and
+  sprint ids, GitLab paths, internal repository names, colleague names and emails.
+
+**Reference, never inline.** Values live in `~/.config/zsh/secrets` (cite as `$VAR_NAME`) or
+`~/.cursor/local/*.md` (cite as "read `~/.cursor/local/<file>`"). A tracked file may name the
+variable or the file; it may not contain the value, an example of it, or a recognisable
+redaction. In examples use `example.invalid`, `<HOST>`, or `$VAR`.
+
+If a change cannot be made without inlining something sensitive, stop and report that as the
+outcome — do not commit it, stage it, write it "temporarily", or offer it as an option. Do not
+print secret values into terminal output or reports while diagnosing either; name the variable
+instead. Scrollback is published too.
+
+Content already pushed is public regardless of a later fix. If you find a leak in history, say
+so and hand over the rewrite commands — the **Git operations** rules in the global instructions
+still apply, so the rewrite is the user's to run.
+
+## Releasing
+
+`/release <major|minor|patch>` prepares the next version. Documentation is part of the change,
+not a follow-up: `README.md` and `docs/ARCHITECTURE.md` describe the same repository and have
+drifted from each other before.

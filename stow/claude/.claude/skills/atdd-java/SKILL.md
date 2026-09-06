@@ -1,6 +1,6 @@
 ---
 name: atdd-java
-description: "ATDD (Acceptance Test-Driven Development) skill for Java using Cucumber/Gherkin. Use when writing feature files, defining @Given/@When/@Then step definitions, wiring up Cucumber with JUnit 5 or JUnit 4, applying BDD red-green-refactor cycles, using @Before/@After hooks, sharing state between steps, filtering scenarios with tags, testing HTTP APIs or domain services, using DataTables and DocStrings, or adding ATDD to an existing Java/Maven/Gradle project."
+description: "ATDD/BDD in Java with Cucumber and Gherkin: feature files, @Given/@When/@Then step definitions, JUnit 4/5 wiring, @Before/@After hooks, sharing state between steps, tag filtering, DataTables and DocStrings, and adding acceptance tests to a Maven or Gradle project."
 argument-hint: "Describe the feature or acceptance test to implement (e.g., 'add feature for user login', 'test REST API', 'add ATDD to Spring Boot service')"
 ---
 
@@ -436,6 +436,7 @@ See [integration patterns reference](./references/integration.md).
 - [Gherkin syntax](./references/gherkin.md)
 - [Hooks and lifecycle](./references/hooks.md)
 - [Integration and DI patterns](./references/integration.md)
+- [Feature file skeleton](./assets/feature.template) - starting point for a new `.feature` file
 - [Cucumber for Java GitHub (cucumber-jvm)](https://github.com/cucumber/cucumber-jvm)
 - [Gherkin reference](https://cucumber.io/docs/gherkin/reference/)
 - [Cucumber Java API reference](https://cucumber.io/docs/cucumber/api/?lang=java)

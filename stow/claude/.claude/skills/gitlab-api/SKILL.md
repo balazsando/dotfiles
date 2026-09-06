@@ -1,6 +1,6 @@
 ---
 name: gitlab-api
-description: 'GitLab REST API v4 skill. Use when writing code that calls the GitLab API, looking up GitLab API endpoints, building GitLab integrations, working with merge requests, issues, pipelines, branches, repositories, groups, users, CI/CD jobs, runners, or any GitLab resource programmatically. Covers authentication, pagination, error handling, and Go HTTP client patterns for GitLab API v4.'
+description: "Calling the GitLab REST API v4 from code: merge requests, issues, pipelines, branches, repositories, groups, users, CI/CD jobs, runners. Covers auth, pagination, error handling, and Go HTTP client patterns."
 argument-hint: 'What GitLab resource or operation do you need? (e.g. "list merge requests", "create branch", "trigger pipeline")'
 ---
 

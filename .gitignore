@@ -1,2 +1,6 @@
 # Local machine data — never commit
 repos.txt
+!/CLAUDE.md
+!/.claude/
+!/.claude/commands/
+!/.claude/commands/*

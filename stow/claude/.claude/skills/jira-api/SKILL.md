@@ -1,6 +1,6 @@
 ---
 name: jira-api
-description: 'Jira REST API v3 skill. Use when writing code that calls the Jira API, looking up Jira API endpoints, building Jira integrations, working with issues, sprints, boards, worklogs, transitions, comments, projects, users, or any Jira resource programmatically. Covers basic auth, pagination, JQL search, ADF (Atlassian Document Format) for descriptions/comments, time tracking, and Go HTTP client patterns for Jira Cloud REST API v3.'
+description: "Calling the Jira Cloud REST API v3 from code: issues, sprints, boards, worklogs, transitions, comments, projects, users. Covers auth, pagination, JQL search, ADF for descriptions and comments, time tracking, and Go HTTP client patterns."
 argument-hint: 'What Jira resource or operation do you need? (e.g. "search issues by JQL", "log work", "transition issue", "get sprint board")'
 ---
 

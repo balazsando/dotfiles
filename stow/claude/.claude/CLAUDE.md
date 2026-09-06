@@ -1,336 +1,131 @@
 # Claude Code Global Instructions
 
-Project-level CLAUDE.md files override these global rules.
-If repository documentation exists (`/docs`, `README.md`, architecture notes, ADRs), that takes precedence over both.
+Machine-wide rules. Project `CLAUDE.md` overrides them; repository documentation (`/docs`,
+`README.md`, ADRs) overrides both.
+
+This file routes — it does not teach. Domain rules live in skills, loaded on demand.
 
 ---
 
-# 1. Dependency Injection Rules
+## Routing
 
-Use constructor injection by default.
+Read the skill file when the work starts; do not rely on memory. Skills live in
+`~/.claude/skills/<name>/SKILL.md`.
 
-- Prefer constructor injection in all cases
-- Avoid field injection unless explicitly required by a framework
-- Do not use `@Autowired` on constructors when a single constructor exists
-- Dependencies must be passed via constructor parameters
-- Dependency fields should be `final` whenever possible
-- Avoid setter injection unless explicitly required by a framework
+| When | Load |
+| --- | --- |
+| Writing or changing Java / Spring / Maven code | `java-standards`, then `clean-code` |
+| Structural decision, new component, abstraction boundary | `design-patterns` |
+| Changing behaviour, or adding feature / API / domain tests | `atdd-java` (Go: `atdd-go`) |
+| Reviewing a diff, merge request, or PR | `code-review-practices` |
+| After changing code in a repo with a SonarQube project | `sonarqube-validation` |
+| Production errors, exceptions, "what is failing in prod" | `app-bug-detection` |
+| Dotfiles, stow packages, symlinks, bootstrap | `dotfiles`, `stow` |
+| Kubernetes, clusters, an environment's state | `kubectl` |
+| Grafana, dashboards, PromQL / LogQL, alerting | `grafana` |
+| Calling the Jira, GitLab, or Microsoft Graph APIs | `jira-api`, `gitlab-api`, `msgraph-go` |
+| Neovim, LazyVim, tmux configuration | `neovim-lua`, `lazyvim`, `nvim-tmux` |
+| Bitwarden CLI (`bw`), secrets upload/restore, vault scripting | `bitwarden-cli` |
+| Adding or changing a skill, agent, command, or AI rule | `claude-config` |
 
----
-
-# 2. Coding Guidelines
-
-General principles:
-
-- Follow SOLID, DRY, YAGNI, and KISS principles
-- Keep classes small, cohesive, and focused
-- Use domain-driven naming
-- Avoid unnecessary complexity
-- Prefer maintainability over cleverness
-
-Modern Java usage:
-
-- Use modern Java (21+) features when they improve readability, safety, or maintainability
-- Do not use newer language features if they reduce clarity
-
-Preferred:
-
-- Clear and explicit logic
-- Readable and maintainable code
-- Predictable control flow
-- Low cognitive overhead
-
-Avoid:
-
-- Overly complex functional chains
-- Unnecessary abstractions
-- Hidden side effects
-- Clever but hard-to-read solutions
-- Premature optimization
-
-Lombok:
-
-- Allowed for boilerplate reduction
-- Avoid overuse in complex logic
-- Do not hide important behavior behind annotations
+Prefer the simplest solution and do not force a pattern; project conventions beat skill defaults;
+say so plainly when no skill applies rather than inventing a process.
 
 ---
 
-# 3. Separation of Concerns
+## Commands and agents
 
-- Do not mix business logic with infrastructure concerns
-- Do not place persistence, HTTP, or framework logic inside domain models
-- Keep classes focused on a single responsibility
-- Avoid god classes handling multiple responsibilities
-- Prefer clear layering even in simple projects
-- Keep boundaries explicit and enforceable
+`/sonar-fix` and `/bug-fix` own their steps inline and use a skill for external data
+(`sonarqube-validation`, `app-bug-detection`). Every other command only dispatches: it spawns
+`<command>-agent`, relays the agent's output unabridged, and resumes that same agent via
+SendMessage rather than spawning a second one.
 
----
+The layers do not overlap. A command owns argument parsing, dispatch, and relaying. An agent owns
+its workflow, output format, and constraints. A skill owns domain knowledge and any MCP server it
+fronts. Never restate one layer's content in another — reference it.
 
-# 4. Testing Guidelines
-
-Testing rules:
-
-- Test behavior, not implementation details
-- Prefer testing observable outcomes
-- Mock only external dependencies
-- Avoid over-mocking
-- Keep tests readable and deterministic
-
-Test structure:
-
-- Use given / when / then structure
-- Prefer parameterized tests when multiple inputs validate the same behavior
-
-TDD preference:
-
-- Prefer test-first iterations when practical
-- Write failing tests → implement minimal fix → refactor safely
+Machine-local specifics — Jira project keys, boards, documentation repositories — live in
+`~/.claude/local/`, unversioned. Read the file a command names; if it is missing, ask rather than
+guess.
 
 ---
 
-# 5. Maven Dependency Management
+## Git operations
 
-- Define shared versions in parent dependency management
-- Do not duplicate versions in child modules
-- Align dependency versions across modules
-- Avoid unnecessary transitive dependencies
-- Respect scope separation: compile, test, provided, optional
+**Committing and history rewriting are prohibited.** The only exceptions are `ticket-to-merge`,
+`/sonar-fix`, and `/bug-fix` while they are running. Reading history, diffs, status, blame, logs,
+and branch state is always allowed.
 
----
+Prohibited outside those three commands: `git commit` (including `--amend`); staging or unstaging
+(`git add`, `git rm --cached`, `git restore --staged`, index edits); any history-altering command
+(`rebase`, `reset --hard`, `cherry-pick`, `revert`, `filter-branch`, `push --force`); creating,
+deleting, or moving tags and branches. If asked to commit outside those exceptions, decline and
+leave the changes unstaged for the user.
 
-# 6. Code Generation and Refactoring Behavior
+**Commit message format.** Write the subject as `category-message` and nothing else
+(`feat-add widget`, `fix-bw upload session handling`). The `prepare-commit-msg` hook expands it to
+`[TICKET] [emoji]([category]): [Message]` — deriving emoji, capitalising, and prefixing the ticket
+parsed from the branch. Do not hand-write the expanded form and do not add the ticket yourself.
+Categories: `feat` `fix` `docs` `chore` `refactor` `style` `test` `deploy` `typo` `revert`
+`version`.
 
-- Identify correct architectural layer before changes
-- Preserve existing behavior unless explicitly requested otherwise
-- Prefer incremental refactoring
-- Remove duplication when safe
-- Do not introduce new architecture unless justified
-- Keep changes simple and maintainable
+**Never add tooling attribution** — no bot `Co-Authored-By` trailers, no `*-Session:` links, no
+"Generated with" footers — to commits, tags, or merge request descriptions. The hook strips them
+from commit messages as a safety net, but cannot touch MR descriptions and is bypassed by
+`--no-verify`.
 
----
-
-# 7. Claude Code Workflow
-
-For multistep tasks:
-
-- Understand request, constraints, and repository context first
-- Break work into steps
-- Use TDD where applicable
-- Validate continuously during execution
-- Refactor safely after correctness is established
-- Ensure final output is production-ready
-
-Key Claude Code features to leverage:
-
-- Use Agent tool for complex, multi-step tasks that benefit from specialized agents
-- Use Bash tool for shell operations; prefer dedicated tools (Read, Edit, Write) when they fit
-- Use TaskCreate/TaskUpdate for tracking progress on complex work
-- Use Artifact for visual communication (HTML, Markdown dashboards)
-- Use /code-review for code review tasks
-- Use /verify skill to validate changes work end-to-end
-- Use /run skill to test changes in the live app
+**Inside the exceptions**, each owns its own limits — read them there, they are not repeated here.
+Common to all three: never `--no-verify`, never touch existing history, and never `--force` on a
+shared branch without explicit authorization.
 
 ---
 
-# 8. Nullability Annotations
+## MCP configuration
 
-- Use `@NotNull` for non-null contracts
-- Use `@Nullable` only when null is explicitly allowed
-- Prefer `Optional` for explicit absence modeling
-- Avoid ambiguous null usage
+MCP servers are registered at user scope in `~/.claude.json`, managed by the `claude mcp` CLI —
+never hand-edit it.
 
----
-
-# 9. Coding Skills Workflow
-
-For every coding task (implementation, refactoring, bug fix, or test work), load these skills
-before writing code — read the skill file when the task starts, do not rely on memory:
-
-- `design-patterns` — structural decisions, abstraction boundaries, pattern evaluation
-- `atdd-java` (or `atdd-go`) — behavior changes, feature/API/domain tests
-- `clean-code` — naming, function size, readability, code smells
-
-Rules:
-
-- Prefer the simplest solution; do not force a pattern. If no pattern adds value, say so and implement plainly.
-- Write or update a failing scenario first when practical (red → green → refactor).
-- If Cucumber/Godog is not present and the change is trivial, use the project's existing test style — but keep given/when/then structure.
-- Project conventions win over skill defaults when they conflict.
+- Source of truth: `~/.claude/mcp-servers.json` — one config per server, no duplicates. Apply with
+  `~/.claude/bin/install-mcp-servers.sh`.
+- Registered: `sonarqube`, `jira`, `atlassian-rovo-mcp`, `gitlab`, and three distinct Grafana
+  instances — `grafana` (the default non-prod instance, `$GRAFANA_URL`), `grafana-prep`
+  (pre-prod), and `grafana-prod` (production, read-only; the only one `app-bug-detection`
+  queries). After editing the source of truth, re-run the install script — a server added to the
+  file but never applied is not registered.
+- Prefer a plain `npx`/`uvx` entry over a launcher script. The one remaining launcher
+  (`~/.local/share/dotfiles/scripts/jira-mcp.sh`) is shared with Cursor — edit it there, never fork
+  a per-agent copy.
+- Cursor keeps its own config at `~/.cursor/mcp.json`. The two are maintained separately and need
+  not match line for line; keep the *server list* in step when adding or removing one.
+- Never duplicate or commit sensitive configuration into project repositories.
 
 ---
 
-# 10. Slash Commands
+## Documentation
 
-These are available as slash commands, invoke them directly. Each spawns the matching
-agent in `~/.claude/agents/`:
+Documentation is part of the implementation, not a follow-up. When a change affects behaviour,
+architecture, configuration, APIs, workflows, or developer experience, update the right source of
+truth in the same change — the project `README.md`, its `/docs`, or the shared knowledge base.
+Prefer updating an existing document over adding one, never duplicate content across two places,
+and say explicitly when no documentation change is needed.
 
-- `/ticket-to-merge` — implement a Jira ticket end-to-end and open a merge request
-- `/jira-mr-reviewer` — review a merge request against its linked Jira ticket
-- `/create-tech-ticket` — create a technical backlog ticket from a short prompt
-- `/enhance-jira-description` — rewrite a Jira description into a sourced user story
-- `/dotfiles-devops` — consult the dotfiles DevOps specialist for stow/bootstrap work
+**Read `~/.claude/local/doc-repos.md`** before saying where documentation lives or referencing
+another repository. If it is missing, use the project's own `README.md` and `/docs` and say the
+documentation map is not configured — never guess at a repository name.
 
----
-
-# 11. General Constraints
-
-- Prefer explicit code over implicit behavior
-- Avoid hidden side effects
-- Avoid overengineering
-- Keep solutions simple and maintainable
-- Make changes intentional and traceable
+- Local clones are for file access only. Link across repositories with the remote URL from
+  `git remote get-url origin`, never a local path.
+- A repository marked read-only is strictly read-only: extract what you need into the current
+  project's `/docs`, never edit it in place.
+- Do not invent infrastructure facts an authoritative document already records — extract and cite.
 
 ---
 
-# 12. Formatting Rules
+## Working agreements
 
-- Use Eclipse formatter (`./formatter.xml`) if present otherwise use global formatter rules (`~/.java/formatter.xml`)
-- Always use LF line endings
-- Prefer early returns over deep nesting
-- Do not manually reformat code
-- Insert one empty line before `return` or `throw` (unless block is trivial)
+**Multi-step work** — understand the request, constraints, and repository first; break it into
+steps; validate continuously rather than at the end; refactor once it is correct.
 
----
-
-# 13. Git Operations
-
-**Committing and history rewriting are prohibited.** The single exception is the
-`ticket-to-merge` command/agent while it is running.
-
-## Always allowed
-
-- Read git history, diffs, status, blame, logs, and branch state
-
-## Prohibited (outside `ticket-to-merge`)
-
-- `git commit` in any form, including `--amend`
-- Staging or unstaging — `git add`, `git rm --cached`, `git restore --staged`, index edits
-- Any history-altering command: `rebase`, `reset --hard`, `cherry-pick`, `revert`, `filter-branch`, `push --force`
-- Creating, deleting, or moving tags and branches
-
-If asked to commit outside that exception, decline and say the work is staged for the user to
-commit themselves. Leave the working tree with the changes in place; do not stage them.
-
-## Commit message format
-
-Write the commit subject as `[category]-[message]` and nothing else:
-
-```
-feat-add widget
-fix-bw upload session handling
-docs-update install steps
-```
-
-The `prepare-commit-msg` hook expands that into
-`[TICKET] [emoji]([category]): [Message]` — it derives the emoji, capitalises the
-title, and prefixes the ticket key parsed from the branch name.
-
-- Do **not** hand-write the expanded form; the hook only transforms subjects
-  matching `^[a-zA-Z]+-.+`, so a pre-formatted subject is left untouched.
-- Do **not** add the ticket key manually — it comes from the branch.
-- Categories: `feat` `fix` `docs` `chore` `refactor` `style` `test` `deploy`
-  `typo` `revert` `version`.
-
-Never add tooling attribution — no bot `Co-Authored-By` trailers, no
-`*-Session:` links, no "Generated with" footers — to commits, tags, or merge
-request descriptions. The hook strips them from commit messages as a safety net,
-but it cannot touch MR descriptions and is bypassed by `--no-verify`.
-
-## Inside `ticket-to-merge`
-
-The agent owns the full branch → commit → push → merge request flow. Within that run:
-
-- Commit and push freely on its own feature branch
-- Never `--force` on `main`/`master`/`develop` without explicit user authorization
-- Never skip hooks (`--no-verify`) without an explicit user request
-- Write commit messages that explain the "why" behind the change
-- Ask before pushing to any shared branch
-
----
-
-# 14. MCP Configuration
-
-MCP servers are registered at user scope in `~/.claude.json` (managed by the `claude mcp` CLI, not hand-edited).
-
-- Source of truth for this dotfiles setup: `~/.claude/mcp-servers.json` — exactly one MCP config per agent, no duplicates
-- Apply/refresh registration by running: `~/.claude/bin/install-mcp-servers.sh`
-- Stdio launcher scripts are shared with Cursor and live in `~/.local/share/dotfiles/scripts/` (`jira-mcp.sh`, `sonarqube-mcp.sh`) — edit them there, never fork a per-agent copy
-- Cursor's equivalent config is `~/.cursor/mcp.json`; keep the two server lists in step when adding or removing a server
-- Do not duplicate or commit sensitive configuration in project repositories
-- When updating MCP integrations, edit `mcp-servers.json` in the dotfiles repo, then re-run the install script — never hand-edit `~/.claude.json` directly
-
----
-
-# 15. Documentation Repositories and Maintenance
-
-Documentation is considered part of the implementation.
-
-## Documentation repositories
-
-The documentation repositories for this machine — their canonical URLs, roles, and any
-read-only restrictions — are configured per machine, not versioned here.
-
-**If `~/.claude/local/doc-repos.md` exists, read it and follow it** before answering anything
-about where documentation lives or writing docs that reference another repository. If it is
-missing, use the project's own `README.md` and `/docs` and say the wider documentation map is
-not configured, rather than guessing at repository names or URLs.
-
-Whatever that file lists, these rules always hold:
-
-- Local clones are for agent file access only — **never** put local filesystem paths into shared
-  markdown that colleagues will follow.
-- When linking across repositories, resolve `git remote get-url origin` and use the full remote
-  URL. Never reference `~/...` or absolute local paths in shared docs.
-- Treat any repository the local file marks read-only as strictly read-only: no edits, no
-  commits, no merge requests, no "improvements" in place. Read it, then extract what you need
-  into the project's own `/docs`.
-- Do not invent infrastructure facts when an authoritative document already records them —
-  extract and cite it instead.
-
-## Maintenance rules
-
-When making changes that affect behavior, architecture, configuration, APIs, workflows, or developer experience:
-
-- Always determine whether existing documentation requires updating
-- Prefer updating existing documentation instead of creating new files whenever appropriate
-- Keep documentation synchronized with the implemented code
-- Update the most appropriate source of truth:
-  - Project `README.md`
-  - Existing files under the project's `/docs` directory
-  - The shared knowledge-base repository listed in `~/.claude/local/doc-repos.md`, for reusable business knowledge, architecture, standards, or workflows
-  - Cross-check / extract from the architecture-document repository listed there (read-only) when the change touches deployment, environments, networking, or platform topology
-- Do not duplicate documentation across multiple locations unless explicitly justified
-- If no documentation update is necessary, explicitly state why
-- Documentation changes should be completed as part of the same implementation whenever possible
-
----
-
-# 16. Claude Code Specific Guidance
-
-### Tool Usage
-
-- **Read/Edit/Write tools:** Use these for file operations instead of cat/sed when possible
-- **Bash tool:** Use for shell operations that don't fit dedicated tools
-- **Agent tool:** Spawn agents for complex multi-step tasks, research, or parallel work
-- **Artifact tool:** Render visual outputs (HTML, Markdown) for dashboards, diagrams, etc.
-
-### Feature-First Verification
-
-For UI and frontend changes:
-
-- Start the dev server and use the feature in a browser before reporting completion
-- Test the golden path and edge cases
-- Monitor for regressions in other features
-- Type checking and tests verify correctness, not feature correctness
-
-### When to Ask Confirmation
-
-Ask before risky actions:
-
-- Destructive operations (delete files, drop tables, force-push)
-- Hard-to-reverse operations (amend published commits, reset --hard)
-- Actions visible to others (push to shared branches, comment on PRs/issues)
-- Uploading to third-party services (sensitive content)
-
----
+**Verification** — type checks and tests prove correctness, not that a feature works. For UI and
+frontend changes, start the app (`/run`), use the feature, check the golden path and obvious edge
+cases, and watch for regressions elsewhere. Use `/code-review` on a finished diff.

@@ -38,6 +38,14 @@ _min=$(echo "$_stow_ver" | cut -d. -f2)
 
 echo "▶ GNU Stow $_stow_ver  |  $STOW_DIR → $TARGET_DIR"
 
+# ─── AI config parity guard ───────────────────────────────────────────────────
+# Cursor discovers ~/.claude/skills and ~/.claude/agents natively; a copy under
+# stow/cursor/ would shadow the shared original. Fail early on drift.
+if ! bash "$DOTFILES/check-ai-parity.sh"; then
+  echo "✗ AI config parity check failed — resolve before stowing"
+  exit 1
+fi
+
 if ! $DRY_RUN; then
   # Back up a real ~/.zshrc instead of destroying it; a symlink is ours or stale.
   if [[ -L "$TARGET_DIR/.zshrc" ]]; then
@@ -93,6 +101,37 @@ else
     fi
   done
   exit 1
+fi
+
+# ─── Prune dangling links ────────────────────────────────────────────────────
+# Stow only unstows what a package still contains, so deleting a file from a
+# package leaves its symlink behind. Remove deployed links that dangle into the
+# stow dir, then any directories they emptied. Scan is bounded to the top-level
+# path components the packages actually claim.
+mapfile -t _roots < <(find "$STOW_DIR" -mindepth 2 -maxdepth 2 -printf '%f\n' | sort -u)
+_pruned_dirs=()
+for _c in "${_roots[@]}"; do
+  [[ -e "$TARGET_DIR/$_c" || -L "$TARGET_DIR/$_c" ]] || continue
+  while IFS= read -r _link; do
+    _dest="$(realpath -m "$_link")"
+    if [[ "$_dest" == "$STOW_DIR"/* ]]; then
+      if $DRY_RUN; then
+        echo "  → would prune dangling $_link"
+      else
+        rm -f "$_link"
+        _pruned_dirs+=("$(dirname "$_link")")
+        echo "  ✂ pruned dangling ${_link/#$HOME/\~}"
+      fi
+    fi
+  done < <(find "$TARGET_DIR/$_c" -xtype l 2>/dev/null)
+done
+if ! $DRY_RUN && [[ ${#_pruned_dirs[@]} -gt 0 ]]; then
+  for _d in "${_pruned_dirs[@]}"; do
+    # remove newly emptied dirs, but never a top-level deployed dir (~/.cursor)
+    while [[ "$(dirname "$_d")" != "$TARGET_DIR" ]] && rmdir "$_d" 2>/dev/null; do
+      _d="$(dirname "$_d")"
+    done
+  done
 fi
 
 # ─── Post-stow ────────────────────────────────────────────────────────────────

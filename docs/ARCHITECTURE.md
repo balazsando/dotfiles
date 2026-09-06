@@ -12,7 +12,7 @@ dotfiles/
 │   ├── bat/                 # bat syntax-highlighter config + Catppuccin themes
 │   ├── bin/                 # Standalone binaries (e.g. win32yank.exe for WSL clipboard)
 │   ├── claude/              # Claude Code: CLAUDE.md, agents, commands, skills, MCP config
-│   ├── cursor/              # Cursor: rules, agents, commands, skills, MCP config
+│   ├── cursor/              # Cursor: rules, commands, MCP config (skills/agents shared from claude/)
 │   ├── git/                 # .gitconfig + .config/git/{ignore,credentials}
 │   ├── java/                # Maven settings.xml, Eclipse formatter
 │   ├── lf/                  # lf file manager config
@@ -30,9 +30,14 @@ dotfiles/
 │   └── pip.txt              # pip packages (if any)
 ├── docs/
 │   └── ARCHITECTURE.md      # This file
+├── CLAUDE.md                # Project rules — never publish secrets (.cursor/rules/ mirrors it)
+├── .claude/commands/        # Project commands: /release (.cursor/commands/ mirrors them)
 ├── install.sh               # Bootstrap entry point — Debian/Ubuntu/WSL2
 ├── stow.sh                  # Idempotent re-stow — safe to run at any time
+├── check-ai-parity.sh       # Guard: skills/agents live only in stow/claude (see AI config)
 ├── sync.sh                  # Pre-migration export (wsl.conf, repos, BW secrets)
+├── CHANGELOG.md             # Keep a Changelog, SemVer — updated with every release
+├── VERSION                  # Current version, mirrored by the README badge
 └── repos.txt                # Repo manifest (gitignored — restored from Bitwarden)
 
 Scripts resolve the repo through `$DOTFILES` (exported by install.sh, defaulting to
@@ -89,7 +94,7 @@ The BW CLI is installed via `npm install -g @bitwarden/cli` using the APT-manage
 | `dotfiles/kube/<filename>` | `~/.kube/<filename>` |
 | `dotfiles/certs/<filename>` | `~/certs/<filename>` |
 | `dotfiles/repos` | `$DOTFILES/repos.txt` |
-| `dotfiles/ai/<filename>` | `~/.claude/local/<filename>` and `~/.cursor/local/<filename>` |
+| `dotfiles/ai/<filename>` | `~/.claude/local/<filename>` (`~/.cursor/local` symlinks to it) |
 
 `NODE_TLS_REJECT_UNAUTHORIZED=0` is set around the Bitwarden CLI calls. **This is deliberate and must not be "fixed".** The corporate CA that would validate the connection is itself stored in the vault (`dotfiles/certs/*`) and is only installed into the system trust store at the end of the restore. On a fresh machine the certificate needed to verify the connection is on the far side of that same connection, so no ordering avoids it.
 
@@ -158,6 +163,12 @@ Stow creates `.bak` backup files when it encounters a real file at a symlink tar
 ### Mixed file/folder linking
 
 Some packages link individual files (e.g. `zsh/.zshrc`); others link entire subdirectory trees (e.g. `bat/.config/bat/`). `--no-folding` ensures Stow handles both correctly without creating unintended folder-level symlinks.
+
+### Pruning dangling links
+
+Stow only unstows what a package still *contains*, so deleting a file from a package leaves its symlink behind in `$HOME`, now pointing at nothing. Nothing in a plain restow removes it, and a stale link is indistinguishable from a live one to the tool that reads it — which is how a deleted Cursor skill kept being discovered.
+
+After stowing, `stow.sh` walks the top-level paths the packages actually claim, removes every symlink that dangles into `$STOW_DIR`, and then `rmdir`s the directories those removals emptied — stopping short of the top-level deployed directory itself. `-n` reports what it would prune instead.
 
 ### XDG-compliant layout
 
@@ -253,11 +264,43 @@ fi
 
 ---
 
+## AI assistant configuration
+
+Two assistants (Claude Code, Cursor) run against one machine. Their instruction sets were
+duplicated package-for-package until v1.1.0; every rule change had to be applied twice, and the
+copies drifted between edits.
+
+**One authoring location.** Skills and agents live only in `stow/claude/.claude/`; Cursor
+discovers `~/.claude/skills/` and `~/.claude/agents/` natively, so no second copy and no sync
+step are needed. A same-named file under `stow/cursor/` would take precedence and shadow the
+shared original — and the failure is invisible, because the assistant still finds *a* skill.
+`check-ai-parity.sh` fails on exactly that, and `stow.sh` runs it before stowing, so the contract
+holds at deploy time rather than by convention. What remains Cursor-specific, and why, is in
+`README.md`.
+
+**Instruction layering.** Four layers, no overlap: a *command* dispatches and relays, an *agent*
+owns its workflow and output format, a *skill* owns domain knowledge and any MCP server it
+fronts, and the *router* owns only the mapping from situation to skill. The router is the one
+file loaded on every request, so it routes and never teaches; depth lives in skills, and the long
+tail one level deeper in each skill's `references/`. Restating one layer's content in another is
+the defect this structure exists to prevent.
+
+**Machine-local overlay.** Anything organisation-specific — project keys, board ids,
+documentation repositories, cluster names — lives in `~/.claude/local/*.md`, restored from
+Bitwarden and never tracked. Skills name the file to read; they never inline its contents.
+`~/.cursor/local` symlinks to the same directory, so one copy serves both.
+
+---
+
 ## MCP servers
 
-Cursor (`~/.cursor/mcp.json`) and Claude Code (`~/.claude/mcp-servers.json`) share the same server list. Stdio launchers live in `~/.local/share/dotfiles/scripts/` (`jira-mcp.sh`, `sonarqube-mcp.sh`) — edit them there, never fork a per-agent copy.
+Cursor (`~/.cursor/mcp.json`) and Claude Code (`~/.claude/mcp-servers.json`) share the same server list. Prefer a plain `npx` entry with a pinned version and the credentials passed through `env`; add a launcher script under `~/.local/share/dotfiles/scripts/` only when a server needs logic the JSON cannot express.
 
-Cursor only injects env vars listed in `mcp.json`. The Jira launcher maps `$JIRA_URL` → `JIRA_BASE_URL` and `$JIRA_TOKEN` → `JIRA_API_TOKEN` for `mcp-jira-cloud`, and sources `~/.config/zsh/secrets` if those vars are missing (GUI launches often skip interactive zsh).
+Cursor only injects env vars listed in `mcp.json`, so every variable a server needs must appear in its `env` block. Values come from `~/.config/zsh/secrets` via the interactive shell — a server launched from a GUI that skips interactive zsh sees nothing, which is the one case that still justifies a launcher.
+
+`jira-mcp.sh` is the remaining launcher: it renames `$JIRA_URL`/`$JIRA_TOKEN` to the `JIRA_BASE_URL`/`JIRA_API_TOKEN` names `mcp-jira-cloud` expects and sources `secrets` as a fallback.
+
+Node ignores the OS trust store, so internal hosts fail TLS verification without the corporate chain. `env.zsh` rebuilds the `~/certs` bundle through `node-ca.sh` on every shell start and exports `NODE_EXTRA_CA_CERTS`; MCP servers inherit it by listing that variable in their `env` block.
 
 ---
 

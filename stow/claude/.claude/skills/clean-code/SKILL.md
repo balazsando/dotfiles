@@ -1,6 +1,6 @@
 ---
 name: clean-code
-description: "Clean Code skill based on Robert C. Martin's Clean Code. Use when writing new code, refactoring, naming variables or functions, reviewing for readability, reducing complexity, improving maintainability, applying SOLID principles, handling errors, writing tests, or auditing code smells. Covers: naming, functions, comments, formatting, error handling, tests, classes, SOLID, DRY, FIRST."
+description: "Readability and maintainability: naming, function and class design, comments, formatting, error handling, test quality, code smells, SOLID, DRY, FIRST. Use when writing, refactoring, or reviewing code for clarity and complexity."
 argument-hint: "file, function, or snippet to evaluate or improve"
 ---
 

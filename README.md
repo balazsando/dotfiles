@@ -3,7 +3,7 @@
 Personal dotfiles managed with [GNU Stow](https://www.gnu.org/software/stow/) and [mise](https://mise.jdx.dev/).  
 Targeting **Debian/Ubuntu/WSL2**.
 
-[![Version](https://img.shields.io/badge/version-1.0.1-blue)](CHANGELOG.md)
+[![Version](https://img.shields.io/badge/version-1.1.0-blue)](CHANGELOG.md)
 
 ---
 
@@ -15,7 +15,7 @@ dotfiles/
 │   ├── bat/                # bat syntax-highlighter config + themes
 │   ├── bin/                # Standalone binaries
 │   ├── claude/             # Claude Code: CLAUDE.md, agents, commands, skills, MCP
-│   ├── cursor/             # Cursor: rules, agents, commands, skills, MCP
+│   ├── cursor/             # Cursor: rules, commands, MCP (skills/agents shared from claude/)
 │   ├── git/                # .gitconfig + .config/git/{ignore,credentials}
 │   ├── java/               # Maven settings, Eclipse formatter
 │   ├── lf/                 # lf file manager config
@@ -26,15 +26,46 @@ dotfiles/
 │   ├── tmux/               # tmux config
 │   └── zsh/                # .zshrc, .p10k.zsh, ~/.config/zsh/ fragments
 ├── host/                   # Machine-specific config (copied, never symlinked)
-│   └── wsl.conf            # Applied to /etc/wsl.conf on WSL2 machines
+│   ├── wsl.conf            # Applied to /etc/wsl.conf on WSL2 machines
+│   └── work-wsl/           # Work-machine WSL overrides
 ├── packages/
-│   └── apt.txt             # System-level APT packages
+│   ├── apt.txt             # System-level APT packages
+│   └── pip.txt             # pip packages (if any)
 ├── docs/
 │   └── ARCHITECTURE.md     # Design decisions and rationale
+├── CLAUDE.md               # Project rules — never publish secrets (.cursor/rules/ mirrors it)
+├── .claude/commands/       # Project commands: /release (.cursor/commands/ mirrors them)
 ├── install.sh              # Bootstrap entry point — run once on a new machine
 ├── stow.sh                 # Idempotent re-stow — safe to run at any time
+├── check-ai-parity.sh      # Guard: no skills/agents under stow/cursor (they shadow the shared ones)
 └── sync.sh                 # Pre-migration export (wsl.conf, repos, BW secrets)
 ```
+
+### AI assistant configs (claude/ + cursor/)
+
+Skills and agents are authored **once** in `stow/claude/.claude/` and consumed by both
+assistants: Cursor natively discovers `~/.claude/skills/` and `~/.claude/agents/`
+([compatibility paths](https://cursor.com/docs/skills)). Never add `skills/` or `agents/`
+under `stow/cursor/` — a same-named copy there takes precedence and shadows the shared
+original. `stow.sh` runs `check-ai-parity.sh` to enforce this.
+
+The cursor package keeps only what is genuinely platform-specific:
+
+- `rules/global-instructions.mdc` — the always-on router (Cursor needs `.mdc` frontmatter;
+  mirrors `CLAUDE.md`'s contract)
+- `commands/*.md` — thin dispatchers (Cursor has no `$ARGUMENTS`; agents do the work)
+- `mcp.json` — same server list as `mcp-servers.json`, Cursor's `${env:VAR}` syntax
+
+Machine-local files (Jira conventions, doc repos, k8s environments) live once in
+`~/.claude/local/`; `~/.cursor/local` is a symlink to it, so both assistants read the same
+unversioned files.
+
+### Keeping secrets out of the repository
+
+This repository is public and configures a machine that works against private infrastructure,
+so nothing organisation-specific may enter a tracked file. Values live in
+`~/.config/zsh/secrets` or `~/.claude/local/`; tracked files reference them by name. The rule
+and what counts as sensitive are in `CLAUDE.md`, mirrored for Cursor in `.cursor/rules/`.
 
 ---
 
@@ -94,7 +125,7 @@ All sensitive files are stored as Bitwarden secure notes under the `dotfiles/` p
 | `dotfiles/kube/<filename>` | `~/.kube/<filename>` |
 | `dotfiles/certs/<filename>` | `~/certs/<filename>` |
 | `dotfiles/repos` | `$DOTFILES/repos.txt` |
-| `dotfiles/ai/<filename>` | `~/.claude/local/` and `~/.cursor/local/` |
+| `dotfiles/ai/<filename>` | `~/.claude/local/` (`~/.cursor/local` symlinks to it) |
 
 ```bash
 # Restore secrets manually

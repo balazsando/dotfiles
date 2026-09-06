@@ -1,0 +1,60 @@
+---
+name: java-standards
+description: "House standards for Java, Spring, and Maven. Load before writing or changing Java code or build files — dependency injection, class design and separation of concerns, Java 21 usage, Lombok, nullability, test structure, dependency management, formatting. Project conventions override it."
+argument-hint: "Optional: the class, module, or pom to apply the standards to"
+---
+
+# Java Standards
+
+House rules for Java work. Depth lives elsewhere: `clean-code` for naming and function-level
+smells, `design-patterns` for structural choices, `atdd-java` for acceptance tests. This file is
+what those skills do not cover — the conventions specific to this machine's projects.
+
+## Dependency injection
+
+- Constructor injection by default; dependency fields `final` wherever the compiler allows.
+- No `@Autowired` on a class's single constructor.
+- Field and setter injection only when a framework genuinely requires it.
+
+## Class design
+
+- SOLID, DRY, YAGNI, KISS. Small, cohesive, domain-named classes; no god classes.
+- Keep business logic out of infrastructure and infrastructure out of domain models — no
+  persistence, HTTP, or framework annotations on a domain type.
+- Prefer clear layering even in small projects, and keep the boundaries enforceable.
+- Identify the right layer before changing anything; do not introduce new architecture unless the
+  change justifies it.
+
+## Writing the code
+
+- Java 21+ features when they improve readability, safety, or maintainability — not for their own
+  sake. Explicit logic and predictable control flow beat clever functional chains.
+- Prefer early returns over deep nesting; one empty line before a non-trivial `return` or `throw`.
+- No hidden side effects, no premature optimisation, no abstraction without a second caller.
+- Lombok is allowed for boilerplate, not for hiding behaviour or complex logic.
+- Preserve existing behaviour unless the task says otherwise; refactor incrementally and remove
+  duplication only when it is safe.
+
+## Nullability
+
+- `@NotNull` for non-null contracts, `@Nullable` only where null is genuinely allowed.
+- `Optional` to model absence in return types. Never leave nullability ambiguous.
+
+## Tests
+
+- Test observable behaviour, not implementation details. Mock external dependencies only.
+- Given / when / then structure; parameterise when several inputs prove the same behaviour.
+- Prefer test-first iterations: failing test → minimal implementation → refactor.
+- Keep tests deterministic and readable; a test that needs a comment to be understood is a smell.
+
+## Maven
+
+- Shared versions in the parent's `dependencyManagement`; never repeat a version in a child module.
+- Align versions across modules, avoid unnecessary transitives, and respect scope separation
+  (`compile`, `test`, `provided`, `optional`).
+
+## Formatting
+
+- Eclipse formatter: `./formatter.xml` when the project has one, otherwise `~/.java/formatter.xml`.
+- LF line endings. Never hand-reformat code the formatter owns, and never reformat lines the change
+  does not otherwise touch.

@@ -1,6 +1,6 @@
 ---
 name: atdd-go
-description: "ATDD (Acceptance Test-Driven Development) skill for Go using Godog (Cucumber/Gherkin). Use when writing feature files, defining Given/When/Then step definitions, wiring up godog test suites, applying BDD red-green-refactor cycles, integrating acceptance tests with go test, using scenario hooks (Before/After), filtering with tags, testing HTTP APIs or domain services with godog, or adding ATDD to an existing Go project."
+description: "ATDD/BDD in Go with Godog (Cucumber/Gherkin): feature files, Given/When/Then step definitions, godog suite wiring, Before/After hooks, tag filtering, integrating with go test, and adding acceptance tests to an existing Go project."
 argument-hint: "Describe the feature or acceptance test to implement (e.g., 'add feature for user login', 'test Jira issue fetch', 'add ATDD to HTTP API')"
 ---
 
@@ -267,6 +267,7 @@ Inject the real or mock implementation in `Before` hook. See [integration testin
 - [Gherkin syntax](./references/gherkin.md)
 - [Hooks and suite-level setup](./references/hooks.md)
 - [Integration testing patterns](./references/integration.md)
+- [Feature file skeleton](./assets/feature.template) - starting point for a new `.feature` file
 - [godog GitHub](https://github.com/cucumber/godog)
 - [godog pkg docs](https://pkg.go.dev/github.com/cucumber/godog)
 - [Gherkin reference](https://cucumber.io/docs/gherkin/reference/)

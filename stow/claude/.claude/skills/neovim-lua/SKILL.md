@@ -1,15 +1,10 @@
 ---
 name: neovim-lua
-description: "Neovim Lua scripting skill. Use when writing, reviewing, and debugging Lua configuration and plugins for Neovim. Covers the full `vim.*` stdlib, keymaps, autocmds, options, LSP, and module patterns."
+description: "Writing and debugging Neovim Lua config and plugins: the vim.* stdlib, keymaps, autocmds, options, LSP, and module patterns."
 argument-hint: "Describe the Neovim config task (e.g., 'add custom keymap', 'configure LSP', 'write plugin module')"
 ---
 
 # Neovim Lua Scripting Skill
-
-## Purpose
-Write, review, and debug Lua configuration and plugins for Neovim. Covers the full `vim.*` stdlib, keymaps, autocmds, options, LSP, and module patterns.
-
----
 
 ## Core Namespaces Cheatsheet
 
