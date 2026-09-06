@@ -11,9 +11,8 @@ matching, plus filters (`--severity`, `--new-code`, `--path`, `--rule`).
 
 - All SonarQube access goes through the `sonarqube-validation` skill — load it first and never
   call the `sonarqube` MCP server directly.
-- This command carries the global-instructions rule's **Git operations** commit exception: its own
-  `sonar-cleanup/*` branch, one local commit. Never push, never open a merge request, never touch
-  existing history.
+- This command carries the `git` rule's commit exception: its own `sonar-cleanup/*` branch, one
+  local commit. Never push, never open a merge request, never touch existing history.
 - Fix only behaviour-preserving changes provable by a compile plus the existing tests; every
   change maps to a real issue key from the collected report.
 - Stop and ask when the working tree is dirty, the project match is ambiguous, the default branch

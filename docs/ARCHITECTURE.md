@@ -278,12 +278,26 @@ shared original — and the failure is invisible, because the assistant still fi
 holds at deploy time rather than by convention. What remains Cursor-specific, and why, is in
 `README.md`.
 
-**Instruction layering.** Four layers, no overlap: a *command* dispatches and relays, an *agent*
+**Instruction layering.** Five layers, no overlap: a *command* dispatches and relays, an *agent*
 owns its workflow and output format, a *skill* owns domain knowledge and any MCP server it
-fronts, and the *router* owns only the mapping from situation to skill. The router is the one
-file loaded on every request, so it routes and never teaches; depth lives in skills, and the long
+fronts, the *router* (`CLAUDE.md`) owns only the mapping from situation to skill, and Cursor's
+*rules* carry the standing contracts that must hold before any skill is read. The router is
+loaded on every request, so it routes and never teaches; depth lives in skills, and the long
 tail one level deeper in each skill's `references/`. Restating one layer's content in another is
 the defect this structure exists to prevent.
+
+Cursor has no router: it discovers skills by their `description`, so a rule exists only to state
+a standing contract (`alwaysApply`) or to bind a file type to a skill (`globs`) — never to
+duplicate the routing table. The always-on rules that mirror a `CLAUDE.md` section — git,
+documentation, precedence — are the tree's only intentional duplication.
+
+**What earns a resident slot.** A rule loaded on every request must change behaviour on a turn
+where the matching skill would never load — prohibitions and defaults qualify, reference
+knowledge does not. Git and documentation qualify: by the time you would think to look them up,
+the commit or the omission has already happened. Brevity qualifies for its floor only, because
+the turns it governs are the ones too small to trigger a skill. MCP configuration does not — it
+is consulted when `mcp.json` is open — so it lives in `ai-config` and the router keeps a
+table row. This is why `CLAUDE.md` is 109 lines and the Cursor rules 123.
 
 **Machine-local overlay.** Anything organisation-specific — project keys, board ids,
 documentation repositories, cluster names — lives in `~/.claude/local/*.md`, restored from

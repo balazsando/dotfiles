@@ -7,6 +7,46 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [1.2.0] — 2026-09-06
+
+Splits the assistant instruction set along load cost: what must hold on every request stays
+resident, everything else moves one level deeper into a skill or a skill's `references/`. Cursor
+gets one rule per concern instead of a single mirror of the Claude router.
+
+### Added
+
+- `economy-of-words` skill and its always-on counterpart in the router and Cursor rules — a
+  brevity floor for every turn, with the long-form and context-budget guidance loaded on demand.
+- Cursor rules split one concern per file: always-on `git`, `documentation`, `layers`,
+  `economy-of-words`, plus `globs`-scoped `java` and `neovim` that pull in the matching skill
+  when a file of that type is open. Cursor discovers skills by their `description`, so a rule
+  no longer restates the routing table.
+- `references/` for `ai-config` (frontmatter shapes; MCP registration and git hooks), `lazyvim`
+  (setup and extras; LSP and tooling) and `nvim-tmux` (`.tmux.conf` patterns; session
+  scripting). Each `SKILL.md` now names which file answers which task.
+- Spring, Lombok, Javadoc and test-naming conventions in `java-standards` — stereotype over
+  `@Configuration` + `@Bean` (with the hexagonal exception), Lombok required for boilerplate,
+  `underTest` and `test<MethodUnderTest>` naming, explicit given/when/then markers.
+
+### Changed
+
+- `claude-config` renamed to `ai-config`: it governs both assistants, and now also owns MCP
+  server registration, which left the router. `stow.sh` prunes the old skill's dangling link.
+- The router keeps routing, prohibitions, and the machine-local overlay only. The MCP,
+  command-and-agent-layering and working-agreement sections moved into `ai-config` — the router
+  is read on every request, so prose there is paid for by work that will never use it.
+- `/release` audits before it writes: parity, stow dry run and shell syntax, then a read for
+  sensitive content, install blockers, wrong documentation, and sources contradicting each
+  other. Any of the first three stops the release and hands the findings back instead of a bump.
+
+### Documentation
+
+- `docs/ARCHITECTURE.md` explains the five instruction layers and what earns a resident slot —
+  a rule loaded on every request must change behaviour on a turn where its skill would never
+  load. `README.md` describes the Cursor rules as they are now.
+
+---
+
 ## [1.1.0] — 2026-09-06
 
 Restructures the AI assistant configuration: skills and agents are authored once and shared

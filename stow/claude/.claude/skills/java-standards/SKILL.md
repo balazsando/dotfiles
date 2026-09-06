@@ -15,6 +15,10 @@ what those skills do not cover — the conventions specific to this machine's pr
 - Constructor injection by default; dependency fields `final` wherever the compiler allows.
 - No `@Autowired` on a class's single constructor.
 - Field and setter injection only when a framework genuinely requires it.
+- Declare a bean with a stereotype — `@Component`, `@Service`, `@Repository`, `@RestController` —
+  not a `@Configuration` + `@Bean` pair. Keep `@Bean` for types you do not own or cannot annotate.
+- Exception: in a hexagonal project the application layer stays framework-free. Those services
+  carry no stereotype; declare them as `@Bean` from a `@Configuration` in the infrastructure layer.
 
 ## Class design
 
@@ -29,9 +33,17 @@ what those skills do not cover — the conventions specific to this machine's pr
 
 - Java 21+ features when they improve readability, safety, or maintainability — not for their own
   sake. Explicit logic and predictable control flow beat clever functional chains.
-- Prefer early returns over deep nesting; one empty line before a non-trivial `return` or `throw`.
+- Prefer early returns over deep nesting. One empty line before a `return` or `throw`, unless it
+  is the only statement in its block.
 - No hidden side effects, no premature optimisation, no abstraction without a second caller.
-- Lombok is allowed for boilerplate, not for hiding behaviour or complex logic.
+- Lombok is required for boilerplate — getters, setters, constructors, builders,
+  `equals`/`hashCode`. Hand-written boilerplate is a defect; a `record` has none to remove. It
+  must never hide behaviour or complex logic.
+- One operation per line, two at most. Name an intermediate variable instead of stacking calls —
+  low cognitive load is what the rest of this section is for.
+- Javadoc on public API only, and only where the signature is not enough — contracts, thrown
+  exceptions, units, nullability. None on private or self-explanatory members, no `@param` that
+  repeats the parameter name.
 - Preserve existing behaviour unless the task says otherwise; refactor incrementally and remove
   duplication only when it is safe.
 
@@ -43,9 +55,16 @@ what those skills do not cover — the conventions specific to this machine's pr
 ## Tests
 
 - Test observable behaviour, not implementation details. Mock external dependencies only.
-- Given / when / then structure; parameterise when several inputs prove the same behaviour.
+- Unit-test business logic, integration-test adapters. POJOs, configuration classes and
+  straightforward delegation get no test at all.
+- Name a unit test `test<MethodUnderTest>` plus the case when one method has several:
+  `testApplyDiscount`, `testApplyDiscountExpiredCoupon`.
+- The instance under test is called `underTest`.
+- Given / when / then structure, each part marked with a `// given`, `// when`, `// then` comment;
+  parameterise when several inputs prove the same behaviour.
 - Prefer test-first iterations: failing test → minimal implementation → refactor.
-- Keep tests deterministic and readable; a test that needs a comment to be understood is a smell.
+- Keep tests deterministic and readable; past those markers, a test that needs a comment to be
+  understood is a smell.
 
 ## Maven
 

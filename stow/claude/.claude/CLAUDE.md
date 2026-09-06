@@ -26,27 +26,36 @@ Read the skill file when the work starts; do not rely on memory. Skills live in
 | Calling the Jira, GitLab, or Microsoft Graph APIs | `jira-api`, `gitlab-api`, `msgraph-go` |
 | Neovim, LazyVim, tmux configuration | `neovim-lua`, `lazyvim`, `nvim-tmux` |
 | Bitwarden CLI (`bw`), secrets upload/restore, vault scripting | `bitwarden-cli` |
-| Adding or changing a skill, agent, command, or AI rule | `claude-config` |
+| Adding or changing a skill, agent, command, AI rule, or MCP server | `ai-config` |
+| Long-form output — report, plan, summary — or a context-heavy session | `economy-of-words` |
 
 Prefer the simplest solution and do not force a pattern; project conventions beat skill defaults;
 say so plainly when no skill applies rather than inventing a process.
 
 ---
 
-## Commands and agents
+## Economy of words
 
-`/sonar-fix` and `/bug-fix` own their steps inline and use a skill for external data
-(`sonarqube-validation`, `app-bug-detection`). Every other command only dispatches: it spawns
-`<command>-agent`, relays the agent's output unabridged, and resumes that same agent via
-SendMessage rather than spawning a second one.
+Simple English, in the shortest form that is still complete and correct.
 
-The layers do not overlap. A command owns argument parsing, dispatch, and relaying. An agent owns
-its workflow, output format, and constraints. A skill owns domain knowledge and any MCP server it
-fronts. Never restate one layer's content in another — reference it.
+- Answer first. No preamble, no restating the question, no closing recap.
+- Match length and structure to the content. Headers and bullets are for genuinely multi-part
+  answers, not for two sentences.
+- State each fact once — not in the intro, the body, and the conclusion.
+- Match reasoning depth to difficulty. A lookup does not need deliberation.
+- Search before reading, read line ranges, and carry a conclusion forward rather than the
+  evidence it came from.
+- When editing a file, cut what adds nothing rather than carrying it forward.
+- Never trade away a caveat, an edge case, a needed question, or a verification run to save
+  words.
 
-Machine-local specifics — Jira project keys, boards, documentation repositories — live in
-`~/.claude/local/`, unversioned. Read the file a command names; if it is missing, ask rather than
-guess.
+---
+
+## Machine-local overlay
+
+Machine-local specifics — Jira project keys, boards, documentation repositories, cluster names —
+live in `~/.claude/local/`, unversioned. Read the file a command or skill names; if it is
+missing, ask rather than guess.
 
 ---
 
@@ -80,27 +89,6 @@ shared branch without explicit authorization.
 
 ---
 
-## MCP configuration
-
-MCP servers are registered at user scope in `~/.claude.json`, managed by the `claude mcp` CLI —
-never hand-edit it.
-
-- Source of truth: `~/.claude/mcp-servers.json` — one config per server, no duplicates. Apply with
-  `~/.claude/bin/install-mcp-servers.sh`.
-- Registered: `sonarqube`, `jira`, `atlassian-rovo-mcp`, `gitlab`, and three distinct Grafana
-  instances — `grafana` (the default non-prod instance, `$GRAFANA_URL`), `grafana-prep`
-  (pre-prod), and `grafana-prod` (production, read-only; the only one `app-bug-detection`
-  queries). After editing the source of truth, re-run the install script — a server added to the
-  file but never applied is not registered.
-- Prefer a plain `npx`/`uvx` entry over a launcher script. The one remaining launcher
-  (`~/.local/share/dotfiles/scripts/jira-mcp.sh`) is shared with Cursor — edit it there, never fork
-  a per-agent copy.
-- Cursor keeps its own config at `~/.cursor/mcp.json`. The two are maintained separately and need
-  not match line for line; keep the *server list* in step when adding or removing one.
-- Never duplicate or commit sensitive configuration into project repositories.
-
----
-
 ## Documentation
 
 Documentation is part of the implementation, not a follow-up. When a change affects behaviour,
@@ -119,13 +107,3 @@ documentation map is not configured — never guess at a repository name.
   project's `/docs`, never edit it in place.
 - Do not invent infrastructure facts an authoritative document already records — extract and cite.
 
----
-
-## Working agreements
-
-**Multi-step work** — understand the request, constraints, and repository first; break it into
-steps; validate continuously rather than at the end; refactor once it is correct.
-
-**Verification** — type checks and tests prove correctness, not that a feature works. For UI and
-frontend changes, start the app (`/run`), use the feature, check the golden path and obvious edge
-cases, and watch for regressions elsewhere. Use `/code-review` on a finished diff.

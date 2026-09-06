@@ -1,0 +1,17 @@
+---
+description: Neovim, LazyVim, or tmux configuration — load neovim-lua, lazyvim, nvim-tmux
+globs:
+  - "**/nvim/**/*.lua"
+  - "**/nvim/**/*.vim"
+  - "**/.tmux.conf"
+  - "**/tmux.conf"
+alwaysApply: false
+---
+
+# Neovim / tmux
+
+Read before changing Neovim, LazyVim, or tmux config:
+
+- `~/.claude/skills/neovim-lua/SKILL.md`
+- `~/.claude/skills/lazyvim/SKILL.md`
+- `~/.claude/skills/nvim-tmux/SKILL.md`

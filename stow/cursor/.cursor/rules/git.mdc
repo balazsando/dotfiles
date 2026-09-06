@@ -1,0 +1,32 @@
+---
+description: Git — no commit or history rewrite except three commands; category-message subjects
+alwaysApply: true
+---
+
+# Git operations
+
+**Committing and history rewriting are prohibited.** The only exceptions are `ticket-to-merge`,
+`/sonar-fix`, and `/bug-fix` while they are running. Reading history, diffs, status, blame, logs,
+and branch state is always allowed.
+
+Prohibited outside those three commands: `git commit` (including `--amend`); staging or unstaging
+(`git add`, `git rm --cached`, `git restore --staged`, index edits); any history-altering command
+(`rebase`, `reset --hard`, `cherry-pick`, `revert`, `filter-branch`, `push --force`); creating,
+deleting, or moving tags and branches. If asked to commit outside those exceptions, decline and
+leave the changes unstaged for the user.
+
+**Commit message format.** Write the subject as `category-message` and nothing else
+(`feat-add widget`, `fix-bw upload session handling`). The `prepare-commit-msg` hook expands it to
+`[TICKET] [emoji]([category]): [Message]` — deriving emoji, capitalising, and prefixing the ticket
+parsed from the branch. Do not hand-write the expanded form and do not add the ticket yourself.
+Categories: `feat` `fix` `docs` `chore` `refactor` `style` `test` `deploy` `typo` `revert`
+`version`.
+
+**Never add tooling attribution** — no bot `Co-Authored-By` trailers, no `*-Session:` links, no
+"Generated with" footers — to commits, tags, or merge request descriptions. The hook strips them
+from commit messages as a safety net, but cannot touch MR descriptions and is bypassed by
+`--no-verify`.
+
+**Inside the exceptions**, each owns its own limits — read them there, they are not repeated here.
+Common to all three: never `--no-verify`, never touch existing history, and never `--force` on a
+shared branch without explicit authorization.

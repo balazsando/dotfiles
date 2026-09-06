@@ -1,0 +1,16 @@
+---
+description: Java, Spring, and Maven — load java-standards then clean-code
+globs:
+  - "**/*.java"
+  - "**/pom.xml"
+alwaysApply: false
+---
+
+# Java / Spring / Maven
+
+Read before writing or changing Java, Spring, or Maven files — do not rely on memory:
+
+- `~/.claude/skills/java-standards/SKILL.md`
+- `~/.claude/skills/clean-code/SKILL.md`
+
+Project conventions beat skill defaults.

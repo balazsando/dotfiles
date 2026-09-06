@@ -3,7 +3,7 @@
 Personal dotfiles managed with [GNU Stow](https://www.gnu.org/software/stow/) and [mise](https://mise.jdx.dev/).  
 Targeting **Debian/Ubuntu/WSL2**.
 
-[![Version](https://img.shields.io/badge/version-1.1.0-blue)](CHANGELOG.md)
+[![Version](https://img.shields.io/badge/version-1.2.0-blue)](CHANGELOG.md)
 
 ---
 
@@ -51,8 +51,9 @@ original. `stow.sh` runs `check-ai-parity.sh` to enforce this.
 
 The cursor package keeps only what is genuinely platform-specific:
 
-- `rules/global-instructions.mdc` — the always-on router (Cursor needs `.mdc` frontmatter;
-  mirrors `CLAUDE.md`'s contract)
+- `rules/*.mdc` — one concern per file (Cursor needs `.mdc` frontmatter): always-on contracts
+  (`git`, `documentation`, `layers`, `economy-of-words`), and `globs` rules that pull in a skill
+  for a file type (`java`, `neovim`)
 - `commands/*.md` — thin dispatchers (Cursor has no `$ARGUMENTS`; agents do the work)
 - `mcp.json` — same server list as `mcp-servers.json`, Cursor's `${env:VAR}` syntax
 

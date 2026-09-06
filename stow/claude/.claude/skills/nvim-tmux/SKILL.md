@@ -6,6 +6,14 @@ argument-hint: "Describe the tmux/Neovim setup task (e.g., 'configure pane navig
 
 # Neovim + tmux Skill
 
+**Detail lives in `references/`** — read the file the task needs, not both.
+
+- `references/tmux-conf.md` — `.tmux.conf` patterns (prefix, mouse, vi copy mode, escape time,
+  true colour, splits, navigation) and the format/status-line variables.
+- `references/scripting.md` — bootstrapping a dev session from a shell script or from Lua.
+
+---
+
 ## Core Concepts
 
 ### tmux Hierarchy
@@ -46,53 +54,6 @@ Server → Sessions ($id) → Windows (@id) → Panes (%id)
 session:window.pane   # e.g. mysession:1.%2
 $1:@2.%3              # by ID
 :                     # current session
-```
-
----
-
-## Common .tmux.conf Patterns
-
-```sh
-# Change prefix to C-a
-unbind C-b
-set -g prefix C-a
-bind C-a send-prefix
-
-# Enable mouse
-set -g mouse on
-
-# Use vi keys in copy mode
-set -g mode-keys vi
-
-# Start windows/panes at 1
-set -g base-index 1
-set -g pane-base-index 1
-set -g renumber-windows on
-
-# Faster escape (important for Neovim!)
-set -sg escape-time 10
-
-# True color support
-set -g default-terminal "tmux-256color"
-set -sa terminal-features ",xterm-256color:RGB"
-
-# Reload config binding
-bind r source-file ~/.tmux.conf \; display "Reloaded!"
-
-# Intuitive splits
-bind | split-window -h -c "#{pane_current_path}"
-bind - split-window -v -c "#{pane_current_path}"
-
-# Vim-style pane navigation
-bind h select-pane -L
-bind j select-pane -D
-bind k select-pane -U
-bind l select-pane -R
-
-# Status bar
-set -g status-left "[#S] "
-set -g status-right "#(date '+%H:%M') "
-set -g status-style "bg=colour235,fg=colour250"
 ```
 
 ---
@@ -165,59 +126,6 @@ end, { desc = "Run file in tmux split" })
 vim.keymap.set("n", "<leader>tt", function()
   vim.cmd("botright 15split | terminal")
 end, { desc = "Open terminal split" })
-```
-
----
-
-## tmux Scripting: Session Layouts
-
-### Shell Script to Bootstrap a Dev Session
-```sh
-#!/bin/sh
-SESSION="dev"
-tmux has-session -t "$SESSION" 2>/dev/null && tmux attach -t "$SESSION" && exit
-
-tmux new-session -d -s "$SESSION" -n "editor" -c "$HOME/projects/myapp"
-tmux send-keys -t "$SESSION:editor" "nvim ." Enter
-
-tmux new-window -t "$SESSION" -n "server" -c "$HOME/projects/myapp"
-tmux send-keys -t "$SESSION:server" "npm run dev" Enter
-
-tmux new-window -t "$SESSION" -n "shell" -c "$HOME/projects/myapp"
-
-tmux select-window -t "$SESSION:editor"
-tmux attach -t "$SESSION"
-```
-
-### Lua Helper to Start tmux Sessions from Neovim
-```lua
-local function tmux_session(name, cmds)
-  if vim.fn.system("tmux has-session -t " .. name .. " 2>/dev/null; echo $?"):match("^0") then
-    return  -- already exists
-  end
-  vim.fn.system("tmux new-session -d -s " .. name)
-  for _, cmd in ipairs(cmds) do
-    vim.fn.system(string.format("tmux send-keys -t %s '%s' Enter", name, cmd))
-  end
-end
-```
-
----
-
-## tmux Formats & Status Line
-
-Format variables use `#{variable}`:
-```sh
-# Useful variables
-#{session_name}   #{window_name}   #{pane_title}
-#{pane_current_path}  #{pane_current_command}
-#{window_index}   #{window_flags}   #{host}
-
-# Conditional: #{?condition,true,false}
-set -g status-right "#{?client_prefix,#[fg=red]PREFIX ,}#H %H:%M"
-
-# Run shell command in status
-set -g status-right "#(uptime | awk -F'[a-z]:' '{print $2}') %H:%M"
 ```
 
 ---

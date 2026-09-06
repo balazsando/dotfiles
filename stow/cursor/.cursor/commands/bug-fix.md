@@ -11,9 +11,8 @@ The text after `/bug-fix` is optional and passes through to detection: `--since`
 
 - All log access goes through the `app-bug-detection` skill — load it first and never query the
   `grafana-prod` MCP server directly.
-- This command carries the global-instructions rule's **Git operations** commit exception: its own
-  `bugfix/*` branch, one local commit. Never push, never open a merge request, never touch
-  existing history.
+- This command carries the `git` rule's commit exception: its own `bugfix/*` branch, one
+  local commit. Never push, never open a merge request, never touch existing history.
 - Fix only what the report attributes to project code with the line confirmed locally. Environment
   issues, expected noise, and low-confidence findings are reported, not patched.
 - Smallest change that removes the cause — no refactors, no drive-by cleanup, no new abstractions.
