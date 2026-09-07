@@ -7,6 +7,32 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [1.3.0] — 2026-09-07
+
+Cuts what agents read: rtk rewrites their bash calls, and graphify answers structure questions
+from a local graph that rebuilds after every commit.
+
+### Added
+
+- `rtk` (mise) and `graphify` (uv tool, PyPI `graphifyy`). `claude` / `ai` register the rtk
+  PreToolUse hook on launch if it is missing (`--hook-only`, so nothing tracked is written).
+  `install.sh` step 11c installs the uv tools and the graphify skill; the router and a Cursor
+  always-on rule send structure questions to `graphify query` when `graphify-out/` exists.
+- A global `post-commit` hook that runs a detached AST-only `graphify update`. Opt out with
+  `GRAPHIFY_DISABLE_HOOK=1`. `graphify-out/` is globally gitignored. Soft graphify mode is pinned
+  by `GRAPHIFY_HOOK_STRICT=0`.
+
+### Changed
+
+- `ai` is a function wrapping `cursor-agent`, not an alias — same rtk check as `claude`.
+- `mise run update-tools` also runs `uv tool upgrade --all`.
+
+### Documentation
+
+- Bootstrap step 11c and the token-tooling layout in `README.md` and `docs/ARCHITECTURE.md`.
+
+---
+
 ## [1.2.0] — 2026-09-06
 
 Splits the assistant instruction set along load cost: what must hold on every request stays

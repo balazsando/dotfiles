@@ -1,6 +1,5 @@
 #!/usr/bin/env zsh
 # --- Aliases ---
-alias ai='cursor-agent'
 alias aig='gh copilot'
 alias d="docker"
 alias k="kubectl"

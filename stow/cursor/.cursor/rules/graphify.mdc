@@ -1,0 +1,10 @@
+---
+description: Codebase questions — query the knowledge graph before grepping
+alwaysApply: true
+---
+
+# graphify
+
+Where `graphify-out/` exists, answer structure questions with `graphify query "<question>"`,
+`graphify path A B`, or `graphify explain X` before grepping or reading files. Build it with
+`/graphify .`. Full skill: `~/.claude/skills/graphify/SKILL.md`.

@@ -14,6 +14,7 @@ Read the skill file when the work starts; do not rely on memory. Skills live in
 
 | When | Load |
 | --- | --- |
+| Exploring an unfamiliar or large codebase — "how does X connect to Y" | `graphify` (`/graphify .`, then `graphify query`) |
 | Writing or changing Java / Spring / Maven code | `java-standards`, then `clean-code` |
 | Structural decision, new component, abstraction boundary | `design-patterns` |
 | Changing behaviour, or adding feature / API / domain tests | `atdd-java` (Go: `atdd-go`) |

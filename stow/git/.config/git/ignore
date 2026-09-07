@@ -3,6 +3,7 @@
 CLAUDE.md
 .factorypath
 .jirlab/
+graphify-out/
 .env.local
 
 **/.claude/settings.local.json

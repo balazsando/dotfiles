@@ -8,6 +8,9 @@ export REPOS_DIR="$HOME/repos"
 export EDITOR=nvim
 export VISUAL=nvim
 
+# --- Agent token tooling ---
+export GRAPHIFY_HOOK_STRICT=0
+
 # --- Node TLS ---
 # Node ignores the OS trust store, so the corporate chain must be passed
 # explicitly. Rebuild the ~/certs bundle here and export NODE_EXTRA_CA_CERTS:

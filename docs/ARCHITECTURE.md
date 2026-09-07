@@ -13,7 +13,7 @@ dotfiles/
 │   ├── bin/                 # Standalone binaries (e.g. win32yank.exe for WSL clipboard)
 │   ├── claude/              # Claude Code: CLAUDE.md, agents, commands, skills, MCP config
 │   ├── cursor/              # Cursor: rules, commands, MCP config (skills/agents shared from claude/)
-│   ├── git/                 # .gitconfig + .config/git/{ignore,credentials}
+│   ├── git/                 # .gitconfig, .githooks, .config/git/{ignore,credentials}
 │   ├── java/                # Maven settings.xml, Eclipse formatter
 │   ├── lf/                  # lf file manager config
 │   ├── mise/                # .mise.toml — all runtime + tool declarations
@@ -27,7 +27,8 @@ dotfiles/
 │   └── work-wsl/            # Work machine WSL overrides
 ├── packages/
 │   ├── apt.txt              # System packages installed in step 1
-│   └── pip.txt              # pip packages (if any)
+│   ├── pip.txt              # pip packages (if any)
+│   └── uv-tools.txt         # Python CLI tools installed as isolated uv tools
 ├── docs/
 │   └── ARCHITECTURE.md      # This file
 ├── CLAUDE.md                # Project rules — never publish secrets (.cursor/rules/ mirrors it)
@@ -136,6 +137,16 @@ TPM (Tmux Plugin Manager) is cloned separately from the main tool install becaus
 
 `~/.gitconfig` (versioned) includes `~/.gitconfig_local` (not versioned) for user name and email. If secrets were restored from BW in step 4, `GIT_USER_NAME` and `GIT_USER_EMAIL` are already set. Otherwise the user is prompted interactively and `~/.config/zsh/secrets` is created.
 
+### Step 11c — Agent token tooling
+
+Both tools hook *below* the agent rather than wrapping it: rtk rewrites the agent's bash calls through a `PreToolUse` hook, graphify is a skill it calls. Registration targets `~/.claude/settings.json` and `~/.claude/skills/` — live runtime state, the same reason MCP servers go through the CLI in step 11b. `~/.claude/settings.json` stays untracked: it carries machine-local work context.
+
+Only the graphify skill is registered here. The rtk hook is left to the `claude` and `ai` shell functions, which check it on every launch — one code path instead of two, and it self-heals if `settings.json` is reset.
+
+Two choices keep the tools out of tracked files. `rtk init --hook-only` suppresses `RTK.md` and its `@`-reference. The graphify row in `stow/claude/.claude/CLAUDE.md`'s routing table makes `graphify install`'s own registration a no-op — `~/.claude/CLAUDE.md` symlinks into that tracked file.
+
+Ordered after step 8 (provides `uv`) and step 9 (the CLAUDE.md symlink must exist).
+
 ### Step 12 — Post-install
 
 - **`addcerts.sh`** — imports `~/certs/*.crt` into the Java keystore (requires Java from mise step 8).
@@ -206,7 +217,7 @@ mise run stow       # equivalent via mise task
 # Pull latest dotfiles and restow
 mise run sync       # git pull --ff-only + stow.sh
 
-# Upgrade all mise-managed tools
+# Upgrade mise-managed tools and uv tools
 mise run update-tools
 
 # Move a $HOME file into the dotfiles repo
@@ -293,11 +304,11 @@ documentation, precedence — are the tree's only intentional duplication.
 
 **What earns a resident slot.** A rule loaded on every request must change behaviour on a turn
 where the matching skill would never load — prohibitions and defaults qualify, reference
-knowledge does not. Git and documentation qualify: by the time you would think to look them up,
-the commit or the omission has already happened. Brevity qualifies for its floor only, because
+knowledge does not. Git, documentation and graphify qualify: by the time you would think to look them up,
+the commit, the omission, or the grep has already happened. Brevity qualifies for its floor only, because
 the turns it governs are the ones too small to trigger a skill. MCP configuration does not — it
 is consulted when `mcp.json` is open — so it lives in `ai-config` and the router keeps a
-table row. This is why `CLAUDE.md` is 109 lines and the Cursor rules 123.
+table row. This is why `CLAUDE.md` is 110 lines and the Cursor rules 133.
 
 **Machine-local overlay.** Anything organisation-specific — project keys, board ids,
 documentation repositories, cluster names — lives in `~/.claude/local/*.md`, restored from

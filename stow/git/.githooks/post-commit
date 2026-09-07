@@ -1,0 +1,21 @@
+#!/bin/sh
+#
+# post-commit hook — keep the graphify code graph in sync with HEAD.
+# AST-only: local, deterministic, no LLM and no tokens. Detached so a large repo
+# never delays the commit. Docs and images still need /graphify --update.
+
+[ -n "$GRAPHIFY_DISABLE_HOOK" ] && exit 0
+command -v graphify >/dev/null 2>&1 || exit 0
+
+root=$(git rev-parse --show-toplevel) || exit 0
+
+# GIT_DIR leaks in from git and would point graphify at the wrong tree.
+unset GIT_DIR GIT_WORK_TREE
+
+(
+  cd "$root" || exit 0
+  mkdir -p graphify-out
+  GRAPHIFY_FORCE=1 graphify update . >graphify-out/.hook.log 2>&1
+) </dev/null >/dev/null 2>&1 &
+
+exit 0

@@ -35,6 +35,9 @@ gh                 = "latest"
 # ─── File manager ─────────────────────────────────────────────────────────────
 "aqua:gokcehan/lf" = "latest"
 
+# ─── AI agent token tooling ───────────────────────────────────────────────────
+"github:rtk-ai/rtk" = "latest"
+
 # ─── Container / Kubernetes ───────────────────────────────────────────────────
 lazydocker         = "latest"
 k9s                = "latest"
@@ -67,5 +70,8 @@ mise run stow
 """
 
 [tasks.update-tools]
-description = "Upgrade all mise-managed tools to latest"
-run         = "mise upgrade"
+description = "Upgrade all mise-managed tools and uv tools to latest"
+run         = """
+mise upgrade
+if command -v uv >/dev/null; then uv tool upgrade --all; fi
+"""

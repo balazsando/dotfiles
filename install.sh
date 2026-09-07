@@ -245,6 +245,36 @@ else
   skip "install-mcp-servers.sh not stowed yet"
 fi
 
+# ── 11c. Agent token tooling ──────────────────────────────────────────────────
+step "Agent token tooling"
+# The rtk hook is registered lazily by the claude/ai shell functions.
+
+if $DRY_RUN; then
+  echo "  → would install uv tools from packages/uv-tools.txt"
+elif ! has uv; then
+  skip "uv not on PATH — uv tools"
+else
+  while IFS= read -r _tool; do
+    _name="${_tool%%\[*}"
+    if uv tool list 2>/dev/null | grep -q "^$_name "; then
+      skip "$_name"
+    else
+      run uv tool install "$_tool" >/dev/null && ok "$_name"
+    fi
+  done < <(grep -v '^#\|^[[:space:]]*$' "$DOTFILES/packages/uv-tools.txt")
+fi
+
+# The graphify routing row in CLAUDE.md makes its own registration a no-op.
+if $DRY_RUN; then
+  echo "  → would register the graphify skill"
+elif ! has graphify; then
+  skip "graphify not on PATH — skill registration"
+elif [[ -f "$HOME/.claude/skills/graphify/SKILL.md" ]]; then
+  skip "graphify skill"
+else
+  graphify install >/dev/null && ok "graphify skill"
+fi
+
 # ── 12. Post-install ──────────────────────────────────────────────────────────
 step "Post-install"
 

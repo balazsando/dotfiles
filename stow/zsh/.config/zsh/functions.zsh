@@ -3,6 +3,15 @@
 # addcerts — sourced for interactive use; actual logic lives in addcerts.sh
 addcerts() { bash "${DOTFILES:-$HOME/dotfiles}/stow/scripts/.local/share/dotfiles/scripts/addcerts.sh" "$@"; }
 
+# claude / ai — register the rtk hook for the agent if missing, then launch it
+_rtk_hooked() {
+  command -v rtk >/dev/null || return 0
+  rtk init --show 2>/dev/null | grep -q "^\[ok\] $2" ||
+    rtk init -g --agent "$1" --hook-only --auto-patch >/dev/null
+}
+claude() { _rtk_hooked claude 'settings.json'; command claude "$@"; }
+ai()     { _rtk_hooked cursor 'Cursor hook';   command cursor-agent "$@"; }
+
 # lfcd — lf file manager with cd-on-quit
 lfcd() {
   local tmp dir
