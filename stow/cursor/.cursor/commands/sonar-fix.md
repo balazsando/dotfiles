@@ -4,42 +4,39 @@ description: "Fix straightforward SonarQube issues on a dedicated branch with on
 
 Fix the SonarQube findings that are mechanically safe; leave everything else in the report.
 
-The text after `/sonar-fix` is optional: a SonarQube project key or name to skip project
-matching, plus filters (`--severity`, `--new-code`, `--path`, `--rule`).
+The text after `/sonar-fix` is optional: a SonarQube project key or name to skip project matching,
+plus filters (`--severity`, `--new-code`, `--path`, `--rule`).
 
 ## Rules
 
 - All SonarQube access goes through the `sonarqube-validation` skill — load it first and never
   call the `sonarqube` MCP server directly.
+- Branch, validation, commit and report mechanics: the `change-delivery` skill. Load it.
 - This command carries the `git` rule's commit exception: its own `sonar-cleanup/*` branch, one
-  local commit. Never push, never open a merge request, never touch existing history.
+  local commit. Never push, never open a merge request.
 - Fix only behaviour-preserving changes provable by a compile plus the existing tests; every
   change maps to a real issue key from the collected report.
-- Stop and ask when the working tree is dirty, the project match is ambiguous, the default branch
-  is ambiguous, or the build cannot be validated locally.
+- The fixes below are mechanical and single-file, so this command edits directly rather than
+  delegating to a developer: anything needing judgement is on the skip list. Never widen that
+  list.
+- Stop and ask when the project match is ambiguous or the build cannot be validated locally —
+  plus the `change-delivery` §1 stop conditions.
 
 ## Steps
 
-1. **Repo** — `git fetch --prune origin`. A dirty `git status --porcelain` is a stop condition.
-2. **Base branch** — `git remote set-head origin --auto`, then
-   `git symbolic-ref --short refs/remotes/origin/HEAD`. If unset, first existing of `develop`,
-   `release`, newest `release/*`, `main`, `master`.
-3. **Project** — match it with the validation skill (§2), passing any project argument through.
+1. **Preconditions and base branch** — `change-delivery` §1–2.
+2. **Project** — match it with the validation skill (§2), passing any project argument through.
    State key and name before editing anything.
-4. **Issues** — collect the report with the validation skill (§3): the base branch, 40 issues per
+3. **Issues** — collect the report with the validation skill (§3): the base branch, 40 issues per
    run, honouring the filters. Apply its §4 interpretation — stale, generated, and suppressed
    hits are out.
-5. **Branch** — `git switch -c sonar-cleanup/<project-key>-$(date +%Y%m%d) origin/<base>`,
-   before any edit.
-6. **Fix** — bugs → vulnerabilities → smells, highest severity first. Smallest edit per issue,
+4. **Branch** — `change-delivery` §3, prefix `sonar-cleanup/`, before any edit.
+5. **Fix** — bugs → vulnerabilities → smells, highest severity first. Smallest edit per issue,
    project formatter, no new abstractions, no drive-by reformatting.
-7. **Validate** — the project's own build and tests for the touched modules
-   (`mvn -pl <mods> -am verify`, `./gradlew :<mod>:test`, `go test ./...`, `npm test`). Revert
-   any fix that fails and skip that issue; never commit a red build.
-8. **Commit** — one commit, subject `fix-…` (bugs, vulnerabilities), `refactor-…` (smells) or
-   `style-…`; body lists rule and `file:line` per issue. No `--no-verify`, no attribution trailers.
-9. **Report** — the validation skill's §5 report, plus base and new branch, commit SHA, fixed
-   issues, skipped issues with reasons, build result, and that nothing was pushed.
+6. **Validate** — `change-delivery` §4. Revert any fix that fails and skip that issue.
+7. **Commit** — `change-delivery` §5, subject `fix-…` (bugs, vulnerabilities), `refactor-…`
+   (smells) or `style-…`; body lists rule and `file:line` per issue.
+8. **Report** — `change-delivery` §6, plus the validation skill's §5 report.
 
 ## Fix / skip
 

@@ -7,6 +7,73 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [1.4.0] — 2026-09-07
+
+Replaces the two end-to-end workflow agents with six single-responsibility roles and the commands
+that sequence them. Each stage writes one brief to `.claude/state/`, so the reviewer judges the
+diff instead of the implementer's reasoning.
+
+### Added
+
+- Six role agents — `requirements`, `architect`, `developer`, `test-engineer`, `reviewer`,
+  `doc-writer` — each with one responsibility, a `tools:` fence, an explicit limits section, and
+  one output file under `.claude/state/<slug>/`. No agent commits and no agent calls another: a
+  blocked agent returns `BLOCKED:` to the command that spawned it, which makes circular
+  delegation impossible rather than discouraged.
+- `/deliver` — sequences those roles for any change, sizing the run first: one unit with no
+  boundary and no contract runs the developer and the reviewer, anything unanswerable runs the
+  full roster. Size decides how much design a change gets, never how much validation — review and
+  build run at every size, and a diff that outgrows its estimate escalates mid-run. Prepares
+  files only: no branch, no commit.
+- `/mr-review` — resolves a merge request, branch or commit range, pulls the acceptance criteria
+  from the ticket when there is one, and relays the reviewer's severity-ranked findings
+  unabridged. Findings are not fixes.
+- `change-delivery` skill — the preconditions, base-branch resolution, branch naming, per-build
+  validation, coverage bar, single-commit rule and hand-back report that `/ticket-to-merge`,
+  `/bug-fix` and `/sonar-fix` each used to restate.
+- `jira-tickets` skill — single owner of Jira MCP access: the tool-priority chain, reading an
+  issue with its comments and links, and the approval gate before any write.
+- `references/` splits for `ai-config` (the agent model and the bar for adding one),
+  `java-standards` (the canonical class shapes; test conventions), `atdd-java` (Maven, Gradle and
+  runner setup) and `code-review-practices` (report shape, severity scale, verdict rule).
+
+### Changed
+
+- `ticket-to-merge-agent` and `jira-mr-reviewer-agent` are gone, along with the
+  `/jira-mr-reviewer` command. Each ran a whole task end to end in one window, so the review
+  reasoned over the noise of the implementation and the agent that wrote a test was the one that
+  wanted it to pass.
+- `/ticket-to-merge` is `/deliver --from <KEY>` plus the git and merge-request half; the
+  workspace, roster, hand-off and routing rules are stated once.
+- `/bug-fix` and `/sonar-fix` keep only their own policy — what to fix, which roles to invoke —
+  and take the mechanics from `change-delivery`.
+- `create-tech-ticket-agent` (168 → 83 lines) and `enhance-jira-description-agent` (121 → 65)
+  dropped their inlined Jira MCP procedures for `jira-tickets`.
+- Every agent declares `tools:`. Omitting it inherits every tool the session has, which is what
+  the old compound agents did and why they could commit, write Jira and reformat a repository
+  from a review task.
+- `atdd-go` no longer builds its examples on one specific project: the layer table and directory
+  layout describe a typical Go service or CLI, with the project's own `docs/architecture.md`
+  winning where it disagrees.
+- The global gitignore covers editor, IDE and OS artifacts — Eclipse, IntelliJ, NetBeans, VS
+  Code, Vim, Emacs, macOS, Windows — instead of only the personal tooling entries. Build output
+  stays the project's own business.
+
+### Fixed
+
+- A sentence in `ai-config` truncated at "the logic must not", losing the point of the
+  Claude ↔ Cursor command contract.
+- The router and the Cursor git rule wrote the commit exception as `ticket-to-merge`, reading as
+  a bare agent name rather than the command that carries it.
+
+### Documentation
+
+- The agent model in `README.md` and `docs/ARCHITECTURE.md`: roles rather than pipelines,
+  artifact hand-offs rather than transcripts, shared mechanics as skills, and why formatting is a
+  build step instead of an agent.
+
+---
+
 ## [1.3.0] — 2026-09-07
 
 Cuts what agents read: rtk rewrites their bash calls, and graphify answers structure questions

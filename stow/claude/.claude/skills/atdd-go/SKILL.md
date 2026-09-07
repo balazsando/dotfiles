@@ -234,23 +234,24 @@ func iShouldSeeTheSummary(ctx context.Context, expected string) error {
 
 Requires `TestingT: t` set in `godog.Options`.
 
-## Integration Layer Pattern (jirlab)
+## Integration Interface Pattern
 
-Per project architecture: step definitions call the **integration interface**, not services directly.
+Step definitions call an **integration interface**, never a concrete service — that is the seam
+the acceptance test swaps.
 
 ```go
-type JiraIntegration interface {
+type IssueIntegration interface {
     FetchIssue(ctx context.Context, key string) (*Issue, error)
 }
 
 type scenarioState struct {
-    jira   JiraIntegration
+    issues IssueIntegration
     result *Issue
     err    error
 }
 ```
 
-Inject the real or mock implementation in `Before` hook. See [integration testing patterns](./references/integration.md).
+Inject the real or mock implementation in the `Before` hook. See [integration testing patterns](./references/integration.md).
 
 ## Quality Gates
 

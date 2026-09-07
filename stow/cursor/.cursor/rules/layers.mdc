@@ -14,4 +14,5 @@ Machine-local specifics — Jira project keys, boards, documentation repositorie
 if it is missing, ask rather than guess.
 
 Commands, agents, and skills each own one layer and never restate another's. Each command carries
-its own dispatch contract; `~/.claude/skills/ai-config/SKILL.md` owns the rest.
+its own dispatch contract; `~/.claude/skills/ai-config/SKILL.md` owns the rest, and its
+`references/agent-architecture.md` owns the agent model.

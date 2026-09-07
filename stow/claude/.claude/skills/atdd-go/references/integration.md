@@ -117,13 +117,14 @@ sc.Before(func(ctx context.Context, s *godog.Scenario) (context.Context, error) 
 })
 ```
 
-## jirlab Architecture Alignment
+## Layer Alignment
 
-Per `docs/architecture.md` / project conventions:
+Where each layer of a typical Go service or CLI sits in an ATDD suite. A project's own
+`docs/architecture.md` wins where it disagrees.
 
 | Layer | ATDD Role |
 |-------|-----------|
-| `internal/tui/` | Not tested with godog; use unit tests |
+| `internal/tui/`, `internal/cmd/` | Not tested with godog; use unit tests |
 | `internal/integration/` | Define interfaces here; mock in step tests |
 | `internal/service/` | HTTP clients — use httptest.Server in acceptance tests |
 | `features/` | Feature files live at project root |
@@ -133,14 +134,13 @@ Example acceptance test file placement:
 
 ```
 features/
-  jira_issue.feature
-  gitlab_mr.feature
-  kube_pods.feature
+  fetch_issue.feature
+  list_items.feature
 internal/
   integration/
-    jira.go            ← interface
-    jira_mock_test.go  ← mock for acceptance tests
-jira_acceptance_test.go  ← TestFeatures + step defs
+    issues.go            ← interface
+    issues_mock_test.go  ← mock for acceptance tests
+issues_acceptance_test.go  ← TestFeatures + step defs
 ```
 
 ## Asserting HTTP Calls Were Made

@@ -4,41 +4,39 @@ argument-hint: "[--since <duration>] [--service <name>] [--issue <n>] [--limit <
 ---
 
 Fix the production bugs whose root cause is confirmed in this repository; report the rest.
+`$ARGUMENTS` passes through to detection: `--since`, `--service`, `--limit`, plus `--issue <n>`
+to fix only the nth issue of the report.
 
-`$ARGUMENTS` is optional and passes through to detection: `--since`, `--service`, `--limit`, plus
-`--issue <n>` to fix only the nth issue of the report.
+You triage and own git. The fixing, the tests and the verdict belong to agents.
 
 ## Rules
 
 - All log access goes through the `app-bug-detection` skill — load it first and never query the
   `grafana-prod` MCP server directly.
-- This command carries the `~/.claude/CLAUDE.md` **Git operations** commit exception: its own `bugfix/*` branch,
-  one local commit. Never push, never open a merge request, never touch existing history.
-- Fix only what the report attributes to project code with the line confirmed locally. Environment
-  issues, expected noise, and low-confidence findings are reported, not patched.
-- Smallest change that removes the cause — no refactors, no drive-by cleanup, no new abstractions.
-- Stop and ask when the working tree is dirty, the service match is ambiguous, the default branch
-  is ambiguous, the report is empty, or the fix would change public API or behaviour beyond the
-  bug.
+- Branch, validation, commit and report mechanics: the `change-delivery` skill. Load it.
+- This command carries the `~/.claude/CLAUDE.md` **Git operations** commit exception: its own
+  `bugfix/*` branch, one local commit. Never push, never open a merge request.
+- Fix only what the report attributes to project code with the line confirmed locally.
+  Environment issues, expected noise, and low-confidence findings are reported, not patched.
+- Stop and ask when the report is empty, the service match is ambiguous, or a fix would change
+  public API or behaviour beyond the bug — plus the `change-delivery` §1 stop conditions.
 
 ## Steps
 
-1. **Repo** — `git fetch --prune origin`. A dirty `git status --porcelain` is a stop condition.
-2. **Base branch** — `git remote set-head origin --auto`, then
-   `git symbolic-ref --short refs/remotes/origin/HEAD`. If unset, first existing of `develop`,
-   `release`, newest `release/*`, `main`, `master`.
-3. **Detect** — run the `app-bug-detection` skill with `$ARGUMENTS` and take its report. State the
-   service name and window before editing anything.
-4. **Triage** — keep the issues marked as application bugs with a verified suspect line, highest
-   impact first; list what you are skipping and why.
-5. **Branch** — `git switch -c bugfix/<service-slug>-$(date +%Y%m%d) origin/<base>`, before any
-   edit. Slugify the service name — the pom description may contain spaces.
-6. **Fix** — one issue at a time, following the project's architecture and conventions. Add or
-   extend a test that fails on the bug first when the project's test setup allows it.
-7. **Validate** — the project's own build and tests for the touched modules
-   (`mvn -pl <mods> -am verify`, `./gradlew :<mod>:test`). Revert any fix that fails and skip that
-   issue; never commit a red build.
-8. **Commit** — one commit, subject `fix-…`; body lists each issue as exception, `file:line`, and
-   what changed. No `--no-verify`, no attribution trailers.
-9. **Report** — the detection scope line, issues fixed with their diffs summarised, issues skipped
-   with reasons, build result, branch and commit SHA, and that nothing was pushed.
+1. **Preconditions and base branch** — `change-delivery` §1–2.
+2. **Detect** — run `app-bug-detection` with `$ARGUMENTS`. State the service and window.
+3. **Triage** — keep the application bugs with a verified suspect line, highest impact first.
+   List what you are skipping and why. This ranking is yours; the agents do not re-triage.
+4. **Branch** — `change-delivery` §3, prefix `bugfix/`, before the first edit.
+5. **Fix** — one issue at a time. Spawn `developer-agent` with the defect, its `file:line`, and
+   the evidence from the report — not the whole report. Smallest change that removes the cause.
+6. **Regression test** — spawn `test-engineer-agent` with the defect and the developer's notes,
+   to add the test that fails on the bug. Skip only where the project has no test setup for it.
+7. **Validate** — `change-delivery` §4. Revert and skip any fix that fails; never commit red.
+8. **Review** — once over the whole branch, not per issue: `reviewer-agent` with the working-tree
+   diff against the base and the triaged defects as the criteria. A CRITICAL or MAJOR goes back to
+   `developer-agent` for one round; a second failure on the same finding drops that fix from the
+   commit and reports it as skipped.
+9. **Commit** — `change-delivery` §5, subject `fix-…`, body listing each issue as exception,
+   `file:line`, and what changed.
+10. **Report** — `change-delivery` §6, plus the detection scope line and the reviewer's verdict.

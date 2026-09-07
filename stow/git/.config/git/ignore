@@ -1,9 +1,56 @@
+# Global gitignore — editor, IDE and OS generated files.
+# Build output and project-specific artifacts belong in the project's own .gitignore.
+
+### Eclipse / STS ###
+.classpath
+.project
+.settings/
+.factorypath
+.apt_generated/
+.apt_generated_test/
+.springBeans
+.sts4-cache/
+
+### IntelliJ IDEA ###
+.idea/
+*.iml
+*.iws
+*.ipr
+
+### NetBeans ###
+/nbproject/private/
+.nb-gradle/
+
+### VS Code ###
+.vscode/
+*.code-workspace
+
+### Vim / Neovim ###
+*.swp
+*.swo
+*~
+.netrwhist
+Session.vim
+.nvimlog
+
+### Emacs ###
+*#
+.#*
+
+### Operating system ###
+.DS_Store
+._*
+.Spotlight-V100
+.Trashes
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+### Personal tooling — not the project's business ###
 /.github/
 /.claude/**
+**/.claude/settings.local.json
 CLAUDE.md
-.factorypath
 .jirlab/
 graphify-out/
 .env.local
-
-**/.claude/settings.local.json

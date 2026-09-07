@@ -1,6 +1,7 @@
 ---
 name: dotfiles-devops-agent
 description: "DevOps specialist for dotfiles repositories: organising, structuring, deploying, and troubleshooting them — Stow packages and conflicts, broken symlinks, bootstrap and install scripts, adding a tool's config, new-machine setup."
+tools: Read, Grep, Glob, Edit, Write, Bash
 ---
 
 # dotfiles-devops-agent

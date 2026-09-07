@@ -12,10 +12,12 @@ change it without breaking the contract.
 
 **Detail lives in `references/`** — read the file the task needs, not both.
 
-- `references/frontmatter.md` — the exact frontmatter for a skill, agent, command, and Cursor
-  rule, plus the table of `alwaysApply` / `globs` / `description` load modes.
-- `references/mcp-and-hooks.md` — registering an MCP server for both assistants, the server
-  list, and the git hooks under `stow/git`.
+- `references/frontmatter.md` — skill, agent, command, and Cursor-rule frontmatter, plus
+  `alwaysApply` / `globs` / `description` load modes.
+- `references/mcp-and-hooks.md` — MCP registration for both assistants, the server list, and
+  the git hooks under `stow/git`.
+- `references/agent-architecture.md` — the agent model. Read it before adding or changing any
+  agent.
 
 ---
 
@@ -29,14 +31,15 @@ restated in two places, they drift, and the assistant follows whichever it read 
 | **Router** — `CLAUDE.md` (Claude only) | Mapping situation → skill, plus the cross-cutting prohibitions (git, documentation, machine-local). | Every Claude request |
 | **Cursor rules** — `rules/*.mdc` | Always-on contracts; optional `globs` when a file type should nag a skill. | `alwaysApply` or matching files |
 | **Command** — `commands/<name>.md` | Argument parsing, dispatch, relaying output | On invocation |
-| **Agent** — `agents/<name>-agent.md` | Workflow, output format, constraints | When spawned |
+| **Agent** — `agents/<name>-agent.md` | One responsibility, its tools, its output artifact, its limits | When spawned |
 | **Skill** — `skills/<name>/SKILL.md` | Domain knowledge, and any MCP server it fronts | On demand |
 
 Decide with these questions, in order:
 
 1. **Is it knowledge that is true regardless of who asks?** → skill.
-2. **Is it a repeatable multi-step workflow with its own output format?** → agent.
-3. **Is it only "how do I start that workflow"?** → command, and keep it to dispatch.
+2. **Is it one bounded responsibility with its own output artifact?** → agent — see
+   `references/agent-architecture.md` for the bar it has to clear.
+3. **Is it how to sequence agents, or how to start one?** → command.
 4. **Does it change what to load in a situation?** → one `CLAUDE.md` table row. Cursor picks
    skills from each skill's `description`, so add a `.mdc` only to scope a skill to a file type
    (`globs`) or to carry a contract that must hold before the skill is read.
@@ -48,13 +51,23 @@ On Cursor, rules are standing contracts (`alwaysApply`) or file-scoped nags (`gl
 copy the `CLAUDE.md` table into a rule, and never add an always-on rule whose only content is
 "load skill X" — the skills catalog already does that.
 
-### The two exceptions
+### Command shapes
 
-`/sonar-fix` and `/bug-fix` own their steps inline, because the fix policy *is* the command and
-has no other consumer. They still delegate all external data to a skill
-(`sonarqube-validation`, `app-bug-detection`) and never touch those MCP servers directly. Every
-other command is a dispatcher — spawn `<command>-agent`, relay unabridged, resume the **same**
-agent via SendMessage rather than spawning a second one.
+Three, and a command is exactly one of them:
+
+- **Dispatcher** — one agent owns the job. `/create-tech-ticket`, `/enhance-jira-description`,
+  `/dotfiles-devops`: spawn it, relay unabridged, resume the **same** agent via SendMessage
+  rather than spawning a second one.
+- **Orchestrator** — several narrow agents in sequence, with the stage conditions, the hand-off
+  paths and the escalation routing. `/deliver`, `/ticket-to-merge`, `/mr-review`, `/bug-fix`.
+  It routes; it never does a stage itself.
+- **Policy** — the decision *is* the command and has no other consumer, and the work is
+  mechanical. `/sonar-fix`: its fix/skip list is the whole point, so it edits directly.
+
+All three take external data from a skill and never touch an MCP server the skill owns
+(`sonarqube-validation`, `app-bug-detection`, `jira-tickets`), and shared mechanics from
+`change-delivery` instead of restating them. An orchestrator that starts explaining *how* a
+stage works has taken over an agent's layer.
 
 ---
 
@@ -63,7 +76,7 @@ agent via SendMessage rather than spawning a second one.
 Skills and agents are authored **once**, under `stow/claude/.claude/`. Cursor discovers
 `~/.claude/skills/` and `~/.claude/agents/` natively.
 
-**Never create `skills/` or `agents/` under `stow/cursor/.cursor/.`** A same-named file there
+**Never create `skills/` or `agents/` under `stow/cursor/.cursor/`.** A same-named file there
 takes precedence and shadows the shared original — and the failure is silent, because the
 assistant still finds *a* skill. `check-ai-parity.sh` fails the build on this, and `stow.sh` runs
 it before stowing anything.
@@ -75,23 +88,31 @@ Only three things are legitimately Cursor-specific:
   in a skill (`java`, `neovim`). An always-on rule states its contract; it never exists only to
   redirect.
 - `commands/*.md` — Cursor has no `$ARGUMENTS`, so the wording differs; the logic must not
+  drift.
 - `mcp.json` — same server list, `${env:VAR}` instead of `${VAR}`
 
 When you change a command, change both copies in the same edit. When you add or rename a skill,
 add a `CLAUDE.md` table row; Cursor uses the skill `description` with no extra `.mdc`. The
 always-on rules that mirror a `CLAUDE.md` section — `git`, `documentation`, `layers`,
-`economy-of-words` — must
-stay in step with it. That is the only intentional duplication, and the only place drift
-can still start.
+`economy-of-words` — must stay in step with it. That is the only intentional duplication, and
+the only place drift can still start.
 
 ---
 
 ## Size and progressive disclosure
 
+Every file here is prose that lands in a context window, so `economy-of-words` is the writing
+standard — load it before authoring one.
+
 A `SKILL.md` over roughly 200 lines is doing two jobs. Split the long tail into
 `references/<topic>.md` and link to it from the body — the reference is read only when the task
 actually needs that depth. Existing splits to copy: `dotfiles`, `stow`, `grafana`,
 `bitwarden-cli`.
+
+A section written for a **different agent** than the rest of the skill belongs in its own
+reference, however short — `java-standards/references/tests.md` is read by the test engineer,
+examples by the developer. Splitting by audience keeps each spawn to what it can act on; a new
+skill for a section that small would only add a second owner of the same domain.
 
 Templates and scaffolds go in `assets/` (see `atdd-java/assets/feature.template`).
 
@@ -120,6 +141,9 @@ organisation or its network must not enter a tracked file, including as an examp
 3. Did a command change? Update both copies. Did a skill mapping change? `CLAUDE.md` table row
    only. Did a rule mirroring a `CLAUDE.md` section change (`git`, `documentation`, `layers`)?
    Both copies.
-4. Did structure, bootstrap flow, or the package list change? Update `README.md` **and**
+4. Added or changed an agent? It must be invoked by a command in the same change, and its
+   capabilities, limits and hand-off must match `references/agent-architecture.md`. Removed one?
+   Remove every reference in both trees.
+5. Did structure, bootstrap flow, or the package list change? Update `README.md` **and**
    `docs/ARCHITECTURE.md` — they have drifted from each other before.
-5. Releasing? Use `/release` — it bumps `VERSION`, the badge, and the changelog together.
+6. Releasing? Use `/release` — it bumps `VERSION`, the badge, and the changelog together.

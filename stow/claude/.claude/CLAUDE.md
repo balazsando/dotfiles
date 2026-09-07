@@ -19,6 +19,8 @@ Read the skill file when the work starts; do not rely on memory. Skills live in
 | Structural decision, new component, abstraction boundary | `design-patterns` |
 | Changing behaviour, or adding feature / API / domain tests | `atdd-java` (Go: `atdd-go`) |
 | Reviewing a diff, merge request, or PR | `code-review-practices` |
+| Reading, creating, or updating a Jira ticket | `jira-tickets` |
+| Running a command that branches, validates, and commits | `change-delivery` |
 | After changing code in a repo with a SonarQube project | `sonarqube-validation` |
 | Production errors, exceptions, "what is failing in prod" | `app-bug-detection` |
 | Dotfiles, stow packages, symlinks, bootstrap | `dotfiles`, `stow` |
@@ -28,6 +30,7 @@ Read the skill file when the work starts; do not rely on memory. Skills live in
 | Neovim, LazyVim, tmux configuration | `neovim-lua`, `lazyvim`, `nvim-tmux` |
 | Bitwarden CLI (`bw`), secrets upload/restore, vault scripting | `bitwarden-cli` |
 | Adding or changing a skill, agent, command, AI rule, or MCP server | `ai-config` |
+| Multi-stage development work — feature, refactor, ticket | `/deliver` or `/ticket-to-merge`, which orchestrate the specialised agents |
 | Long-form output — report, plan, summary — or a context-heavy session | `economy-of-words` |
 
 Prefer the simplest solution and do not force a pattern; project conventions beat skill defaults;
@@ -62,7 +65,7 @@ missing, ask rather than guess.
 
 ## Git operations
 
-**Committing and history rewriting are prohibited.** The only exceptions are `ticket-to-merge`,
+**Committing and history rewriting are prohibited.** The only exceptions are `/ticket-to-merge`,
 `/sonar-fix`, and `/bug-fix` while they are running. Reading history, diffs, status, blame, logs,
 and branch state is always allowed.
 

@@ -11,7 +11,7 @@ dotfiles/
 ├── stow/                    # GNU Stow packages — each subdirectory maps to $HOME
 │   ├── bat/                 # bat syntax-highlighter config + Catppuccin themes
 │   ├── bin/                 # Standalone binaries (e.g. win32yank.exe for WSL clipboard)
-│   ├── claude/              # Claude Code: CLAUDE.md, agents, commands, skills, MCP config
+│   ├── claude/              # Claude Code: CLAUDE.md, role agents, commands, skills, MCP config
 │   ├── cursor/              # Cursor: rules, commands, MCP config (skills/agents shared from claude/)
 │   ├── git/                 # .gitconfig, .githooks, .config/git/{ignore,credentials}
 │   ├── java/                # Maven settings.xml, Eclipse formatter
@@ -301,6 +301,35 @@ Cursor has no router: it discovers skills by their `description`, so a rule exis
 a standing contract (`alwaysApply`) or to bind a file type to a skill (`globs`) — never to
 duplicate the routing table. The always-on rules that mirror a `CLAUDE.md` section — git,
 documentation, precedence — are the tree's only intentional duplication.
+
+**Agents are roles, not pipelines.** Until v1.3.0 the heavy workflows were single agents that
+ran a whole task end to end — `ticket-to-merge-agent` read the ticket, designed, implemented,
+tested, judged its own work, committed and opened the merge request. Everything it read stayed
+in one window, so the review reasoned over the noise of the implementation, and the agent that
+wrote a test was the one that wanted it to pass. Those are now six narrow agents —
+requirements, architect, developer, test engineer, reviewer, doc writer — each with one
+responsibility, a `tools:` fence, an explicit limits section, and one output file. Commands
+(`/deliver`, `/ticket-to-merge`, `/mr-review`, `/bug-fix`) sequence them, decide which stages a
+task actually needs, and own git; no agent commits. That decision is a sizing gate in `/deliver`
+rather than a habit: one unit, no boundary and no contract runs the developer and the reviewer
+only, and anything unanswerable is full. It sizes process, never validation — review and build
+run at every size, and a diff that outgrows its estimate escalates mid-run.
+
+**Hand-offs are artifacts, not transcripts.** Each stage writes one brief into
+`.claude/state/<slug>/` and the command passes the *path* to the next agent. Nothing carries the
+original prompt, the previous agent's reasoning, or its tool output. The reviewer deliberately
+never sees the implementer's notes — it judges the diff against the criteria instead of
+re-deriving the author's argument. Agents never call each other: a blocked agent returns
+`BLOCKED:` and the command routes it, which makes circular delegation impossible rather than
+discouraged.
+
+**Shared mechanics are skills, not copied steps.** `/bug-fix` and `/sonar-fix` had the same
+branch, validate, commit and report boilerplate written out in four files; it now lives once in
+`change-delivery`. Every Jira MCP call lives in `jira-tickets`, the way Sonar and Loki access
+already lived in `sonarqube-validation` and `app-bug-detection`. There is no formatter agent:
+formatting is a build step, so it is a bounded permission inside the agents that build — a
+subagent spawn would cost more than the command it would run. The rules for adding the next
+agent, skill or command are in `ai-config/references/agent-architecture.md`.
 
 **What earns a resident slot.** A rule loaded on every request must change behaviour on a turn
 where the matching skill would never load — prohibitions and defaults qualify, reference

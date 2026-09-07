@@ -31,6 +31,9 @@ argument-hint: "file path, diff, or PR description to review"
 
 Go through remaining files in a logical sequence (tests → implementation → config is a common order). See [checklist](./references/checklist.md) for what to verify in each file.
 
+Handing the review back as one document instead of inline comments? Use
+[report-format](./references/report-format.md) — severity scale, section shape, and verdict rule.
+
 ## Comment Severity Labels
 
 Always label the severity so the author can prioritize:

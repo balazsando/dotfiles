@@ -213,6 +213,18 @@ public Role role(String name) { return Role.valueOf(name.toUpperCase()); }
 public void iAmLoggedInAs(Role role) { ... }
 ```
 
+Built-in parameter types:
+
+| Type | Example step text | Java type |
+|------|-------------------|-----------|
+| `{int}` | `42` | `int` / `Integer` |
+| `{long}` | `9999999999` | `long` |
+| `{float}` | `3.14` | `float` |
+| `{double}` | `3.14159` | `double` |
+| `{word}` | `admin` | `String` |
+| `{string}` | `"quoted text"` | `String` |
+| `{}` | anything | `String` |
+
 ## Naming Conventions
 
 - Feature files: `src/test/resources/features/<domain>.feature` — kebab-case filenames

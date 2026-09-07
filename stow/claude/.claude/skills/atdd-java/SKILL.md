@@ -27,64 +27,6 @@ argument-hint: "Describe the feature or acceptance test to implement (e.g., 'add
 | Glue | The package(s) where Cucumber scans for step definitions and hooks |
 | World / State | Instance variables in step-definition classes — new instance per scenario |
 
-## Installation
-
-### Maven
-
-```xml
-<properties>
-  <cucumber.version>7.22.0</cucumber.version>
-</properties>
-
-<dependencies>
-  <!-- Core -->
-  <dependency>
-    <groupId>io.cucumber</groupId>
-    <artifactId>cucumber-java</artifactId>
-    <version>${cucumber.version}</version>
-    <scope>test</scope>
-  </dependency>
-
-  <!-- JUnit 5 runner (recommended) -->
-  <dependency>
-    <groupId>io.cucumber</groupId>
-    <artifactId>cucumber-junit-platform-engine</artifactId>
-    <version>${cucumber.version}</version>
-    <scope>test</scope>
-  </dependency>
-  <dependency>
-    <groupId>org.junit.platform</groupId>
-    <artifactId>junit-platform-suite</artifactId>
-    <scope>test</scope>
-  </dependency>
-  <dependency>
-    <groupId>org.junit.jupiter</groupId>
-    <artifactId>junit-jupiter</artifactId>
-    <scope>test</scope>
-  </dependency>
-
-  <!-- OR JUnit 4 runner (legacy) -->
-  <!-- <dependency>
-    <groupId>io.cucumber</groupId>
-    <artifactId>cucumber-junit</artifactId>
-    <version>${cucumber.version}</version>
-    <scope>test</scope>
-  </dependency> -->
-</dependencies>
-```
-
-### Gradle (Kotlin DSL)
-
-```kotlin
-val cucumberVersion = "7.22.0"
-dependencies {
-    testImplementation("io.cucumber:cucumber-java:$cucumberVersion")
-    testImplementation("io.cucumber:cucumber-junit-platform-engine:$cucumberVersion")
-    testImplementation("org.junit.platform:junit-platform-suite")
-    testImplementation("org.junit.jupiter:junit-jupiter")
-}
-```
-
 ## ATDD Cycle
 
 ```
@@ -140,42 +82,8 @@ Feature: Fetch Jira issue
 
 ## Step 2 — Wire the Test Runner
 
-### JUnit 5 (recommended)
-
-```java
-// src/test/java/com/example/runner/RunCucumberTest.java
-package com.example.runner;
-
-import org.junit.platform.suite.api.*;
-
-@Suite
-@IncludeEngines("cucumber")
-@SelectClasspathResource("features")
-@ConfigurationParameter(key = "cucumber.glue", value = "com.example.steps")
-@ConfigurationParameter(key = "cucumber.plugin", value = "pretty, html:target/cucumber.html")
-public class RunCucumberTest {}
-```
-
-Or use `src/test/resources/junit-platform.properties`:
-
-```properties
-cucumber.glue=com.example.steps
-cucumber.plugin=pretty, html:target/cucumber.html
-cucumber.publish.quiet=true
-```
-
-### JUnit 4 (legacy)
-
-```java
-@RunWith(Cucumber.class)
-@CucumberOptions(
-    features = "src/test/resources/features",
-    glue = "com.example.steps",
-    plugin = {"pretty", "html:target/cucumber.html"},
-    tags = "not @wip"
-)
-public class RunCucumberTest {}
-```
+Dependencies and the JUnit 5 / JUnit 4 runner: [setup reference](./references/setup.md). Once per
+project — skip it in a project that already runs Cucumber.
 
 ## Step 3 — Scaffold Step Definitions
 
@@ -235,108 +143,25 @@ public class IssueSteps {
 
 ## Step 4 — Share State Between Steps
 
-Cucumber creates a **new instance** of each glue class per scenario. Use a shared state class injected via [PicoContainer](#dependency-injection):
-
-```java
-// src/test/java/com/example/steps/IssueState.java
-package com.example.steps;
-
-public class IssueState {
-    public MockJiraClient mockJira = new MockJiraClient();
-    public IssueService service = new IssueService(mockJira);
-    public Issue fetchedIssue;
-    public Exception fetchError;
-}
-```
-
-Cucumber-PicoContainer dependency:
-
-```xml
-<dependency>
-  <groupId>io.cucumber</groupId>
-  <artifactId>cucumber-picocontainer</artifactId>
-  <version>${cucumber.version}</version>
-  <scope>test</scope>
-</dependency>
-```
-
-Any glue class with a constructor parameter that matches another glue class type gets it injected automatically — no configuration needed.
+Cucumber creates a **new instance** of each glue class per scenario: no static fields, no shared
+singletons. Put the scenario's state in a plain object and take it as a constructor parameter —
+every glue class that declares it gets the same instance. Pattern and wiring:
+[hooks reference](./references/hooks.md#sharing-state-between-glue-classes).
 
 ## Step 5 — Hooks
 
-See [hooks reference](./references/hooks.md) for full patterns.
+`@Before` resets the state object, `@After` attaches failure evidence when `scenario.isFailed()`,
+`@BeforeAll` / `@AfterAll` own the expensive suite-level resources. Tag-scoped hooks, step hooks
+and execution order: [hooks reference](./references/hooks.md).
 
-```java
-// src/test/java/com/example/steps/Hooks.java
-package com.example.steps;
+## Step Matching
 
-import io.cucumber.java.Before;
-import io.cucumber.java.After;
-import io.cucumber.java.BeforeAll;
-import io.cucumber.java.AfterAll;
-import io.cucumber.java.Scenario;
+Prefer **Cucumber Expressions** (`{int}`, `{string}`, `{word}`) over regex; reach for regex only
+when the match is genuinely complex. Parameter types, optional text, alternation and custom
+`@ParameterType`: [Gherkin reference](./references/gherkin.md#cucumber-expressions-step-matching).
 
-public class Hooks {
-
-    private final IssueState state;
-
-    public Hooks(IssueState state) {
-        this.state = state;
-    }
-
-    @BeforeAll
-    public static void beforeAll() {
-        // Start test server, initialize DB — runs once before all scenarios
-    }
-
-    @Before
-    public void beforeEach(Scenario scenario) {
-        // Reset state before each scenario
-        state.fetchedIssue = null;
-        state.fetchError = null;
-        state.mockJira.reset();
-    }
-
-    @After
-    public void afterEach(Scenario scenario) {
-        if (scenario.isFailed()) {
-            // Attach debug info to the report
-            scenario.attach("State dump...", "text/plain", "debug");
-        }
-    }
-
-    @AfterAll
-    public static void afterAll() {
-        // Tear down server, close DB — runs once after all scenarios
-    }
-}
-```
-
-## Cucumber Expressions vs Regex
-
-Prefer **Cucumber Expressions** (cleaner) over regex unless you need complex matching:
-
-```java
-// Cucumber Expression (recommended)
-@Given("there are {int} items in the {word} category")
-public void thereAreItems(int count, String category) { ... }
-
-// Regex (for complex patterns)
-@Given("^there are (\\d+) items?$")
-public void thereAreItems(int count) { ... }
-```
-
-Built-in parameter types:
-
-| Type | Example step text | Java type |
-|------|-------------------|-----------|
-| `{int}` | `42` | `int` / `Integer` |
-| `{long}` | `9999999999` | `long` |
-| `{float}` | `3.14` | `float` |
-| `{double}` | `3.14159` | `double` |
-| `{word}` | `admin` | `String` |
-| `{string}` | `"quoted text"` | `String` |
-| `{}` | anything | `String` |
+DataTables and DocStrings, and the Java types a table maps to:
+[Gherkin reference](./references/gherkin.md#data-tables).
 
 ## Running Tests
 
@@ -365,48 +190,9 @@ mvn test -Dcucumber.features="src/test/resources/features/issue_fetch.feature"
 
 ## Tags
 
-```gherkin
-@smoke
-Feature: Issue management
-
-  @wip
-  Scenario: Work in progress
-    Given ...
-
-  @regression @critical
-  Scenario: Must-pass regression
-    Given ...
-```
-
-Tag expressions:
-
-| Expression | Effect |
-|-----------|--------|
-| `@smoke` | Only tagged `@smoke` |
-| `not @wip` | Exclude `@wip` |
-| `@smoke and @fast` | Both tags |
-| `@smoke or @regression` | Either tag |
-| `(@smoke or @ui) and not @slow` | Compound |
-
-## DataTables
-
-See [Gherkin reference](./references/gherkin.md#data-tables) for full patterns.
-
-```gherkin
-Given the following issues exist:
-  | key    | summary         | status |
-  | PROJ-1 | Fix login bug   | Open   |
-  | PROJ-2 | Add dark mode   | Closed |
-```
-
-```java
-@Given("the following issues exist:")
-public void theFollowingIssuesExist(List<Map<String, String>> rows) {
-    for (var row : rows) {
-        state.mockJira.stubIssue(row.get("key"), row.get("summary"), row.get("status"));
-    }
-}
-```
+House policy: `@wip` marks work in progress and CI runs `not @wip`; `@smoke` marks the fast
+subset. Tag placement, inheritance and the expression operators:
+[Gherkin reference](./references/gherkin.md#tags).
 
 ## Quality Gates
 
@@ -420,19 +206,15 @@ public void theFollowingIssuesExist(List<Map<String, String>> rows) {
 - [ ] Assertions use AssertJ or JUnit assertions, not `System.out`
 - [ ] `@After` captures failure evidence (screenshot, logs, state dump)
 
-## Dependency Injection Options
+## Dependency Injection
 
-| Library | When to use |
-|---------|-------------|
-| PicoContainer (`cucumber-picocontainer`) | Zero-config, constructor injection — default choice |
-| Spring (`cucumber-spring`) | Spring Boot integration tests with `@SpringBootTest` |
-| Guice (`cucumber-guice`) | Guice-based applications |
-| CDI (`cucumber-cdi2`) | Jakarta EE applications |
-
-See [integration patterns reference](./references/integration.md).
+PicoContainer is the default — zero config, constructor injection. Spring, Guice and CDI, with
+WireMock, RestAssured and Testcontainers patterns:
+[integration reference](./references/integration.md).
 
 ## References
 
+- [Setup — dependencies and runner](./references/setup.md)
 - [Gherkin syntax](./references/gherkin.md)
 - [Hooks and lifecycle](./references/hooks.md)
 - [Integration and DI patterns](./references/integration.md)

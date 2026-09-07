@@ -5,7 +5,7 @@ alwaysApply: true
 
 # Git operations
 
-**Committing and history rewriting are prohibited.** The only exceptions are `ticket-to-merge`,
+**Committing and history rewriting are prohibited.** The only exceptions are `/ticket-to-merge`,
 `/sonar-fix`, and `/bug-fix` while they are running. Reading history, diffs, status, blame, logs,
 and branch state is always allowed.
 
