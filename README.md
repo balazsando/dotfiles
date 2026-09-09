@@ -3,7 +3,7 @@
 Personal dotfiles managed with [GNU Stow](https://www.gnu.org/software/stow/) and [mise](https://mise.jdx.dev/).  
 Targeting **Debian/Ubuntu/WSL2**.
 
-[![Version](https://img.shields.io/badge/version-1.4.0-blue)](CHANGELOG.md)
+[![Version](https://img.shields.io/badge/version-1.5.0-blue)](CHANGELOG.md)
 
 ---
 
@@ -35,7 +35,7 @@ dotfiles/
 ├── docs/
 │   └── ARCHITECTURE.md     # Design decisions and rationale
 ├── CLAUDE.md               # Project rules — never publish secrets (.cursor/rules/ mirrors it)
-├── .claude/commands/       # Project commands: /release (.cursor/commands/ mirrors them)
+├── .claude/commands/       # Project commands: /release, /review-staged (.cursor/commands/ mirrors them)
 ├── install.sh              # Bootstrap entry point — run once on a new machine
 ├── stow.sh                 # Idempotent re-stow — safe to run at any time
 ├── check-ai-parity.sh      # Guard: no skills/agents under stow/cursor (they shadow the shared ones)
@@ -53,9 +53,10 @@ original. `stow.sh` runs `check-ai-parity.sh` to enforce this.
 Agents are **roles**, not pipelines: `requirements`, `architect`, `developer`, `test-engineer`,
 `reviewer` and `doc-writer` each own one responsibility, declare the tools they may use, and
 write one brief into `.claude/state/<slug>/`. Commands sequence them and own git — `/deliver`
-(pick the roles the task needs), `/ticket-to-merge` (Jira → merge request), `/mr-review`,
-`/bug-fix`, `/sonar-fix`. No agent commits, and no agent calls another: a blocked agent hands
-the question back to the command. The model and the bar for adding a new agent are in
+sizes the run (small: developer, tests; medium: requirements, developer, tests; deep: those
+plus architect and docs), `/ticket-to-merge` (Jira → merge request), `/mr-review`, `/bug-fix`,
+`/sonar-fix`. No agent commits, and no agent calls another: a blocked agent hands the question
+back to the command. The model and the bar for adding a new agent are in
 `~/.claude/skills/ai-config/references/agent-architecture.md`.
 
 The cursor package keeps only what is genuinely platform-specific:

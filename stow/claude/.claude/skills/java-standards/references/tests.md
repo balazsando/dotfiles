@@ -1,7 +1,7 @@
 # Java test conventions
 
 Copy the skeleton; the rules after it are what it cannot show. The quality bar itself is
-`clean-code` (FIRST, one concept per test); Cucumber and acceptance tests are `atdd-java`.
+`clean-code` (FIRST, one concept per test); Cucumber and acceptance tests are `atdd`.
 
 ## The canonical test
 

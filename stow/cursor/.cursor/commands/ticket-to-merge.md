@@ -24,10 +24,9 @@ agent commits.
    component and labels against the repositories under `$REPOS_DIR`. Rank the candidates and ask
    only when the ranking is genuinely tied. `$REPOS_DIR` unset → ask.
 4. **Branch** — `change-delivery` §3, before the first edit.
-5. **Size, then design → implement → test → review → fix → document** — `/deliver` §Sizing
-   picks the roster, then its stages 2–7, same conditions, same routing. Size never removes a
-   step below: the branch, the build, the review, the commit and the merge request run whatever
-   the size.
+5. **Size, then the `/deliver` roster** — `/deliver` §Sizing picks the roster, then its stages
+   2–5, same conditions, same routing. Size never removes a step below: the branch, the build,
+   the commit and the merge request.
 6. **Commit** — `change-delivery` §5. One commit; the body lists each criterion and how it is
    met.
 7. **Push and merge request** — push the ticket branch, open the MR (GitLab MCP, or `glab` when
@@ -38,5 +37,5 @@ agent commits.
 
 ## Report
 
-The `change-delivery` §6 hand-back, plus the criteria and their status, the reviewer's verdict,
-the merge request URL, the pipeline result, and every assumption and open question.
+The `change-delivery` §6 hand-back, plus the criteria and their status, the merge request URL,
+the pipeline result, and every assumption and open question.

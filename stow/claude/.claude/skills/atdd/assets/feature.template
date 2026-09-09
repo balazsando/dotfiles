@@ -1,19 +1,20 @@
-# features/<domain>.feature
+# <features/ (Go) or src/test/resources/features/ (Java)>/<domain>.feature
 Feature: <Feature title — one capability>
   In order to <business value>
   As a <role>
   I need to <capability>
 
   Background:
-    Given <shared precondition for all scenarios>
+    Given <shared precondition for all scenarios in this feature>
 
   Scenario: <Happy path title>
     Given <initial state>
-    When  <action taken>
+    When  <action>
     Then  <expected outcome>
+    And   <additional assertion>
 
   Scenario: <Error / edge case title>
-    Given <initial state that causes error>
+    Given <state that causes the error>
     When  <same action>
     Then  <expected error outcome>
 
@@ -28,6 +29,7 @@ Feature: <Feature title — one capability>
     When  I process <input>
     Then  the result should be <expected>
 
+    @smoke
     Examples:
       | start | input | expected |
       | 10    | 3     | 7        |

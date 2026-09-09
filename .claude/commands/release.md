@@ -17,32 +17,18 @@ operations** rules in `~/.claude/CLAUDE.md` are not suspended for this command.
 2. **Version** — current in `VERSION`. Apply `$ARGUMENTS`, or propose: breaking change to the
    bootstrap flow or package layout → major; new package, skill, command, or capability → minor;
    fixes and documentation only → patch. State the reasoning in one line.
-3. **Audit** — before writing anything, audit the release scope and every file it touches. Run
-   `bash check-ai-parity.sh`, `bash stow.sh -n`, and a syntax check on each shell file in scope
-   (`sh -n` or `bash -n`, matching the shebang). Then read for:
-   - **Sensitive** — anything the project `CLAUDE.md` forbids in a tracked file: credentials,
-     internal hostnames, IPs, cluster or namespace names, registry and service endpoints,
-     company, product, board, ticket-key, repository path, colleague name or email. Cover the
-     diff, the files about to be written, and the changelog text about to be written.
-   - **Blocker** — the release could not be installed: a verification command fails, a bootstrap
-     or stow step that cannot succeed on a clean machine, a package pointing at a file that is
-     not there.
-   - **Critical** — it installs but is wrong: a documented command, path, flag, or guard that no
-     longer matches what the repository actually does.
-   - **Inconsistency** — two tracked sources contradicting each other: `README.md` against
-     `docs/ARCHITECTURE.md` (layout blocks, package list, bootstrap steps), `VERSION` against
-     the README badge and the newest changelog heading, a command against the skill it loads,
-     a Claude file against its Cursor twin.
-4. **Push back or proceed** — any Blocker, Critical, or Sensitive finding stops the release:
-   report each as `severity — path:line — what is wrong — the smallest fix`, write nothing, and
-   hand the decision back. Documentation that is unambiguously stale, fix in place and say so;
-   an inconsistency that needs a decision is pushed back like the rest. Only a clean audit
-   continues to step 5.
+3. **Audit** — before writing anything, run `/review-staged` over the release scope
+   (`<tag>..HEAD` plus the working tree) and cover the changelog text about to be written with
+   it. It owns the checks and the finding categories; do not restate them here.
+4. **Push back or proceed** — any Sensitive, Blocker, or Critical finding stops the release:
+   report the audit output, write nothing, and hand the decision back. Documentation that is
+   unambiguously stale, fix in place and say so; an inconsistency that needs a decision is
+   pushed back like the rest. Only a clean audit continues to step 5.
 5. **Changelog** — a new `## [x.y.z] — YYYY-MM-DD` section above the previous one, grouped
    `Added` / `Changed` / `Fixed` / `Security` / `Documentation` (omit empty groups). One line
    under the heading saying what the release is for.
 6. **Bump** — `VERSION`, and the README badge `version-<x.y.z>-blue`. Both, together.
-7. **Verify** — re-run the step 3 commands after the edits.
+7. **Verify** — re-run the step 3 audit after the edits.
 8. **Hand over** — print the commands for the user to run, and stop:
 
    ```

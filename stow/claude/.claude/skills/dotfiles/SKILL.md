@@ -23,12 +23,10 @@ antidote), multi-machine strategies, XDG base dirs, and plugin submodules — li
 │   │   ├── agents/            # Subagent definitions
 │   │   ├── commands/          # Slash commands
 │   │   └── skills/            # Skill reference documents
-│   ├── cursor/.cursor/        # Cursor agents, rules, skills, MCP
+│   ├── cursor/.cursor/        # Cursor rules, commands, MCP
 │   │   ├── mcp.json           # Global Cursor MCP config
 │   │   ├── rules/             # Global .mdc rules (alwaysApply)
-│   │   ├── agents/            # Custom Cursor agents
-│   │   ├── commands/          # Cursor slash commands
-│   │   └── skills/            # Skill reference documents
+│   │   └── commands/          # Cursor slash commands
 │   ├── zsh/.config/zsh/       # Zsh config, aliases, functions
 │   ├── nvim/.config/nvim/     # Neovim / LazyVim config
 │   ├── tmux/.config/tmux/     # tmux config

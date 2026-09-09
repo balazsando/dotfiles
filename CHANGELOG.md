@@ -7,6 +7,40 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [1.5.0] — 2026-09-09
+
+Separates review from delivery, folds ATDD into one skill, and adds hexagonal architecture plus a
+pre-release audit command.
+
+### Added
+
+- `/review-staged` — reports whether a staged set or a rev range meets the release bar without
+  writing or committing. `/release` runs it before it bumps anything.
+- `hexagonal-architecture` skill — inward dependencies, package layout, and per-ring tests for
+  Java/Spring ports-and-adapters services.
+- `atdd` skill — one language-neutral ATDD cycle; Cucumber-JVM and Godog live in `references/`.
+
+### Changed
+
+- `/deliver` sequences requirements, architect, developer, test engineer and docs by size
+  (small / medium / deep). It does not run the reviewer: `/mr-review` is the only command that
+  does, so the verdict is a separate request against a finished branch. Deep runs the developer
+  and the test engineer in parallel off compiling stubs, with the tests isolated in a detached
+  worktree.
+- The architect's stubs must compile against the project's build; they are the contract both
+  later stages share. The developer fills those bodies and no longer takes a review-fix round as
+  an input.
+- `atdd-java` and `atdd-go` are gone as separate skills. `msgraph-go` is gone.
+
+### Documentation
+
+- Layout blocks name `/review-staged`. The agent-model section records sizing, the parallel stub
+  flow, and that review is not a delivery stage.
+- The documentation contract requires describing the present system, not the delta from what it
+  replaced.
+
+---
+
 ## [1.4.0] — 2026-09-07
 
 Replaces the two end-to-end workflow agents with six single-responsibility roles and the commands

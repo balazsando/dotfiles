@@ -32,7 +32,7 @@ dotfiles/
 ├── docs/
 │   └── ARCHITECTURE.md      # This file
 ├── CLAUDE.md                # Project rules — never publish secrets (.cursor/rules/ mirrors it)
-├── .claude/commands/        # Project commands: /release (.cursor/commands/ mirrors them)
+├── .claude/commands/        # Project commands: /release, /review-staged (.cursor/commands/ mirrors them)
 ├── install.sh               # Bootstrap entry point — Debian/Ubuntu/WSL2
 ├── stow.sh                  # Idempotent re-stow — safe to run at any time
 ├── check-ai-parity.sh       # Guard: skills/agents live only in stow/claude (see AI config)
@@ -310,10 +310,26 @@ wrote a test was the one that wanted it to pass. Those are now six narrow agents
 requirements, architect, developer, test engineer, reviewer, doc writer — each with one
 responsibility, a `tools:` fence, an explicit limits section, and one output file. Commands
 (`/deliver`, `/ticket-to-merge`, `/mr-review`, `/bug-fix`) sequence them, decide which stages a
-task actually needs, and own git; no agent commits. That decision is a sizing gate in `/deliver`
-rather than a habit: one unit, no boundary and no contract runs the developer and the reviewer
-only, and anything unanswerable is full. It sizes process, never validation — review and build
-run at every size, and a diff that outgrows its estimate escalates mid-run.
+task actually needs, and own git; no agent commits. `/mr-review` is the only command that runs
+the reviewer, so the verdict is a separate request against a finished branch — not a stage of
+the same run that implemented the change. `/deliver` sizes the roster — small
+(developer, test engineer), medium (plus requirements), deep (plus architect and docs) — and
+anything unanswerable is deep. Size never drops the test engineer; only a diff with no behaviour
+to assert does — documentation, formatter output, configuration no runtime reads — and then the
+tests are skipped rather than handed to the developer, so the author of the code never judges
+it. A diff that outgrows its estimate escalates mid-run.
+
+**Stubs are what makes the deep flow parallel.** The architect does not only describe the
+structure, it writes the compiling stubs that fix it — signatures and file existence, never
+bodies — against the project's own build. The developer then fills the bodies while the test
+engineer writes tests from the criteria and those same stubs, the two running at once. That is
+not only faster: the test engineer never receives `implementation.md`, so it cannot copy the
+implementation's branches back as assertions, which the old sequential order could only ask it
+not to do. Both halves need isolation, so the test engineer gets a detached worktree and its
+tests come back as a patch — `/deliver` carries no commit exception, so nothing is committed or
+merged. Where the isolation costs too much, the two stages run in order instead: no safe
+isolation, no concurrency. Agents cannot renegotiate mid-task, so parallelism is only ever safe
+against a contract frozen in a file before both start.
 
 **Hand-offs are artifacts, not transcripts.** Each stage writes one brief into
 `.claude/state/<slug>/` and the command passes the *path* to the next agent. Nothing carries the
@@ -337,7 +353,7 @@ knowledge does not. Git, documentation and graphify qualify: by the time you wou
 the commit, the omission, or the grep has already happened. Brevity qualifies for its floor only, because
 the turns it governs are the ones too small to trigger a skill. MCP configuration does not — it
 is consulted when `mcp.json` is open — so it lives in `ai-config` and the router keeps a
-table row. This is why `CLAUDE.md` is 110 lines and the Cursor rules 133.
+table row. This is why `CLAUDE.md` is 121 lines and the Cursor rules 142.
 
 **Machine-local overlay.** Anything organisation-specific — project keys, board ids,
 documentation repositories, cluster names — lives in `~/.claude/local/*.md`, restored from

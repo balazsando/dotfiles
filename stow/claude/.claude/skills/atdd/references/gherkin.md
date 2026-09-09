@@ -1,4 +1,6 @@
-# Gherkin Syntax Reference (Java/Cucumber)
+# Gherkin syntax reference
+
+Language-neutral, with Java and Go bindings called out where the mapping differs.
 
 ## Feature File Structure
 
@@ -6,7 +8,7 @@
 # language: en  (optional header; omit for English)
 @tag1 @tag2
 Feature: <Short title — one capability>
-  <Free-form description. Ignored by Cucumber at runtime.
+  <Free-form description. Ignored at runtime.
   Use Markdown. Describe business rules and context here.>
 
   Background:
@@ -48,7 +50,7 @@ Feature: <Short title — one capability>
 | `Scenario:` / `Example:` | A single concrete test (synonyms) |
 | `Scenario Outline:` / `Scenario Template:` | Parameterised scenario |
 | `Examples:` / `Scenarios:` | Data table for Scenario Outline |
-| `Background:` | Steps run before every scenario (after `@Before` hooks) |
+| `Background:` | Steps run before every scenario (after the before-hooks) |
 | `Given` | Sets up initial context / precondition |
 | `When` | Describes an action or event |
 | `Then` | Describes expected outcome — use assertions here |
@@ -59,6 +61,8 @@ Feature: <Short title — one capability>
 | `\|` | Data Table cell separator |
 | `@` | Tag |
 | `#` | Comment |
+
+Godog does not implement `Rule:`; keep rule grouping to separate feature files there.
 
 ## Tags
 
@@ -79,7 +83,7 @@ Feature: Billing
 
 Tags are **inherited**: a tag on `Feature:` applies to all its scenarios.
 
-Tag expressions used in `@CucumberOptions` or `-Dcucumber.filter.tags`:
+Tag expressions — Cucumber-JVM (`cucumber.filter.tags`, `@CucumberOptions`):
 
 ```
 @smoke                       → only @smoke
@@ -87,6 +91,15 @@ not @wip                     → exclude @wip
 @smoke and @fast             → both tags
 @smoke or @regression        → either tag
 (@smoke or @ui) and not @slow
+```
+
+Godog (`godog.Options.Tags`, `--godog.tags`) uses the older operator set:
+
+```
+@wip                         → only @wip
+~@wip                        → exclude @wip
+@smoke && ~@slow             → compound
+@smoke,@wip                  → OR
 ```
 
 ## Scenario Outline
@@ -103,7 +116,8 @@ Scenario Outline: Process <amount> items
     | 5     | 2      | 3         |
 ```
 
-Each row generates a separate test. Tag individual `Examples:` tables:
+Each row generates a separate test; `<placeholder>` values are substituted before matching, so the
+same step definitions are reused. Tag individual `Examples:` tables:
 
 ```gherkin
 @slow
@@ -114,7 +128,7 @@ Examples: Large dataset
 
 ## Background
 
-Runs `Given` steps before every scenario in the `Feature` (or `Rule`). Runs **after** `@Before` hooks.
+Runs `Given` steps before every scenario in the `Feature` (or `Rule`), **after** the before-hooks.
 
 ```gherkin
 Background:
@@ -126,16 +140,18 @@ Keep `Background` to ≤4 steps. If it grows, use a higher-level step (`Given th
 
 ## Data Tables
 
-Passed as the **last argument** to the step method.
+Passed as the **last argument** to the step.
 
 ```gherkin
 Given the following users exist:
-  | name  | email           | role  |
-  | Alice | alice@test.com  | admin |
-  | Bob   | bob@test.com    | user  |
+  | name  | email                  | role  |
+  | Alice | alice@example.invalid  | admin |
+  | Bob   | bob@example.invalid    | user  |
 ```
 
-Java: Map the table using these types as the last parameter:
+Escape `|` in cells as `\|`, newlines as `\n`, backslash as `\\`.
+
+### Java
 
 ```java
 // List of maps — most flexible, header row becomes keys
@@ -160,11 +176,27 @@ public void theMatrix(DataTable table) {
 }
 ```
 
-Escape `|` in cells as `\|`, newlines as `\n`, backslash as `\\`.
+### Go
+
+Arrives as `*godog.Table`; no automatic mapping.
+
+```go
+func theFollowingUsersExist(ctx context.Context, table *godog.Table) error {
+    for _, row := range table.Rows[1:] { // skip header
+        name  := row.Cells[0].Value
+        email := row.Cells[1].Value
+        role  := row.Cells[2].Value
+        _ = name; _ = email; _ = role
+        // seed your store
+    }
+    return nil
+}
+```
 
 ## Doc Strings
 
-Multiline text passed as last argument (`String` or `DocString`):
+Multiline text passed as the last argument. The content-type annotation (`"""json`) is
+informational; the raw string is what reaches the step.
 
 ```gherkin
 When I submit the following JSON:
@@ -179,16 +211,21 @@ When I submit the following JSON:
 ```java
 @When("I submit the following JSON:")
 public void iSubmitTheFollowingJSON(String body) {
-    // body contains the raw text, dedented to the opening """
+    // dedented to the opening """
     state.requestBody = body;
 }
 ```
 
-Content type annotation (`"""json`) is informational; Cucumber passes the raw string.
+```go
+func iSubmitTheFollowingJSON(ctx context.Context, body *godog.DocString) (context.Context, error) {
+    // body.Content is the raw string
+    return context.WithValue(ctx, reqBodyKey{}, body.Content), nil
+}
+```
 
-## Cucumber Expressions (Step Matching)
+## Step Matching — Cucumber Expressions (Java)
 
-Prefer over regex unless complex matching is needed.
+Prefer over regex unless the match is genuinely complex.
 
 ```java
 // Built-in types
@@ -213,8 +250,6 @@ public Role role(String name) { return Role.valueOf(name.toUpperCase()); }
 public void iAmLoggedInAs(Role role) { ... }
 ```
 
-Built-in parameter types:
-
 | Type | Example step text | Java type |
 |------|-------------------|-----------|
 | `{int}` | `42` | `int` / `Integer` |
@@ -225,9 +260,27 @@ Built-in parameter types:
 | `{string}` | `"quoted text"` | `String` |
 | `{}` | anything | `String` |
 
+## Step Matching — Regex (Go)
+
+Godog matches on regex. Capture groups map positionally to the step function's parameters, after
+the optional leading `context.Context`.
+
+| Match | Pattern |
+|-------|---------|
+| Integer | `(\d+)` |
+| Quoted string | `"([^"]*)"` |
+| Any word | `(\w+)` |
+| Optional word | `(?:word )?` |
+| Boolean flag | `(enabled\|disabled)` |
+| Float | `(\d+\.\d+)` |
+
+Anchor with `^...$` and prefer `([^"]*)` over `(.*)` inside quotes — a greedy group swallows the
+rest of the step and produces a match that looks right until a second argument appears.
+
 ## Naming Conventions
 
-- Feature files: `src/test/resources/features/<domain>.feature` — kebab-case filenames
+- Feature files: `<domain>.feature`, kebab-case — `src/test/resources/features/` (Java),
+  `features/` at project root (Go)
 - One `Feature:` per file
 - Scenario titles: sentence-case, describe intent not implementation
 - Step text: imperative present tense — "I fetch", "there are", "I should see"
@@ -239,6 +292,7 @@ Built-in parameter types:
 |-------------|-------------------|
 | `Given I click the Submit button` | `Given I submit the form` — intent, not mechanics |
 | `Given I am logged in and have 5 items` | Split into two steps (conjunctive steps) |
+| Listing every click and keystroke | Keep scenarios declarative, not imperative |
 | Long `Background` (>4 steps) | Higher-level step or `Rule`-scoped background |
 | `Then I check the database for user X` | Observe system output, not internal state |
 | Scenario depends on previous scenario's state | Each scenario must be fully independent |

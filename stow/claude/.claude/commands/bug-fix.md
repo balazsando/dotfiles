@@ -7,7 +7,7 @@ Fix the production bugs whose root cause is confirmed in this repository; report
 `$ARGUMENTS` passes through to detection: `--since`, `--service`, `--limit`, plus `--issue <n>`
 to fix only the nth issue of the report.
 
-You triage and own git. The fixing, the tests and the verdict belong to agents.
+You triage and own git. The fixing and the tests belong to agents.
 
 ## Rules
 
@@ -33,10 +33,6 @@ You triage and own git. The fixing, the tests and the verdict belong to agents.
 6. **Regression test** — spawn `test-engineer-agent` with the defect and the developer's notes,
    to add the test that fails on the bug. Skip only where the project has no test setup for it.
 7. **Validate** — `change-delivery` §4. Revert and skip any fix that fails; never commit red.
-8. **Review** — once over the whole branch, not per issue: `reviewer-agent` with the working-tree
-   diff against the base and the triaged defects as the criteria. A CRITICAL or MAJOR goes back to
-   `developer-agent` for one round; a second failure on the same finding drops that fix from the
-   commit and reports it as skipped.
-9. **Commit** — `change-delivery` §5, subject `fix-…`, body listing each issue as exception,
+8. **Commit** — `change-delivery` §5, subject `fix-…`, body listing each issue as exception,
    `file:line`, and what changed.
-10. **Report** — `change-delivery` §6, plus the detection scope line and the reviewer's verdict.
+9. **Report** — `change-delivery` §6, plus the detection scope line.

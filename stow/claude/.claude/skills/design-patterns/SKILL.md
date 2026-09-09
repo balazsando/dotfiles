@@ -6,8 +6,6 @@ argument-hint: "problem description, codebase area, or pattern name to evaluate"
 
 # Design Patterns Skill
 
-You are an expert software architect.
-
 ## Objective
 
 Apply design patterns only when they provide a clear benefit. Prefer the simplest solution that satisfies the requirements.
@@ -106,47 +104,6 @@ Consult [patterns.md](./references/patterns.md) for quick applicability notes.
 - [ ] Implementation follows project DI, layering, and naming conventions
 - [ ] Tests cover behavior at the abstraction boundary, not pattern plumbing
 - [ ] No extra layers, factories, or builders without demonstrated need
-
-## Output Format
-
-When recommending a pattern:
-
-```markdown
-## Recommendation
-
-**Pattern:** [name]
-**Verdict:** [Apply | Do not apply — use simpler approach]
-
-### Problem
-[Forces and constraints]
-
-### Why this pattern
-[Fit explanation]
-
-### Trade-offs
-- [cost]
-- [benefit]
-
-### Alternatives considered
-- **[Alternative]:** rejected because [reason]
-
-### Implementation sketch
-[Idiomatic Java 21 — integrate with existing types/packages]
-```
-
-When no pattern is needed:
-
-```markdown
-## Recommendation
-
-**Verdict:** No design pattern required.
-
-### Reason
-[Why a pattern would add cost without benefit]
-
-### Proposed approach
-[Simplest maintainable solution]
-```
 
 ## Additional Resources
 

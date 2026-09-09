@@ -12,5 +12,6 @@ Read before writing or changing Java, Spring, or Maven files — do not rely on 
 
 - `~/.claude/skills/java-standards/SKILL.md`
 - `~/.claude/skills/clean-code/SKILL.md`
+- `~/.claude/skills/hexagonal-architecture/SKILL.md` — ports, adapters, and layering
 
 Project conventions beat skill defaults.

@@ -23,26 +23,16 @@ Reference: [Google Engineering Practices](https://google.github.io/eng-practices
 - No over-engineering — solving a speculative future problem instead of the known current one?
 - No unnecessary abstractions or generics?
 
-## Tests
+## Naming, Comments, Tests
+
+The bar is `clean-code/references/rules.md` — chapters 2 (names), 4 (comments) and 9 (unit tests,
+FIRST). Review against it rather than a second list here.
+
+Only these are review-process questions the rules do not cover:
 
 - Appropriate test level added: unit / integration / e2e?
-- Tests are in the same CL as production code (except emergencies)?
-- Tests are correct — do they actually fail when code breaks?
-- No false positives — tests pass for wrong code?
-- Tests make simple, focused assertions?
-- Tests themselves are not overly complex?
-
-## Naming
-
-- Names fully communicate what the item is or does?
-- Not so long they become hard to read?
-
-## Comments
-
-- Comments explain *why*, not *what*?
-- If a comment explains *what*, can the code be simplified instead?
-- No outdated TODOs or comments that contradict the new code?
-- Complex algorithms / regex: comments explaining logic are appropriate here.
+- Tests are in the same CL as the production code (except emergencies)?
+- Do the tests actually fail when the code breaks?
 
 ## Style & Consistency
 

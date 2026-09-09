@@ -8,7 +8,7 @@ argument-hint: "Optional: the class, module, or pom to apply the standards to"
 
 Copy the class shape from [references/examples.md](./references/examples.md). The rules below
 are what an example cannot show. Depth lives elsewhere: `clean-code` for naming and
-function-level smells, `design-patterns` for structural choices, `atdd-java` for acceptance
+function-level smells, `design-patterns` for structural choices, `atdd` for acceptance
 tests, and [references/tests.md](./references/tests.md) for writing unit tests.
 
 ## Rules an example cannot show

@@ -54,6 +54,7 @@ Create no other file and change nothing else.
 
 - No architecture, no interfaces, no class or file names, no patterns.
 - No code, no tests, no documentation, no formatting, no Jira writes.
+- No commits, no staging, no branches, no pushes — the command owns git.
 - Never invent an acceptance criterion to fill the section. Fewer, sourced criteria beat a
   complete-looking list.
 - A **blocking** open question stops you: return the brief with `BLOCKED: <question>` at the top

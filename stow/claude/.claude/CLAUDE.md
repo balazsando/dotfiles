@@ -17,7 +17,8 @@ Read the skill file when the work starts; do not rely on memory. Skills live in
 | Exploring an unfamiliar or large codebase — "how does X connect to Y" | `graphify` (`/graphify .`, then `graphify query`) |
 | Writing or changing Java / Spring / Maven code | `java-standards`, then `clean-code` |
 | Structural decision, new component, abstraction boundary | `design-patterns` |
-| Changing behaviour, or adding feature / API / domain tests | `atdd-java` (Go: `atdd-go`) |
+| Ports and adapters, layering, where a class belongs in a hexagonal service | `hexagonal-architecture` |
+| Changing behaviour, or adding feature / API / domain tests | `atdd` |
 | Reviewing a diff, merge request, or PR | `code-review-practices` |
 | Reading, creating, or updating a Jira ticket | `jira-tickets` |
 | Running a command that branches, validates, and commits | `change-delivery` |
@@ -26,7 +27,7 @@ Read the skill file when the work starts; do not rely on memory. Skills live in
 | Dotfiles, stow packages, symlinks, bootstrap | `dotfiles`, `stow` |
 | Kubernetes, clusters, an environment's state | `kubectl` |
 | Grafana, dashboards, PromQL / LogQL, alerting | `grafana` |
-| Calling the Jira, GitLab, or Microsoft Graph APIs | `jira-api`, `gitlab-api`, `msgraph-go` |
+| Calling the Jira or GitLab APIs | `jira-api`, `gitlab-api` |
 | Neovim, LazyVim, tmux configuration | `neovim-lua`, `lazyvim`, `nvim-tmux` |
 | Bitwarden CLI (`bw`), secrets upload/restore, vault scripting | `bitwarden-cli` |
 | Adding or changing a skill, agent, command, AI rule, or MCP server | `ai-config` |
@@ -101,13 +102,20 @@ truth in the same change — the project `README.md`, its `/docs`, or the shared
 Prefer updating an existing document over adding one, never duplicate content across two places,
 and say explicitly when no documentation change is needed.
 
+**Document the present, not the change.** Write what the implementation does now, never framed
+against what it replaced: no "instead of X, now Y", no "previously", no note that a behaviour was
+removed. Rewrite the passage so the new behaviour reads as the only one and delete the old wording
+instead of qualifying it. Version history belongs in the changelog alone. Something still
+supported but discouraged is current state — mark it deprecated in place.
+
 **Read `~/.claude/local/doc-repos.md`** before saying where documentation lives or referencing
 another repository. If it is missing, use the project's own `README.md` and `/docs` and say the
 documentation map is not configured — never guess at a repository name.
 
 - Local clones are for file access only. Link across repositories with the remote URL from
   `git remote get-url origin`, never a local path.
-- A repository marked read-only is strictly read-only: extract what you need into the current
-  project's `/docs`, never edit it in place.
+- A repository marked read-only is strictly read-only except for exceptions that map names
+  (gitignored local artifacts). Extract tracked content into the current project's `/docs`;
+  never edit tracked files in place.
 - Do not invent infrastructure facts an authoritative document already records — extract and cite.
 

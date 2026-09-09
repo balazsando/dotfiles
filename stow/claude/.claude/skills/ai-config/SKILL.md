@@ -59,7 +59,8 @@ Three, and a command is exactly one of them:
   `/dotfiles-devops`: spawn it, relay unabridged, resume the **same** agent via SendMessage
   rather than spawning a second one.
 - **Orchestrator** — several narrow agents in sequence, with the stage conditions, the hand-off
-  paths and the escalation routing. `/deliver`, `/ticket-to-merge`, `/mr-review`, `/bug-fix`.
+  paths and the escalation routing. `/deliver` (three sizes), `/ticket-to-merge`, `/mr-review`,
+  `/bug-fix`.
   It routes; it never does a stage itself.
 - **Policy** — the decision *is* the command and has no other consumer, and the work is
   mechanical. `/sonar-fix`: its fix/skip list is the whole point, so it edits directly.
@@ -114,7 +115,7 @@ reference, however short — `java-standards/references/tests.md` is read by the
 examples by the developer. Splitting by audience keeps each spawn to what it can act on; a new
 skill for a section that small would only add a second owner of the same domain.
 
-Templates and scaffolds go in `assets/` (see `atdd-java/assets/feature.template`).
+Templates and scaffolds go in `assets/` (see `atdd/assets/feature.template`).
 
 ---
 

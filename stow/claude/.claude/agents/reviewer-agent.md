@@ -1,6 +1,6 @@
 ---
 name: reviewer-agent
-description: "Independent final review of a finished change: reads the diff against the acceptance criteria and the design and returns severity-ranked, located findings with a merge verdict. Use for the review stage of a delivery workflow or to review a merge request or branch. Makes no changes."
+description: "Independent final review of a finished change: reads the diff against the acceptance criteria and the design and returns severity-ranked, located findings with a merge verdict. Use to review a merge request or branch. Makes no changes."
 tools: Read, Grep, Glob, Bash, mcp__sonarqube__issues, mcp__sonarqube__quality_gate_status, mcp__sonarqube__measures_component, Write
 ---
 

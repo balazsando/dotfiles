@@ -27,7 +27,10 @@ agent. Departing from that needs a documented reason in this file.
    section). Every capability has a reason; every limit prevents a specific creep.
 3. Only the context the responsibility needs. An agent gets briefs and paths, never the
    conversation that produced them.
-4. Exactly one output artifact, in a stated shape, written to a path the caller supplies.
+4. Exactly one report artifact, in a stated shape, written to a path the caller supplies. The
+   architect additionally writes the stub files its report enumerates — the only agent that
+   produces a second artifact class, because the stubs *are* the contract two later agents
+   share.
 5. No agent-to-agent calls. An agent that hits a wall returns `BLOCKED: <question>`; the command
    routes it. This is what makes circular delegation impossible rather than discouraged.
 6. No agent commits, stages, branches or pushes. Git belongs to the command that carries the
@@ -42,7 +45,7 @@ agent. Departing from that needs a documented reason in this file.
 | Agent | Owns | Must not |
 | --- | --- | --- |
 | `requirements-agent` | business intent, acceptance criteria | design, code, tests, any write outside its brief |
-| `architect-agent` | intended structure, plan, stubs | business decisions, behaviour, tests |
+| `architect-agent` | intended structure, work packages, signatures and file existence, compiling stubs, test boundaries | business decisions, behaviour, method bodies, test cases |
 | `developer-agent` | production implementation | tests, design changes, docs, git |
 | `test-engineer-agent` | test strategy and tests | production code, criteria, design |
 | `reviewer-agent` | the verdict | any change at all |
@@ -51,6 +54,22 @@ agent. Departing from that needs a documented reason in this file.
 The fences matter more than the roles. Tests belong to someone who cannot edit the production
 code, so a red test is reported rather than deleted. The verdict belongs to someone who never
 read the implementer's reasoning, so the review judges the diff rather than re-deriving it.
+The developer loads `design-patterns` when there is no `design.md`.
+
+Most fences here are prose. Four agents — architect, developer, test engineer, doc writer —
+hold unrestricted `Edit`/`Write` and `Bash`, so those fences hold because the agent's own file
+states them — which is why each states its own git prohibition rather than relying on rule 6, and
+why `/deliver` checks the developer's diff for test paths instead of trusting the sentence. The
+reviewer's "no edits" fence is enforced by its `tools:` line, which omits `Edit`. One cell is deliberately empty: code comments and
+javadoc are owned by nobody, since the developer writes none and the doc writer may not touch
+production code.
+
+`/deliver` sizes the roster: **small** (developer, test engineer), **medium** (plus
+requirements), **deep** (plus architect and docs, with developer and test engineer in parallel
+off the stubs). Size never drops the test engineer — only a diff with no behaviour to assert
+does, on a closed list `/deliver` states. A roster that kept the developer and dropped its check
+would put the author of the code back in charge of judging it, which is the failure this model
+exists to prevent, so the exemption removes the tests rather than reassigning them.
 
 ## Hand-offs
 
@@ -61,7 +80,7 @@ contents. Both assistants use the same directory.
 | --- | --- | --- |
 | requirements → architect | goal, criteria, constraints, open questions | ticket JSON, comment threads, knowledge-base prose |
 | architect → developer | components, interfaces, dependencies, steps, relevant criteria | rejected alternatives, the requirements gathering |
-| architect → test engineer | boundaries, intended behaviour, testability notes | implementation detail |
+| architect → test engineer | the stubs, boundaries, intended behaviour, testability notes | implementation detail, `implementation.md` |
 | developer → test engineer | changed components, seams, limitations | the design rationale, build logs |
 | developer → reviewer | nothing — the reviewer reads the diff | the implementer's reasoning, on purpose |
 | any → doc writer | what changed and why it matters | criteria history, review findings |
@@ -70,6 +89,20 @@ contents. Both assistants use the same directory.
 Context that must never propagate: the original prompt once a brief replaces it, another
 stage's tool output, an agent's chain of thought, and any criterion or file the receiving stage
 does not act on.
+
+## Parallelism
+
+Agents cannot renegotiate mid-task — rule 5 forbids agent-to-agent calls and every spawn starts
+cold. So two agents may run at once **only** where the contract between them is frozen in a file
+both read before starting, and where their writes are physically isolated. The architect's
+stubs are that contract; a detached worktree is that isolation. Missing either one, run
+sequentially.
+
+Splitting one role across several agents has neither: two developers share no frozen contract,
+and the win is wall-clock rather than tokens or accuracy, which `Token efficiency` below says is
+the wrong thing to optimise. Deliberately not done. Should it be revisited, the precondition is
+disjoint file sets declared by the architect — which is what `## Work packages` already records
+for the single developer that takes them in order.
 
 ## Escalation
 
