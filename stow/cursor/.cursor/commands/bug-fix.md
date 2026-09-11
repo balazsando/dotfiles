@@ -1,20 +1,22 @@
 ---
-description: "Fix production bugs found in Loki logs, on a dedicated branch with one local commit"
+description: "Fix production bugs found in Loki logs, on a dedicated branch"
 ---
 
 Fix the production bugs whose root cause is confirmed in this repository; report the rest.
 The text after `/bug-fix` passes through to detection: `--since`, `--service`, `--limit`, plus
 `--issue <n>` to fix only the nth issue of the report.
 
-You triage and own git. The fixing and the tests belong to agents.
+You triage and orchestrate. The fixing, the builds and the commits belong to subagents —
+`~/.claude/skills/agent-workflow/SKILL.md` carries the report directory, question routing and
+status rules.
 
 ## Rules
 
 - All log access goes through the `app-bug-detection` skill — load it first and never query the
   `grafana-prod` MCP server directly.
-- Branch, validation, commit and report mechanics: the `change-delivery` skill. Load it.
-- This command carries the `git` rule's commit exception: its own `bugfix/*` branch, one local
-  commit. Never push, never open a merge request.
+- Branch and report mechanics: the `change-delivery` skill. Load it.
+- This command carries the `git` rule's commit exception for the
+  subagents it delegates to: its own `fix/*` branch. Never push, never open a merge request.
 - Fix only what the report attributes to project code with the line confirmed locally.
   Environment issues, expected noise, and low-confidence findings are reported, not patched.
 - Stop and ask when the report is empty, the service match is ambiguous, or a fix would change
@@ -22,18 +24,17 @@ You triage and own git. The fixing and the tests belong to agents.
 
 ## Steps
 
-1. **Preconditions and base branch** — `change-delivery` §1–2.
-2. **Detect** — run `app-bug-detection` with the given arguments. State the service and window.
+1. **Preconditions and base branch** — `change-delivery` §1–2. Create `$REPORTS` and write
+   `prompt.md`.
+2. **Detect** — run `app-bug-detection` with the text after `/bug-fix`. State the service and
+   window.
 3. **Triage** — keep the application bugs with a verified suspect line, highest impact first.
    List what you are skipping and why. This ranking is yours; the subagents do not re-triage.
-4. **Branch** — `change-delivery` §3, prefix `bugfix/`, before the first edit.
-5. **Fix** — one issue at a time. Delegate to the `developer-agent` subagent with the defect, its
-   `file:line`, and the evidence from the report — not the whole report. Smallest change that
-   removes the cause.
+4. **Branch** — `change-delivery` §3, prefix `fix/`, before the first edit.
+5. **Fix** — one issue at a time. Delegate to the `developer-agent` subagent with the defect
+   and its `file:line` — not the whole report. It builds and commits its own fix; a `FAILED`
+   return leaves no commit and the issue is reported as skipped.
 6. **Regression test** — delegate to the `test-engineer-agent` subagent with the defect and the
-   developer's notes, to add the test that fails on the bug. Skip only where the project has no
-   test setup for it.
-7. **Validate** — `change-delivery` §4. Revert and skip any fix that fails; never commit red.
-8. **Commit** — `change-delivery` §5, subject `fix-…`, body listing each issue as exception,
-   `file:line`, and what changed.
-9. **Report** — `change-delivery` §6, plus the detection scope line.
+   developer's commit.
+   It builds green and commits its own tests. Skip only where the project has no test setup.
+7. **Report** — `change-delivery` §6, plus non-derivable detection skips and exceptions.

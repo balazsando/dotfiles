@@ -16,6 +16,8 @@ Read the skill file when the work starts; do not rely on memory. Skills live in
 | --- | --- |
 | Exploring an unfamiliar or large codebase — "how does X connect to Y" | `graphify` (`/graphify .`, then `graphify query`) |
 | Writing or changing Java / Spring / Maven code | `java-standards`, then `clean-code` |
+| Micrometer meters, naming, tags, Observation API, or registries | `micrometer` |
+| Spring Boot 4 observability wiring — Actuator, auto-instrumentation, OTLP, Prometheus scrape | `spring-observability`, then `micrometer` |
 | Structural decision, new component, abstraction boundary | `design-patterns` |
 | Ports and adapters, layering, where a class belongs in a hexagonal service | `hexagonal-architecture` |
 | Changing behaviour, or adding feature / API / domain tests | `atdd` |
@@ -32,6 +34,7 @@ Read the skill file when the work starts; do not rely on memory. Skills live in
 | Bitwarden CLI (`bw`), secrets upload/restore, vault scripting | `bitwarden-cli` |
 | Adding or changing a skill, agent, command, AI rule, or MCP server | `ai-config` |
 | Multi-stage development work — feature, refactor, ticket | `/deliver` or `/ticket-to-merge`, which orchestrate the specialised agents |
+| Running or writing a delivery agent — reports, questions, status | `agent-workflow` |
 | Long-form output — report, plan, summary — or a context-heavy session | `economy-of-words` |
 
 Prefer the simplest solution and do not force a pattern; project conventions beat skill defaults;
@@ -66,11 +69,11 @@ missing, ask rather than guess.
 
 ## Git operations
 
-**Committing and history rewriting are prohibited.** The only exceptions are `/ticket-to-merge`,
-`/sonar-fix`, and `/bug-fix` while they are running. Reading history, diffs, status, blame, logs,
-and branch state is always allowed.
+**Committing and history rewriting are prohibited.** The only exceptions are `/deliver`,
+`/ticket-to-merge`, `/sonar-fix`, and `/bug-fix` while they are running, and the agents they
+spawn. Reading history, diffs, status, blame, logs, and branch state is always allowed.
 
-Prohibited outside those three commands: `git commit` (including `--amend`); staging or unstaging
+Prohibited outside those commands: `git commit` (including `--amend`); staging or unstaging
 (`git add`, `git rm --cached`, `git restore --staged`, index edits); any history-altering command
 (`rebase`, `reset --hard`, `cherry-pick`, `revert`, `filter-branch`, `push --force`); creating,
 deleting, or moving tags and branches. If asked to commit outside those exceptions, decline and
@@ -89,33 +92,15 @@ from commit messages as a safety net, but cannot touch MR descriptions and is by
 `--no-verify`.
 
 **Inside the exceptions**, each owns its own limits — read them there, they are not repeated here.
-Common to all three: never `--no-verify`, never touch existing history, and never `--force` on a
+Common to all: never `--no-verify`, never touch existing history, and never `--force` on a
 shared branch without explicit authorization.
 
 ---
 
 ## Documentation
 
-Documentation is part of the implementation, not a follow-up. When a change affects behaviour,
-architecture, configuration, APIs, workflows, or developer experience, update the right source of
-truth in the same change — the project `README.md`, its `/docs`, or the shared knowledge base.
-Prefer updating an existing document over adding one, never duplicate content across two places,
-and say explicitly when no documentation change is needed.
-
-**Document the present, not the change.** Write what the implementation does now, never framed
-against what it replaced: no "instead of X, now Y", no "previously", no note that a behaviour was
-removed. Rewrite the passage so the new behaviour reads as the only one and delete the old wording
-instead of qualifying it. Version history belongs in the changelog alone. Something still
-supported but discouraged is current state — mark it deprecated in place.
-
-**Read `~/.claude/local/doc-repos.md`** before saying where documentation lives or referencing
-another repository. If it is missing, use the project's own `README.md` and `/docs` and say the
-documentation map is not configured — never guess at a repository name.
-
-- Local clones are for file access only. Link across repositories with the remote URL from
-  `git remote get-url origin`, never a local path.
-- A repository marked read-only is strictly read-only except for exceptions that map names
-  (gitignored local artifacts). Extract tracked content into the current project's `/docs`;
-  never edit tracked files in place.
-- Do not invent infrastructure facts an authoritative document already records — extract and cite.
-
+- Never add comments.
+- Javadoc, or the language-specific equivalent, on interfaces only.
+- Documentation lives in `/docs` and `README.md`.
+- In a flow that includes `doc-writer-agent`, it owns `/docs` and `README.md` — the other
+  agents leave them alone. A flow without it edits them directly.

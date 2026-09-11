@@ -300,60 +300,78 @@ the defect this structure exists to prevent.
 Cursor has no router: it discovers skills by their `description`, so a rule exists only to state
 a standing contract (`alwaysApply`) or to bind a file type to a skill (`globs`) — never to
 duplicate the routing table. The always-on rules that mirror a `CLAUDE.md` section — git,
-documentation, precedence — are the tree's only intentional duplication.
+documentation, layers (precedence), economy-of-words — plus `graphify` (Cursor's standing
+equivalent of the router row) are the tree's only intentional duplication.
 
-**Agents are roles, not pipelines.** Until v1.3.0 the heavy workflows were single agents that
-ran a whole task end to end — `ticket-to-merge-agent` read the ticket, designed, implemented,
-tested, judged its own work, committed and opened the merge request. Everything it read stayed
-in one window, so the review reasoned over the noise of the implementation, and the agent that
-wrote a test was the one that wanted it to pass. Those are now six narrow agents —
-requirements, architect, developer, test engineer, reviewer, doc writer — each with one
-responsibility, a `tools:` fence, an explicit limits section, and one output file. Commands
-(`/deliver`, `/ticket-to-merge`, `/mr-review`, `/bug-fix`) sequence them, decide which stages a
-task actually needs, and own git; no agent commits. `/mr-review` is the only command that runs
-the reviewer, so the verdict is a separate request against a finished branch — not a stage of
-the same run that implemented the change. `/deliver` sizes the roster — small
-(developer, test engineer), medium (plus requirements), deep (plus architect and docs) — and
-anything unanswerable is deep. Size never drops the test engineer; only a diff with no behaviour
-to assert does — documentation, formatter output, configuration no runtime reads — and then the
-tests are skipped rather than handed to the developer, so the author of the code never judges
+**Agents are roles, not pipelines.** A heavy workflow is six narrow agents — requirements,
+architect, developer, test engineer, reviewer, doc writer — each with one responsibility, a
+`tools:` fence, an explicit limits section, and the reports it owns. A single agent that read the
+ticket, designed, implemented, tested and judged its own work kept everything in one window, so
+the review reasoned over the noise of the implementation and the agent that wrote a test was the
+one that wanted it to pass. Orchestrating commands (`/deliver`,
+`/ticket-to-merge`, `/mr-review`, `/bug-fix`) size the work and sequence the agents; they never
+implement, never modify project files and never run a build. Each agent is spawned only once its
+own prerequisites hold — the reports it reads exist, the commit it reads is in place — so the doc
+writer starts after the implementation is complete and the build is green, never at the top of
+the flow. `/mr-review` is the only command that runs the reviewer, so the verdict is a separate
+request against a finished branch. `/deliver` sizes the flow — small (developer, test engineer),
+medium (plus requirements), deep (plus architect and doc writer) — and anything unanswerable is
+deep. Size never drops the test engineer; only a diff with no behaviour to assert does, and then
+the tests are skipped rather than handed to the developer, so the author of the code never judges
 it. A diff that outgrows its estimate escalates mid-run.
 
-**Stubs are what makes the deep flow parallel.** The architect does not only describe the
-structure, it writes the compiling stubs that fix it — signatures and file existence, never
-bodies — against the project's own build. The developer then fills the bodies while the test
-engineer writes tests from the criteria and those same stubs, the two running at once. That is
-not only faster: the test engineer never receives `implementation.md`, so it cannot copy the
-implementation's branches back as assertions, which the old sequential order could only ask it
-not to do. Both halves need isolation, so the test engineer gets a detached worktree and its
-tests come back as a patch — `/deliver` carries no commit exception, so nothing is committed or
-merged. Where the isolation costs too much, the two stages run in order instead: no safe
-isolation, no concurrency. Agents cannot renegotiate mid-task, so parallelism is only ever safe
-against a contract frozen in a file before both start.
+**Agents communicate through files.** `~/.claude/skills/agent-workflow/SKILL.md` is the single
+contract: the session report directory `.claude/state/<session>/`, the schemas (`prompt.md`,
+`requirements.md`, `design.md`, `developer-design.md`, `test-fail.md`), question routing and the
+status signals. What each agent reads, writes and builds is in its own brief, not restated in the
+contract. Nothing travels in a command argument or a conversational relay, so nothing carries the
+previous agent's reasoning or tool output. A blocked agent appends its question to
+`questions.md` and returns `BLOCKED`; the orchestrator routes it — technical questions to the
+architect and then the user, functional ones to the requirements agent and then the user — and
+writes the answer back to `answers.md`. Agents never call each other, which makes circular
+delegation impossible rather than discouraged. Each returns one status token: `DONE`, `BLOCKED`,
+`PAUSED` (complete but resumable, so a later question reaches it without a cold restart) or
+`FAILED`, and a `FAILED` agent commits nothing. The reviewer deliberately never sees the
+implementer's reports — it judges the diff against the criteria.
 
-**Hand-offs are artifacts, not transcripts.** Each stage writes one brief into
-`.claude/state/<slug>/` and the command passes the *path* to the next agent. Nothing carries the
-original prompt, the previous agent's reasoning, or its tool output. The reviewer deliberately
-never sees the implementer's notes — it judges the diff against the criteria instead of
-re-deriving the author's argument. Agents never call each other: a blocked agent returns
-`BLOCKED:` and the command routes it, which makes circular delegation impossible rather than
-discouraged.
+**Every agent owns its build and its commit.** The architect's stubs compile, the developer's
+implementation compiles, the test engineer's and the doc writer's trees are green with tests, and
+each commits its own work atomically — the architect first, since it is the first to touch
+repository files. Orchestrators hold the `CLAUDE.md` commit exception for the agents they spawn
+and never build themselves, so a red result stops the agent that caused it rather than travelling
+up. The exception is bounded by a branch, not by a command: an orchestrator resolves the base and
+cuts the run's own branch (`change-delivery` §1–3) before the first agent that edits, naming it
+after the ticket key when there is one. A protected branch — the base, `main`, `master`,
+`develop`, `release`, `release/*` — is never worked on, so no agent can commit where the
+exception was not meant to reach.
 
-**Shared mechanics are skills, not copied steps.** `/bug-fix` and `/sonar-fix` had the same
-branch, validate, commit and report boilerplate written out in four files; it now lives once in
-`change-delivery`. Every Jira MCP call lives in `jira-tickets`, the way Sonar and Loki access
-already lived in `sonarqube-validation` and `app-bug-detection`. There is no formatter agent:
-formatting is a build step, so it is a bounded permission inside the agents that build — a
-subagent spawn would cost more than the command it would run. The rules for adding the next
-agent, skill or command are in `ai-config/references/agent-architecture.md`.
+**Stubs are what makes the deep flow parallel.** The architect writes compiling stubs that fix the
+structure — signatures and file existence, never behaviour — against the project's own build. The
+developer fills the bodies in the main worktree while the test engineer writes tests from the
+criteria and those same stubs in a detached worktree of its own; both commit atomically. The
+orchestrator merges the test worktree when the developer is done and resumes the test engineer,
+which builds the merged tree with the tests — the pair's green bar is verified by the agent that
+wrote them, not by the orchestrator that cannot build. Remaining failures go back as
+`test-fail.md`. Where the isolation costs too much the two run in order instead: no safe
+isolation, no concurrency. Agents cannot renegotiate mid-task, so
+parallelism is only ever safe against a contract frozen in a file before both start.
+
+**Shared rules live in one place.** The workflow contract is `agent-workflow`; branch, build and
+report mechanics are `change-delivery`; every Jira MCP call is `jira-tickets`, as Sonar and Loki
+access already were in `sonarqube-validation` and `app-bug-detection`. Documentation is one rule
+in the router — no comments, documentation on interfaces only, and `/docs` and `README.md` owned
+by the doc writer in any flow that includes one — and no agent or skill restates it. There is no
+formatter agent: formatting is a build step, so it is a bounded permission inside the agents that
+build. The rules for adding the
+next agent, skill or command are in `ai-config/references/agent-architecture.md`.
 
 **What earns a resident slot.** A rule loaded on every request must change behaviour on a turn
 where the matching skill would never load — prohibitions and defaults qualify, reference
-knowledge does not. Git, documentation and graphify qualify: by the time you would think to look them up,
-the commit, the omission, or the grep has already happened. Brevity qualifies for its floor only, because
-the turns it governs are the ones too small to trigger a skill. MCP configuration does not — it
-is consulted when `mcp.json` is open — so it lives in `ai-config` and the router keeps a
-table row. This is why `CLAUDE.md` is 121 lines and the Cursor rules 142.
+knowledge does not. Git, documentation and graphify qualify: by the time you would think to look
+them up, the commit, the omission, or the grep has already happened. Brevity qualifies for its
+floor only, because the turns it governs are the ones too small to trigger a skill. MCP
+configuration does not — it is consulted when `mcp.json` is open — so it lives in `ai-config`
+and the router keeps a table row.
 
 **Machine-local overlay.** Anything organisation-specific — project keys, board ids,
 documentation repositories, cluster names — lives in `~/.claude/local/*.md`, restored from

@@ -78,7 +78,10 @@ What that class is showing, and what breaking it costs:
 | The early `throw`, then the blank line | Early exit over nesting; one blank line before a `return` or `throw` |
 | `var order = ...` then `return` | One operation per line — an intermediate name, not a stacked call chain |
 
-## Package layout (hexagonal service)
+## Package layout
+
+One layout, from a hexagonal service — follow the project's own architecture instead where it
+has one.
 
 ```
 <module>/src/main/java/com/example/ordering/

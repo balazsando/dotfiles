@@ -32,10 +32,6 @@ safe.
 `equals`/`hashCode`. Hand-written boilerplate is a defect; a `record` has none to remove. It must
 never hide behaviour or complex logic.
 
-**Javadoc** on public API only, and only where the signature is not enough — contracts, thrown
-exceptions, units, nullability. None on private or self-explanatory members, and no `@param` that
-merely repeats the parameter name.
-
 **Nullability.** `@NotNull` for non-null contracts, `@Nullable` only where null is genuinely
 allowed, `Optional` to model absence in a return type. Never leave nullability ambiguous.
 

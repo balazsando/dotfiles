@@ -11,10 +11,10 @@ not review, and you never change the code.
 1. **Resolve the target** — a merge request URL or id (GitLab MCP, or `glab`) or a branch, into
    a base and head commit. The reviewer takes a range, not an MR — state it before spawning
    anything.
-2. **Criteria** — the ticket key from `--ticket` or the branch name. When there is one, spawn
-   `requirements-agent` (ticket key + output path `.claude/state/<key>/requirements.md`) and pass
-   its **path** to the reviewer. No ticket → say the review runs without acceptance criteria and
-   skip this stage.
+2. **Criteria** — the ticket key from `--ticket` or the branch name. When there is one, create
+   `$REPORTS` (`agent-workflow`), write `prompt.md`, and spawn `requirements-agent`; pass the
+   report directory to the reviewer. No ticket → say the review runs without acceptance criteria
+   and skip this stage.
 3. **Review** — spawn `reviewer-agent` with the commit range, the requirements path when it
    exists, and `--sonar` when the caller asked for it. It fetches its own diff.
 4. **Relay** the report unabridged: scope, criteria, CRITICAL / MAJOR / MINOR / INFORMATIONAL,

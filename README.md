@@ -3,7 +3,7 @@
 Personal dotfiles managed with [GNU Stow](https://www.gnu.org/software/stow/) and [mise](https://mise.jdx.dev/).  
 Targeting **Debian/Ubuntu/WSL2**.
 
-[![Version](https://img.shields.io/badge/version-1.5.0-blue)](CHANGELOG.md)
+[![Version](https://img.shields.io/badge/version-1.6.0-blue)](CHANGELOG.md)
 
 ---
 
@@ -49,15 +49,6 @@ assistants: Cursor natively discovers `~/.claude/skills/` and `~/.claude/agents/
 ([compatibility paths](https://cursor.com/docs/skills)). Never add `skills/` or `agents/`
 under `stow/cursor/` — a same-named copy there takes precedence and shadows the shared
 original. `stow.sh` runs `check-ai-parity.sh` to enforce this.
-
-Agents are **roles**, not pipelines: `requirements`, `architect`, `developer`, `test-engineer`,
-`reviewer` and `doc-writer` each own one responsibility, declare the tools they may use, and
-write one brief into `.claude/state/<slug>/`. Commands sequence them and own git — `/deliver`
-sizes the run (small: developer, tests; medium: requirements, developer, tests; deep: those
-plus architect and docs), `/ticket-to-merge` (Jira → merge request), `/mr-review`, `/bug-fix`,
-`/sonar-fix`. No agent commits, and no agent calls another: a blocked agent hands the question
-back to the command. The model and the bar for adding a new agent are in
-`~/.claude/skills/ai-config/references/agent-architecture.md`.
 
 The cursor package keeps only what is genuinely platform-specific:
 

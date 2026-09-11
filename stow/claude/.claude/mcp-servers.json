@@ -59,6 +59,17 @@
         "GRAFANA_SERVICE_ACCOUNT_TOKEN": "${GRAFANA_MCP_TOKEN_PREP}"
       }
     },
+    "grafana-prep-connector": {
+      "type": "stdio",
+      "command": "uvx",
+      "args": [
+        "mcp-grafana"
+      ],
+      "env": {
+        "GRAFANA_URL": "${GRAFANA_URL_PREPC}",
+        "GRAFANA_SERVICE_ACCOUNT_TOKEN": "${GRAFANA_MCP_TOKEN_PREPC}"
+      }
+    },
     "grafana-prod": {
       "type": "stdio",
       "command": "uvx",

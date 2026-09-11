@@ -27,7 +27,7 @@ Scan the target code using [the rules reference](./references/rules.md). Look fo
 
 1. **Names** — unclear, abbreviated, misleading, or encoded names
 2. **Functions** — too large, doing more than one thing, mixed abstraction levels
-3. **Comments** — redundant, stale, or compensating for bad code
+3. **Comments** — every one outside an interface contract; rename or extract instead
 4. **Error handling** — returning null, using error codes instead of exceptions
 5. **Classes** — too large, low cohesion, multiple responsibilities
 6. **Tests** — missing, brittle, or violating FIRST
@@ -52,7 +52,7 @@ Apply changes in small steps. **Never make the code worse to make it cleaner.** 
 
 - [ ] All names reveal intent without needing a comment to explain them
 - [ ] Every function is small and does one thing at one level of abstraction
-- [ ] No comments that explain *what* — only *why* when not obvious
+- [ ] No comments outside interface documentation
 - [ ] No null returns or null parameters
 - [ ] Tests cover the changed code and follow FIRST
 - [ ] No duplication (DRY)
@@ -73,11 +73,6 @@ Apply changes in small steps. **Never make the code worse to make it cleaner.** 
 - **≤ 2 arguments** preferred; > 3 is a strong smell
 - **No side effects** — a function named `checkPassword` must not also initialize a session
 - **Command/Query separation** — a function either changes state or returns a value, not both
-
-### Comments
-- The best comment is no comment — rename or restructure until the code is self-documenting
-- Acceptable: legal headers, intent explanation, warning of consequences, TODO
-- Never: commented-out code, redundant restating of code, misleading or stale comments
 
 ### Error Handling
 - Use exceptions, not return codes or error flags

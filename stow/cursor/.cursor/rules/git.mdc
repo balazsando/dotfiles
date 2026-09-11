@@ -1,15 +1,15 @@
 ---
-description: Git — no commit or history rewrite except three commands; category-message subjects
+description: Git — no commit or history rewrite except the delivery commands; category-message subjects
 alwaysApply: true
 ---
 
 # Git operations
 
-**Committing and history rewriting are prohibited.** The only exceptions are `/ticket-to-merge`,
-`/sonar-fix`, and `/bug-fix` while they are running. Reading history, diffs, status, blame, logs,
-and branch state is always allowed.
+**Committing and history rewriting are prohibited.** The only exceptions are `/deliver`,
+`/ticket-to-merge`, `/sonar-fix`, and `/bug-fix` while they are running, and the agents they
+spawn. Reading history, diffs, status, blame, logs, and branch state is always allowed.
 
-Prohibited outside those three commands: `git commit` (including `--amend`); staging or unstaging
+Prohibited outside those commands: `git commit` (including `--amend`); staging or unstaging
 (`git add`, `git rm --cached`, `git restore --staged`, index edits); any history-altering command
 (`rebase`, `reset --hard`, `cherry-pick`, `revert`, `filter-branch`, `push --force`); creating,
 deleting, or moving tags and branches. If asked to commit outside those exceptions, decline and
@@ -28,5 +28,5 @@ from commit messages as a safety net, but cannot touch MR descriptions and is by
 `--no-verify`.
 
 **Inside the exceptions**, each owns its own limits — read them there, they are not repeated here.
-Common to all three: never `--no-verify`, never touch existing history, and never `--force` on a
+Common to all: never `--no-verify`, never touch existing history, and never `--force` on a
 shared branch without explicit authorization.

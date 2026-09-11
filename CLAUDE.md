@@ -31,6 +31,5 @@ still apply, so the rewrite is the user's to run.
 
 `/release <major|minor|patch>` audits the release scope first, then prepares the next version.
 A blocker, a critical defect, or anything sensitive stops it before a file is written — the
-findings come back instead of a bump. Documentation is part of the change, not a follow-up:
-`README.md` and `docs/ARCHITECTURE.md` describe the same repository and have drifted from each
-other before.
+findings come back instead of a bump. `README.md` and `docs/ARCHITECTURE.md` describe the same
+repository and have drifted from each other before — check both.

@@ -66,25 +66,10 @@ Source: *Clean Code* — Robert C. Martin
 
 ## Chapter 4 — Comments
 
-### When Comments Are Justified
-- **Legal** — copyright, license headers
-- **Intent explanation** — why a decision was made when the code can't convey it
-- **Clarification** — translating obscure syntax (e.g., a regex)
-- **Warning of consequences** — `// This test is slow — run only nightly`
-- **TODO** — acceptable, but clean them up regularly
-- **Amplification** — marking something that looks trivial but isn't
-
-### Bad Comments (Remove or Rewrite)
-- **Redundant** — `// The day of the month` above `private int dayOfMonth`
-- **Misleading** — comment says one thing, code does another
-- **Mandated** — every function "must" have a Javadoc
-- **Journal/changelog** — use version control instead
-- **Noise** — `/* default constructor */`
-- **Commented-out code** — delete it; VCS remembers it
-- **Nonlocal information** — a comment describing something far away in the codebase
-- **HTML in comments** — unreadable in source
-
-> If you feel the need to comment, ask first: can I rename this or extract a function to make the comment unnecessary?
+The documentation rule in `~/.claude/CLAUDE.md` decides what may exist: no comments, and
+documentation on interfaces only. What remains here is cleanup — delete redundant, misleading,
+mandated, journal, noise, commented-out and nonlocal comments as you find them, and rename or
+extract instead of explaining.
 
 ---
 

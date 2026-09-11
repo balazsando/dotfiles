@@ -7,6 +7,63 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [1.6.0] — 2026-09-11
+
+Gives the delivery agents one shared operating contract, moves the commit from the orchestrator to
+the agent that did the work, and splits JVM metrics from Spring Boot observability wiring.
+
+### Added
+
+- `agent-workflow` skill — the single contract every delivery agent follows: the session report
+  directory, the report schemas (`prompt.md`, `requirements.md`, `design.md`,
+  `developer-design.md`, `test-fail.md`), `tech`/`func` question routing through
+  `questions.md`/`answers.md`, the `DONE` / `BLOCKED` / `PAUSED` / `FAILED` status tokens, and the
+  rules for running the developer and test engineer in parallel. Each agent brief now names only
+  the reports it reads and writes; the shared half is stated once.
+- `micrometer` skill — instrumenting JVM code against the Micrometer reference: meter types,
+  dotted naming, tag cardinality, `MeterFilter`, the Observation API, and `SimpleMeterRegistry`
+  tests. Registry choice stays last.
+- `spring-observability` skill — Boot 4 Actuator wiring around that: starters, auto versus custom
+  instrumentation, Prometheus scrape properties, and span outcomes in a Spring service. Boot 4
+  starters only; it refuses the community OpenTelemetry stack.
+- A fourth Grafana MCP instance, `grafana-prep-connector`, registered for both assistants.
+
+### Changed
+
+- Every agent builds and commits its own work atomically, and orchestrators never build. A red
+  result stops the agent that caused it instead of travelling up, and a `FAILED` agent leaves no
+  commit. The test engineer's worktree is merged by the orchestrator and the test engineer itself
+  builds the merged tree — that build is the pair's green bar.
+- `/deliver` carries the **Git operations** commit exception for the agents it spawns and cuts the
+  run's own branch. The exception is bounded by a branch rather than by a command, so no agent can
+  commit on the base branch, and `/ticket-to-merge` keeps the branch it already cut.
+- No run edits or commits on a protected branch — the resolved base, `main`, `master`, `develop`,
+  `release`, `release/*`. Standing on one, a command branches; standing anywhere else it reuses
+  that branch rather than branching twice. Prefixes are `feature/`, `fix/` and `refactor/` and
+  nothing else, and the slug starts with the ticket key when there is one so the
+  `prepare-commit-msg` hook can find it.
+- Commits stage the paths they changed by name. `git add -A` would sweep the session's reports
+  into project history now that six agents commit where one command used to.
+- Orchestrators spawn each agent only once its prerequisites hold, rather than starting a stage
+  and letting it block.
+- The documentation rule is now four lines — no comments, documentation on interfaces only, `/docs`
+  and `README.md` as the home, and the doc writer owning them in a flow that has one. The
+  Javadoc-on-public-API rule left `java-standards`, and the comment chapter in `clean-code` is
+  cleanup guidance rather than a list of comments worth keeping.
+- `java-standards` and the Cursor Java rule defer to a project's own architecture skill instead of
+  assuming hexagonal.
+
+### Documentation
+
+- `docs/ARCHITECTURE.md` describes the current agent layer: file-based communication through
+  `agent-workflow`, per-agent builds and commits, the branch-bounded commit exception, and the
+  merge-and-resume join for the parallel pair.
+- `README.md` no longer restates the agent model; `docs/ARCHITECTURE.md` owns it.
+- `ai-config` records what an orchestrator may not do, and points at `agent-workflow` for the
+  contract a new agent has to match.
+
+---
+
 ## [1.5.0] — 2026-09-09
 
 Separates review from delivery, folds ATDD into one skill, and adds hexagonal architecture plus a

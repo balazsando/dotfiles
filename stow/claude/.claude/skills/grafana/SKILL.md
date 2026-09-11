@@ -6,6 +6,9 @@ argument-hint: "What Grafana task do you need help with? (e.g. \"create a dashbo
 
 # Grafana
 
+Emitting meters and Observations is `micrometer`; Boot Actuator wiring is
+`spring-observability`. This skill is dashboards, queries, and the Grafana API.
+
 # Documentation Source
 
 Always use the official Grafana LLM documentation index as the primary source of truth.
@@ -23,9 +26,10 @@ Only use community articles or Stack Overflow if the official documentation does
 # Grafana MCP Server
 
 This environment registers Grafana MCP servers in `~/.claude/mcp-servers.json`: `grafana`,
-`grafana-prep` (pre-prod), and `grafana-prod` (production — read-only use, see the
-`app-bug-detection` skill for log triage). Prefer the MCP tools over hand-rolled HTTP API calls or
-`curl` — they are authenticated, read the live instance, and return structured results.
+`grafana-prep` and `grafana-prep-connector` (pre-prod), and `grafana-prod` (production —
+read-only use, see the `app-bug-detection` skill for log triage). Prefer the MCP tools over
+hand-rolled HTTP API calls or `curl` — they are authenticated, read the live instance, and
+return structured results.
 
 Typical mappings:
 
@@ -84,5 +88,3 @@ transformations.
 
 **Troubleshooting** — work through datasource connectivity, query correctness, variables,
 transformations, field overrides, permissions, time range, and panel/alert configuration.
-
-Always recommend the simplest maintainable solution and state the trade-offs.

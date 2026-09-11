@@ -9,9 +9,9 @@ Project rules override these; repository documentation (`/docs`, `README.md`, AD
 both. Prefer the simplest solution; project conventions beat skill defaults; say so plainly when
 no skill applies rather than inventing a process.
 
-Machine-local specifics — Jira project keys, boards, documentation repositories — live in
-`~/.cursor/local/`, unversioned (symlinked to `~/.claude/local/`). Read the file a command names;
-if it is missing, ask rather than guess.
+Machine-local specifics — Jira project keys, boards, documentation repositories, cluster names —
+live in `~/.cursor/local/`, unversioned (symlinked to `~/.claude/local/`). Read the file a
+command or skill names; if it is missing, ask rather than guess.
 
 Commands, agents, and skills each own one layer and never restate another's. Each command carries
 its own dispatch contract; `~/.claude/skills/ai-config/SKILL.md` owns the rest, and its

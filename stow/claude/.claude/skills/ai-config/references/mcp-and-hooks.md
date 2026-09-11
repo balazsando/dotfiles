@@ -13,9 +13,10 @@ file but never applied is not registered.
 `${env:VAR}` instead of `${VAR}`. The two configs are maintained separately and need not match
 line for line, but the *server list* stays in step when one is added or removed.
 
-Registered: `sonarqube`, `jira`, `atlassian-rovo-mcp`, `gitlab`, and three distinct Grafana
-instances — `grafana` (the default non-prod instance, `$GRAFANA_URL`), `grafana-prep` (pre-prod),
-and `grafana-prod` (production, read-only; the only one `app-bug-detection` queries).
+Registered: `sonarqube`, `jira`, `atlassian-rovo-mcp`, `gitlab`, and four distinct Grafana
+instances — `grafana` (the default non-prod instance, `$GRAFANA_URL`), `grafana-prep` and
+`grafana-prep-connector` (pre-prod), and `grafana-prod` (production, read-only; the only one
+`app-bug-detection` queries).
 
 Prefer a plain `npx`/`uvx` entry over a launcher script. The one remaining launcher
 (`~/.local/share/dotfiles/scripts/jira-mcp.sh`) is shared by both assistants — edit it there,

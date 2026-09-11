@@ -16,8 +16,9 @@ change it without breaking the contract.
   `alwaysApply` / `globs` / `description` load modes.
 - `references/mcp-and-hooks.md` — MCP registration for both assistants, the server list, and
   the git hooks under `stow/git`.
-- `references/agent-architecture.md` — the agent model. Read it before adding or changing any
-  agent.
+- `references/agent-architecture.md` — the agent model and the bar a new agent clears. Read it
+  before adding or changing any agent; the operating contract every delivery agent follows is
+  `~/.claude/skills/agent-workflow/SKILL.md`.
 
 ---
 
@@ -58,10 +59,11 @@ Three, and a command is exactly one of them:
 - **Dispatcher** — one agent owns the job. `/create-tech-ticket`, `/enhance-jira-description`,
   `/dotfiles-devops`: spawn it, relay unabridged, resume the **same** agent via SendMessage
   rather than spawning a second one.
-- **Orchestrator** — several narrow agents in sequence, with the stage conditions, the hand-off
-  paths and the escalation routing. `/deliver` (three sizes), `/ticket-to-merge`, `/mr-review`,
-  `/bug-fix`.
-  It routes; it never does a stage itself.
+- **Orchestrator** — several narrow agents, with the flow conditions and the question routing.
+  `/deliver` (three sizes), `/ticket-to-merge`, `/mr-review`, `/bug-fix`. It sizes and routes; it
+  never does a stage itself, and it never builds. It spawns each agent only once that agent's
+  prerequisites hold, never the whole flow up front. The reports and statuses it passes and reads
+  are `agent-workflow`'s.
 - **Policy** — the decision *is* the command and has no other consumer, and the work is
   mechanical. `/sonar-fix`: its fix/skip list is the whole point, so it edits directly.
 
@@ -140,11 +142,12 @@ organisation or its network must not enter a tracked file, including as an examp
 1. `bash check-ai-parity.sh` — no skills or agents leaked into the cursor tree.
 2. `bash stow.sh -n` — dry run; the guard runs first and conflicts surface here.
 3. Did a command change? Update both copies. Did a skill mapping change? `CLAUDE.md` table row
-   only. Did a rule mirroring a `CLAUDE.md` section change (`git`, `documentation`, `layers`)?
-   Both copies.
-4. Added or changed an agent? It must be invoked by a command in the same change, and its
-   capabilities, limits and hand-off must match `references/agent-architecture.md`. Removed one?
-   Remove every reference in both trees.
+   only. Did a rule mirroring a `CLAUDE.md` section change (`git`, `documentation`, `layers`,
+   `economy-of-words`)? Both copies.
+4. Added or changed an agent? It must be invoked by a command in the same change, its
+   capabilities and limits must match `references/agent-architecture.md`, and its reports,
+   questions and status must match `agent-workflow`. Removed one? Remove every reference in both
+   trees.
 5. Did structure, bootstrap flow, or the package list change? Update `README.md` **and**
    `docs/ARCHITECTURE.md` — they have drifted from each other before.
 6. Releasing? Use `/release` — it bumps `VERSION`, the badge, and the changelog together.

@@ -31,18 +31,21 @@ your value is that you did not read them.
    branch first if it is not local. Read the changed files around the hunks, not the whole
    repository.
 2. Check the criteria one by one. Met, not met, or not verifiable from the diff.
-3. Check the design: components as designed, no undesigned abstraction, no scope the brief did
+3. Check the design: components as designed, no undesigned abstraction, no scope the criteria did
    not ask for.
 4. Check the tests: does a test exist for each criterion, does it assert the behaviour rather
    than the implementation, would it fail if the code were wrong.
-5. Check code health — correctness, error handling, naming, security, concurrency — per the
+5. Check the documentation rule: no comments, documentation on interfaces only, `/docs` and
+   `README.md` current.
+6. Check code health — correctness, error handling, naming, security, concurrency — per the
    review skill.
 
 ## Output
 
-The report from `references/report-format.md`, and nothing else. Write it to the path you were
-given when the caller supplies one; otherwise return it. Findings only — actionable, located,
-ranked, with the fix stated in one line so the developer needs nothing else.
+The report from `references/report-format.md`, and nothing else — findings only, actionable,
+located, ranked, with the fix in one line. Write it to the path you were given when the caller
+supplies one; otherwise return it. End with the status token
+(`~/.claude/skills/agent-workflow/SKILL.md`).
 
 ## Limits
 

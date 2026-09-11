@@ -14,7 +14,7 @@ Fix the SonarQube findings that are mechanically safe; leave everything else in 
   call the `sonarqube` MCP server directly.
 - Branch, validation, commit and report mechanics: the `change-delivery` skill. Load it.
 - This command carries the `~/.claude/CLAUDE.md` **Git operations** commit exception: its own
-  `sonar-cleanup/*` branch, one local commit. Never push, never open a merge request.
+  `refactor/*` branch, one local commit. Never push, never open a merge request.
 - Fix only behaviour-preserving changes provable by a compile plus the existing tests; every
   change maps to a real issue key from the collected report.
 - The fixes below are mechanical and single-file, so this command edits directly rather than
@@ -30,7 +30,7 @@ Fix the SonarQube findings that are mechanically safe; leave everything else in 
 3. **Issues** — collect the report with the validation skill (§3): the base branch, 40 issues per
    run, honouring the filters. Apply its §4 interpretation — stale, generated, and suppressed
    hits are out.
-4. **Branch** — `change-delivery` §3, prefix `sonar-cleanup/`, before any edit.
+4. **Branch** — `change-delivery` §3, prefix `refactor/`, before any edit.
 5. **Fix** — bugs → vulnerabilities → smells, highest severity first. Smallest edit per issue,
    project formatter, no new abstractions, no drive-by reformatting.
 6. **Validate** — `change-delivery` §4. Revert any fix that fails and skip that issue.

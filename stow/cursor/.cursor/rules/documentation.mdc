@@ -1,29 +1,12 @@
 ---
-description: Documentation is part of the change; never guess another repository
+description: Documentation — no comments, interfaces only, /docs and README.md
 alwaysApply: true
 ---
 
 # Documentation
 
-Documentation is part of the implementation, not a follow-up. When a change affects behaviour,
-architecture, configuration, APIs, workflows, or developer experience, update the right source of
-truth in the same change — the project `README.md`, its `/docs`, or the shared knowledge base.
-Prefer updating an existing document over adding one, never duplicate content across two places,
-and say explicitly when no documentation change is needed.
-
-**Document the present, not the change.** Write what the implementation does now, never framed
-against what it replaced: no "instead of X, now Y", no "previously", no note that a behaviour was
-removed. Rewrite the passage so the new behaviour reads as the only one and delete the old wording
-instead of qualifying it. Version history belongs in the changelog alone. Something still
-supported but discouraged is current state — mark it deprecated in place.
-
-**Read `~/.cursor/local/doc-repos.md`** before saying where documentation lives or referencing
-another repository. If it is missing, use the project's own `README.md` and `/docs` and say the
-documentation map is not configured — never guess at a repository name.
-
-- Local clones are for file access only. Link across repositories with the remote URL from
-  `git remote get-url origin`, never a local path.
-- A repository marked read-only is strictly read-only except for exceptions that map names
-  (gitignored local artifacts). Extract tracked content into the current project's `/docs`;
-  never edit tracked files in place.
-- Do not invent infrastructure facts an authoritative document already records — extract and cite.
+- Never add comments.
+- Javadoc, or the language-specific equivalent, on interfaces only.
+- Documentation lives in `/docs` and `README.md`.
+- In a flow that includes `doc-writer-agent`, it owns `/docs` and `README.md` — the other
+  agents leave them alone. A flow without it edits them directly.
