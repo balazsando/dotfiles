@@ -7,9 +7,8 @@ Fix the production bugs whose root cause is confirmed in this repository; report
 `$ARGUMENTS` passes through to detection: `--since`, `--service`, `--limit`, plus `--issue <n>`
 to fix only the nth issue of the report.
 
-You triage and orchestrate. The fixing, the builds and the commits belong to agents —
-`~/.claude/skills/agent-workflow/SKILL.md` carries the report directory, question routing and
-status rules.
+You triage and orchestrate. The fixing, the builds and the commits belong to agents. Load
+`orchestration`.
 
 ## Rules
 
@@ -34,6 +33,6 @@ status rules.
 5. **Fix** — one issue at a time. Spawn `developer-agent` with the defect and its `file:line` —
    not the whole report. It builds and commits its own fix; a `FAILED` return leaves no commit
    and the issue is reported as skipped.
-6. **Regression test** — spawn `test-engineer-agent` with the defect and the developer's commit.
-   It builds green and commits its own tests. Skip only where the project has no test setup.
+6. **Regression test** — spawn `test-engineer-agent` with the defect. It builds green and
+   commits its own tests. Skip only where the project has no test setup.
 7. **Report** — `change-delivery` §6, plus non-derivable detection skips and exceptions.

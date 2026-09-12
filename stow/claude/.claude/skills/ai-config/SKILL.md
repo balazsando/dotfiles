@@ -18,7 +18,8 @@ change it without breaking the contract.
   the git hooks under `stow/git`.
 - `references/agent-architecture.md` — the agent model and the bar a new agent clears. Read it
   before adding or changing any agent; the operating contract every delivery agent follows is
-  `~/.claude/skills/agent-workflow/SKILL.md`.
+  `agent-workflow`. Orchestrating commands load `orchestration` and do not load the agent
+  contract.
 
 ---
 
@@ -29,7 +30,7 @@ restated in two places, they drift, and the assistant follows whichever it read 
 
 | Layer | Owns | Loaded |
 | --- | --- | --- |
-| **Router** — `CLAUDE.md` (Claude only) | Mapping situation → skill, plus the cross-cutting prohibitions (git, documentation, machine-local). | Every Claude request |
+| **Router** — `CLAUDE.md` (Claude only) | Mapping situation → skill, plus the standing contracts (git, documentation, economy-of-words, machine-local). | Every Claude request |
 | **Cursor rules** — `rules/*.mdc` | Always-on contracts; optional `globs` when a file type should nag a skill. | `alwaysApply` or matching files |
 | **Command** — `commands/<name>.md` | Argument parsing, dispatch, relaying output | On invocation |
 | **Agent** — `agents/<name>-agent.md` | One responsibility, its tools, its output artifact, its limits | When spawned |
@@ -46,7 +47,8 @@ Decide with these questions, in order:
    (`globs`) or to carry a contract that must hold before the skill is read.
 
 On Claude Code the router (`CLAUDE.md`) is the only file resident on every request. Adding
-prose there costs tokens on work that will never use it. It routes; it does not teach.
+prose there costs tokens on work that will never use it. It routes; standing contracts live
+here, and domain knowledge lives in skills.
 
 On Cursor, rules are standing contracts (`alwaysApply`) or file-scoped nags (`globs`). Never
 copy the `CLAUDE.md` table into a rule, and never add an always-on rule whose only content is
@@ -62,8 +64,8 @@ Three, and a command is exactly one of them:
 - **Orchestrator** — several narrow agents, with the flow conditions and the question routing.
   `/deliver` (three sizes), `/ticket-to-merge`, `/mr-review`, `/bug-fix`. It sizes and routes; it
   never does a stage itself, and it never builds. It spawns each agent only once that agent's
-  prerequisites hold, never the whole flow up front. The reports and statuses it passes and reads
-  are `agent-workflow`'s.
+  prerequisites hold, never the whole flow up front. It loads `orchestration`; it does not load
+  the agent contract.
 - **Policy** — the decision *is* the command and has no other consumer, and the work is
   mechanical. `/sonar-fix`: its fix/skip list is the whole point, so it edits directly.
 
@@ -104,8 +106,7 @@ the only place drift can still start.
 
 ## Size and progressive disclosure
 
-Every file here is prose that lands in a context window, so `economy-of-words` is the writing
-standard — load it before authoring one.
+Every file here is prose that lands in a context window.
 
 A `SKILL.md` over roughly 200 lines is doing two jobs. Split the long tail into
 `references/<topic>.md` and link to it from the body — the reference is read only when the task
@@ -145,9 +146,10 @@ organisation or its network must not enter a tracked file, including as an examp
    only. Did a rule mirroring a `CLAUDE.md` section change (`git`, `documentation`, `layers`,
    `economy-of-words`)? Both copies.
 4. Added or changed an agent? It must be invoked by a command in the same change, its
-   capabilities and limits must match `references/agent-architecture.md`, and its reports,
-   questions and status must match `agent-workflow`. Removed one? Remove every reference in both
-   trees.
+   capabilities and limits must match `references/agent-architecture.md`, its questions and status
+   `agent-workflow`, and the schema of every report it writes lives in its own brief. An
+   orchestrating command loads `orchestration`, not the agent contract. Removed one? Remove every
+   reference in both trees.
 5. Did structure, bootstrap flow, or the package list change? Update `README.md` **and**
    `docs/ARCHITECTURE.md` — they have drifted from each other before.
 6. Releasing? Use `/release` — it bumps `VERSION`, the badge, and the changelog together.

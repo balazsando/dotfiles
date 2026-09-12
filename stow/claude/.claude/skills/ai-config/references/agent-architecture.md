@@ -1,8 +1,7 @@
 # Agent architecture
 
-Why the agent layer is shaped this way, and the bar a new agent has to clear. The operating
-contract — report directory, schemas, questions, status, builds, commits, parallelism — is
-`~/.claude/skills/agent-workflow/SKILL.md` and is not repeated here.
+Why the agent layer is shaped this way, and the bar a new agent has to clear. Delivery agents
+follow `agent-workflow`. Orchestrating commands follow `orchestration`. Neither is repeated here.
 
 ## The model
 
@@ -27,19 +26,20 @@ agent. Departing from that needs a documented reason in this file.
 2. Explicit **capabilities** (`tools:`) and explicit **limits** (`## Limits`). Every capability
    has a reason; every limit prevents a specific creep.
 3. Only the context the responsibility needs: reports and paths, never the conversation that
-   produced them.
-4. The reports its own brief names, and nothing else. The architect additionally writes the
-   stubs — the contract two later agents share.
+   produced them. `$REPORTS` is open — list it and read what the task needs. Do not name
+   required files in the brief.
+4. It writes the reports its own brief names and nothing else, and that brief carries their
+   schema: a schema belongs to its writer, never to the shared contract every agent loads. The
+   architect additionally writes the stubs — the contract two later agents share.
 5. No agent-to-agent calls. A blocked agent writes a question and returns `BLOCKED`; the
    orchestrator routes it. That makes circular delegation impossible rather than discouraged.
 6. An agent that changes files builds and commits its own work; it never pushes and never
    rewrites history. A read-only agent produces a report and commits nothing.
 7. An agent is reachable from at least one command from the day it is added.
-8. Description in one or two lines: responsibility, inputs, outputs. Shared workflow rules live
-   in `agent-workflow`, never restated per agent.
-9. Every other named skill costs a file read on every spawn. Name `economy-of-words` only for an
-   artifact no schema bounds — `doc-writer-agent` and nothing else today; the reports are bounded
-   by `agent-workflow`'s schemas and the brevity floor is resident.
+8. Description in one or two lines: the responsibility and what it leaves behind. Shared
+   workflow rules live in `agent-workflow`, never restated per agent.
+9. Every other named skill costs a file read on every spawn. Name only what the responsibility
+   needs. Fence writes and harmful operations; do not fence research.
 
 ## Roles and their fences
 
@@ -81,7 +81,8 @@ reduction in context or improvement in accuracy, explicit capabilities and limit
 that invokes it in the same change. Missing any one means it is not an agent.
 
 - Knowledge several callers share → **a skill**. Duplicated mechanics went to `change-delivery`,
-  the workflow contract to `agent-workflow`, Jira MCP calls to `jira-tickets`.
+  the agent contract to `agent-workflow`, command sequencing to `orchestration`, Jira MCP calls
+  to `jira-tickets`.
 - A new way to sequence existing agents → **a command**.
 - One more thing an existing role already owns → **that agent's file**.
 
@@ -99,8 +100,7 @@ Judge a change by the tokens on the critical path, not by file count.
 - Resident cost first: the router loads on every request, so a line there is the most expensive
   line in the repository.
 - Per-stage cost: what an agent must read before it can act. A report beats a transcript; a path
-  beats a paste; a `file:line` beats a diff hunk.
+  beats a paste; a `file:line` beats a diff hunk. Do not starve a stage of reports it needs.
 - Duplication costs twice — once for the copy, once when the copies drift and something has to
   reconcile them.
-- A narrow agent that reads two files beats a broad one that reads twenty, even when the broad
-  one needs fewer turns.
+- A narrow write fence beats a broad read fence: starve a stage of reports and accuracy drops.

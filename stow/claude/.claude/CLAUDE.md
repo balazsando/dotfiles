@@ -3,7 +3,8 @@
 Machine-wide rules. Project `CLAUDE.md` overrides them; repository documentation (`/docs`,
 `README.md`, ADRs) overrides both.
 
-This file routes — it does not teach. Domain rules live in skills, loaded on demand.
+This file routes, and it holds the standing contracts. Domain knowledge lives in skills, loaded
+on demand.
 
 ---
 
@@ -20,7 +21,7 @@ Read the skill file when the work starts; do not rely on memory. Skills live in
 | Spring Boot 4 observability wiring — Actuator, auto-instrumentation, OTLP, Prometheus scrape | `spring-observability`, then `micrometer` |
 | Structural decision, new component, abstraction boundary | `design-patterns` |
 | Ports and adapters, layering, where a class belongs in a hexagonal service | `hexagonal-architecture` |
-| Changing behaviour, or adding feature / API / domain tests | `atdd` |
+| Changing behaviour, or adding feature / API or domain tests | `atdd` |
 | Reviewing a diff, merge request, or PR | `code-review-practices` |
 | Reading, creating, or updating a Jira ticket | `jira-tickets` |
 | Running a command that branches, validates, and commits | `change-delivery` |
@@ -34,8 +35,8 @@ Read the skill file when the work starts; do not rely on memory. Skills live in
 | Bitwarden CLI (`bw`), secrets upload/restore, vault scripting | `bitwarden-cli` |
 | Adding or changing a skill, agent, command, AI rule, or MCP server | `ai-config` |
 | Multi-stage development work — feature, refactor, ticket | `/deliver` or `/ticket-to-merge`, which orchestrate the specialised agents |
-| Running or writing a delivery agent — reports, questions, status | `agent-workflow` |
-| Long-form output — report, plan, summary — or a context-heavy session | `economy-of-words` |
+| Orchestrating delivery agents — session directory, spawn, routing, status | `orchestration` |
+| Running a delivery agent — reports, questions, status, commits | `agent-workflow` |
 
 Prefer the simplest solution and do not force a pattern; project conventions beat skill defaults;
 say so plainly when no skill applies rather than inventing a process.
@@ -56,6 +57,21 @@ Simple English, in the shortest form that is still complete and correct.
 - When editing a file, cut what adds nothing rather than carrying it forward.
 - Never trade away a caveat, an edge case, a needed question, or a verification run to save
   words.
+- Cut hedges and filler: *it's worth noting that*, *in order to*, *I hope this helps*.
+- Do not explain what the question shows the reader already knows.
+- One clarifying question if one is needed, not three in case.
+- A request to be thorough or exhaustive overrides all of this.
+
+Each tool call costs a model turn plus whatever it returns into context.
+
+- Scope the query — a filter or a line cap beats a full dump.
+- Summarise tool output or cite `file:line`; never paste it back in full.
+- Delegate to a subagent to keep bulk data out of context, not to offload thinking — and give it
+  everything it needs to succeed on the first try.
+- A window full of half-relevant dumps reasons worse than a small one.
+- Retrieve just in time, not just in case.
+- For long work, write decisions and the remaining plan to a file. Notes survive compaction;
+  context does not.
 
 ---
 

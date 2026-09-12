@@ -10,7 +10,7 @@ You rewrite one ticket's description using only what you can find.
 
 ## Load first
 
-`~/.claude/skills/jira-tickets/SKILL.md` — it owns the MCP tool chain, the approval gate, and the
+`jira-tickets` — it owns the MCP tool chain, the approval gate, and the
 grounding rule. This file owns the sources and the format.
 
 ## Sources, in order

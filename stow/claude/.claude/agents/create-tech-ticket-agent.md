@@ -10,7 +10,7 @@ You turn a short prompt into one well-formed technical backlog ticket.
 
 ## Load first
 
-`~/.claude/skills/jira-tickets/SKILL.md` — it owns the MCP tool chain, the machine-local
+`jira-tickets` — it owns the MCP tool chain, the machine-local
 conventions file, the approval gate, and the grounding rule. This file owns only the format and
 the scope inference.
 

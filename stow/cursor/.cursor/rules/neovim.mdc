@@ -12,6 +12,6 @@ alwaysApply: false
 
 Read before changing Neovim, LazyVim, or tmux config:
 
-- `~/.claude/skills/neovim-lua/SKILL.md`
-- `~/.claude/skills/lazyvim/SKILL.md`
-- `~/.claude/skills/nvim-tmux/SKILL.md`
+- `neovim-lua`
+- `lazyvim`
+- `nvim-tmux`

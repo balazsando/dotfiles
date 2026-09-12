@@ -6,8 +6,7 @@ argument-hint: "the command carrying the commit exception, and its branch prefix
 
 # Change delivery
 
-Mechanics for every command that changes code on its own branch. Each command keeps its own
-policy — what to fix, which roles to invoke — and takes the rest from here.
+Each command keeps its own policy; mechanics are here.
 
 ## 1. Preconditions (stop conditions)
 
@@ -30,8 +29,8 @@ If unset, take the first that exists: `develop`, `release`, the newest `release/
 
 ## 3. Branch
 
-Never edit or commit on a protected branch — the resolved base, and `main`, `master`,
-`develop`, `release`, `release/*`. Standing on one of those, branch before the first edit.
+Never edit or commit on a protected branch — the resolved base, `main`, `master`, `develop`,
+`release`, `release/*`. Standing on one of those, branch before the first edit.
 Standing anywhere else, that branch is the run's branch: stay on it and say so, unless the run
 has a ticket key its name does not carry.
 
@@ -66,7 +65,7 @@ its own changes. A command that only spawns agents never runs a build.
   change of its own.
 - Coverage ≥ 80 % on new or changed code where the project measures it. Below that, say the
   number and why it is justified — never pad with assertion-free tests.
-- Never commit a red build: work that does not reach its bar is reported as skipped instead.
+- Never commit a red build; report it as skipped.
 
 ## 5. Commit
 
@@ -82,5 +81,6 @@ open a merge request unless the invoking command says so explicitly.
 
 Git status/diff and the last validation command are authoritative for files and the build
 result. Report once, in this order, only what those do not already show: work skipped and why,
-the run's branch and whether it was created or reused, commit SHA, whether anything was pushed,
-then any non-derivable exception. No narrative recap.
+the run's branch and whether it was created or reused, the commit SHA — or `commits.md` where
+agents did the committing — whether anything was pushed, then any
+non-derivable exception. No narrative recap.

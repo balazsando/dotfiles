@@ -5,11 +5,9 @@ description: "Run a change through the specialised roles — only the ones the t
 Deliver the text after `/deliver` through the delivery agents. You size and orchestrate. You do
 not design, implement, test, document, or build.
 
-Load `~/.claude/skills/agent-workflow/SKILL.md` — the report directory, schemas, question
-routing, status signals and worktree rules are there and are not repeated here; branch
-mechanics are the `change-delivery` skill. This command carries the `git` rule's commit
-exception for the subagents it delegates to: they commit on this run's own branch and nowhere
-else, and nothing is pushed.
+Load `orchestration`. Branch mechanics are `change-delivery`.
+This command carries the `git` rule's commit exception for the subagents it delegates to: they
+commit on this run's own branch and nowhere else, and nothing is pushed.
 
 ## Steps
 
@@ -19,14 +17,10 @@ else, and nothing is pushed.
 4. **Branch** — `change-delivery` §3, before the first delegation that edits. A caller that
    already branched (`/ticket-to-merge`) keeps its branch — never branch twice.
 5. Delegate to an agent only once its prerequisites hold, one at a time — the deep flow's
-   developer and test engineer are the one pair that runs concurrently. Give each only its
-   one-line task and the report directory — never a report's contents, never your own
-   conversation.
-6. Check each returned status. `BLOCKED` → route the question. `FAILED` committed nothing →
-   re-delegate once with the failure, then stop and report. `DONE` or `PAUSED` → continue.
-7. Merge the test engineer's worktree when the parallel pair ran, remove it, then resume the
-   test engineer to build the merged tree.
-8. Finish: report what the artifacts and the Git history do not already show.
+   developer and test engineer are the one pair that runs concurrently.
+6. Check each returned status.
+7. Join the parallel pair when it ran.
+8. **Hand back** — `change-delivery` §6.
 
 | Agent | Delegate when |
 | --- | --- |
@@ -53,7 +47,7 @@ Everything else is **medium**.
 | Medium | requirements when the criteria are unknown or `--from <KEY>`, then developer, then test engineer |
 | Deep | requirements, architect, then developer and test engineer in parallel off the stubs, then doc writer unless `--no-docs` |
 
-Small and medium have no architect: the developer runs the reduced flow.
+Small and medium have no architect: the developer owns the technical design.
 
 The test engineer drops out only when the diff has nothing to assert — every file is
 documentation, formatter output, or configuration no runtime reads. A dependency bump qualifies
@@ -71,12 +65,9 @@ a medium change grows a deep trigger. Report the re-size.
 
 ## Questions
 
-Route a `BLOCKED` agent's question by `agent-workflow`'s table, then resume the asker. A question
-routed to the user is yours to ask; one routed to an agent is not. Never answer in a delegation
-prompt — the answer goes to `answers.md`.
+Route a `BLOCKED` agent's question per orchestration, then resume the asker.
 
-Two failed rounds on the same finding → stop and report. Never take a stage over because an agent
-was slow or wrong; re-delegate it with the correction.
+Two failed rounds on the same finding → stop and report.
 
 ## Done when
 

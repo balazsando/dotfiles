@@ -17,3 +17,18 @@ Simple English, in the shortest form that is still complete and correct.
 - When editing a file, cut what adds nothing rather than carrying it forward.
 - Never trade away a caveat, an edge case, a needed question, or a verification run to save
   words.
+- Cut hedges and filler: *it's worth noting that*, *in order to*, *I hope this helps*.
+- Do not explain what the question shows the reader already knows.
+- One clarifying question if one is needed, not three in case.
+- A request to be thorough or exhaustive overrides all of this.
+
+Each tool call costs a model turn plus whatever it returns into context.
+
+- Scope the query — a filter or a line cap beats a full dump.
+- Summarise tool output or cite `file:line`; never paste it back in full.
+- Delegate to a subagent to keep bulk data out of context, not to offload thinking — and give it
+  everything it needs to succeed on the first try.
+- A window full of half-relevant dumps reasons worse than a small one.
+- Retrieve just in time, not just in case.
+- For long work, write decisions and the remaining plan to a file. Notes survive compaction;
+  context does not.
