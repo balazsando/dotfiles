@@ -16,18 +16,17 @@ commit on this run's own branch and nowhere else, and nothing is pushed.
 3. Size the task and state the flow before the first delegation.
 4. **Branch** — `change-delivery` §3, before the first delegation that edits. A caller that
    already branched (`/ticket-to-merge`) keeps its branch — never branch twice.
-5. Delegate to an agent only once its prerequisites hold, one at a time — the deep flow's
-   developer and test engineer are the one pair that runs concurrently.
+5. Delegate to an agent only once its prerequisites hold, one at a time. Tests before
+   implementation.
 6. Check each returned status.
-7. Join the parallel pair when it ran.
-8. **Hand back** — `change-delivery` §6.
+7. **Hand back** — `change-delivery` §6.
 
 | Agent | Delegate when |
 | --- | --- |
 | requirements | `prompt.md` is written |
-| architect | `requirements.md` exists, or the flow has no requirements agent |
-| developer | `design.md` and the architect's commit exist, or the flow has no architect |
-| test engineer | the implementation commit exists — or, for the parallel pair only, the architect's stubs are committed |
+| architect | the flow includes one, and `requirements.md` exists or the flow has no requirements agent |
+| test engineer | `design.md` and the architect's commit exist, or the flow has no architect |
+| developer | the test engineer's commit exists, or the test engineer was dropped |
 | doc writer | the implementation is committed and the last agent returned `DONE` |
 
 ## Sizing
@@ -43,11 +42,11 @@ Everything else is **medium**.
 
 | Size | Flow |
 | --- | --- |
-| Small | developer, then test engineer |
-| Medium | requirements when the criteria are unknown or `--from <KEY>`, then developer, then test engineer |
-| Deep | requirements, architect, then developer and test engineer in parallel off the stubs, then doc writer unless `--no-docs` |
+| Small | test engineer, then developer |
+| Medium | requirements when the criteria are unknown or `--from <KEY>`, then test engineer, then developer |
+| Deep | requirements, architect, test engineer, developer, then doc writer unless `--no-docs` |
 
-Small and medium have no architect: the developer owns the technical design.
+Small and medium have no architect: the test engineer owns the technical design.
 
 The test engineer drops out only when the diff has nothing to assert — every file is
 documentation, formatter output, or configuration no runtime reads. A dependency bump qualifies

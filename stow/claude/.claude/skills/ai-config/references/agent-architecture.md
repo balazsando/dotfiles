@@ -29,12 +29,15 @@ agent. Departing from that needs a documented reason in this file.
    produced them. `$REPORTS` is open — list it and read what the task needs. Do not name
    required files in the brief.
 4. It writes the reports its own brief names and nothing else, and that brief carries their
-   schema: a schema belongs to its writer, never to the shared contract every agent loads. The
-   architect additionally writes the stubs — the contract two later agents share.
+   schema: a schema belongs to its writer, never to the shared contract every agent loads. Shared
+   session files (`questions.md`, `research.md`) are the exception; `agent-workflow` owns those.
+   The design owner writes the compiling stubs — the contract the test engineer and developer
+   share.
 5. No agent-to-agent calls. A blocked agent writes a question and returns `BLOCKED`; the
    orchestrator routes it. That makes circular delegation impossible rather than discouraged.
 6. An agent that changes files builds and commits its own work; it never pushes and never
-   rewrites history. A read-only agent produces a report and commits nothing.
+   rewrites history. A read-only agent produces a report and commits nothing. Which build bar
+   applies is `change-delivery` §4.
 7. An agent is reachable from at least one command from the day it is added.
 8. Description in one or two lines: the responsibility and what it leaves behind. Shared
    workflow rules live in `agent-workflow`, never restated per agent.
@@ -46,15 +49,19 @@ agent. Departing from that needs a documented reason in this file.
 | Agent | Owns | Must not |
 | --- | --- | --- |
 | `requirements-agent` | business intent, acceptance criteria | design, code, tests, commits |
-| `architect-agent` | intended structure, decisions, compiling stubs, test boundaries | business decisions, behaviour, method bodies, test cases |
-| `developer-agent` | production implementation | tests, design changes, documentation files when a doc writer is in the flow |
-| `test-engineer-agent` | test strategy and tests | production code, criteria, design |
+| `architect-agent` | intended structure, decisions, compiling stubs (production and test sources) | business decisions, production behaviour, scenarios, assertions |
+| `developer-agent` | production implementation against the design and the criteria | tests, design, documentation files when a doc writer is in the flow |
+| `test-engineer-agent` | test strategy and tests; design and stubs when the flow has no architect | production behaviour, criteria |
 | `reviewer-agent` | the verdict | any change at all |
 | `doc-writer-agent` | `/docs` and `README.md` | production source, tests, design or business decisions |
 
-The fences matter more than the roles. Tests belong to someone who cannot edit the production
-code, so a red test is reported rather than deleted. The verdict belongs to someone who never
-read the implementer's reasoning, so the review judges the diff rather than re-deriving it.
+A compiling stub may change a test file's types, constructors and imports so `test-compile`
+succeeds. It may not add a scenario or assertion — those are test cases, and they belong to the
+test engineer. The developer never edits a test to make the suite pass.
+
+Tests belong to someone who cannot edit production behaviour, so a red test is reported rather
+than deleted. The verdict belongs to someone who never read the implementer's reasoning, so the
+review judges the diff rather than re-deriving it.
 
 Most fences are prose, because four agents hold unrestricted `Edit`/`Write` and `Bash`. The
 reviewer's "no edits" fence is enforced by its `tools:` line, which omits `Edit`.
@@ -64,15 +71,18 @@ behaviour to assert does. A flow that kept the developer and dropped its check w
 author of the code back in charge of judging it, so the exemption removes the tests rather than
 reassigning them.
 
-## Parallelism
+## Sequence
 
-Agents cannot renegotiate mid-task and every spawn starts cold, so two may run at once **only**
-against a contract frozen in a file both read before starting — the architect's stubs — and with
-physically isolated trees. Missing either, run sequentially.
+Outside-in: criteria, then the contract, then the failing tests, then the implementation that
+makes them green. The test engineer always runs before the developer. When the flow has no
+architect, the test engineer is the design owner: `design.md` and stubs in one commit, the AC
+suite in a second. `tech` questions follow the design owner. A `test-fail.md` finding is
+production behaviour; a suite that contradicts the criteria is a `test` question, not a test
+edit by the developer.
 
-Splitting one role across several agents has neither: two developers share no frozen contract,
-and the win is wall-clock rather than tokens or accuracy. Deliberately not done. The precondition
-for revisiting it is disjoint file sets declared by the architect.
+Two agents still do not share a tree mid-task. Splitting one role across several agents is
+deliberately not done; the precondition for revisiting it is disjoint file sets declared in
+`design.md`.
 
 ## Adding to this
 

@@ -30,9 +30,9 @@ You triage and orchestrate. The fixing, the builds and the commits belong to sub
 3. **Triage** — keep the application bugs with a verified suspect line, highest impact first.
    List what you are skipping and why. This ranking is yours; the subagents do not re-triage.
 4. **Branch** — `change-delivery` §3, prefix `fix/`, before the first edit.
-5. **Fix** — one issue at a time. Delegate to the `developer-agent` subagent with the defect
-   and its `file:line` — not the whole report. It builds and commits its own fix; a `FAILED`
-   return leaves no commit and the issue is reported as skipped.
-6. **Regression test** — delegate to the `test-engineer-agent` subagent with the defect. It
-   builds green and commits its own tests. Skip only where the project has no test setup.
+5. **Regression test** — one issue at a time. Delegate to the `test-engineer-agent` subagent
+   with the defect and its `file:line` — not the whole report. Skip only where the project has
+   no test setup.
+6. **Fix** — delegate to the `developer-agent` subagent with the same defect. It builds green
+   and commits the fix; a `FAILED` return leaves no commit and the issue is reported as skipped.
 7. **Report** — `change-delivery` §6, plus non-derivable detection skips and exceptions.

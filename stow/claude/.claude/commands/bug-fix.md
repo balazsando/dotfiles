@@ -30,9 +30,8 @@ You triage and orchestrate. The fixing, the builds and the commits belong to age
 3. **Triage** — keep the application bugs with a verified suspect line, highest impact first.
    List what you are skipping and why. This ranking is yours; the agents do not re-triage.
 4. **Branch** — `change-delivery` §3, prefix `fix/`, before the first edit.
-5. **Fix** — one issue at a time. Spawn `developer-agent` with the defect and its `file:line` —
-   not the whole report. It builds and commits its own fix; a `FAILED` return leaves no commit
-   and the issue is reported as skipped.
-6. **Regression test** — spawn `test-engineer-agent` with the defect. It builds green and
-   commits its own tests. Skip only where the project has no test setup.
+5. **Regression test** — one issue at a time. Spawn `test-engineer-agent` with the defect and
+   its `file:line` — not the whole report. Skip only where the project has no test setup.
+6. **Fix** — spawn `developer-agent` with the same defect. It builds green and commits the
+   fix; a `FAILED` return leaves no commit and the issue is reported as skipped.
 7. **Report** — `change-delivery` §6, plus non-derivable detection skips and exceptions.

@@ -1,6 +1,6 @@
 ---
 name: orchestration
-description: "Shared contract for commands that sequence delivery agents: session directory, prompt.md, spawn, question routing, status, parallel join. Load before /deliver, /ticket-to-merge, /mr-review, or /bug-fix."
+description: "Shared contract for commands that sequence delivery agents: session directory, prompt.md, spawn, question routing, status. Load before /deliver, /ticket-to-merge, /mr-review, or /bug-fix."
 argument-hint: "the command about to run"
 ---
 
@@ -33,10 +33,9 @@ prompt. `FAILED` → re-spawn once, then stop. `DONE` or `PAUSED` → continue.
 | Question | Route |
 | --- | --- |
 | `tech`, architect present | developer / test engineer → architect → user |
-| `tech`, no architect | developer / test engineer → user |
+| `tech`, no architect | developer → test engineer → user |
 | `func`, requirements agent present | architect / developer / test engineer → requirements agent → user |
 | `func`, no requirements agent | agent → user |
 | any, from the requirements agent | user |
-
-Parallel pair: merge the test engineer's worktree, remove it, resume the test engineer. No safe
-isolation → run the two in order.
+| `tech`, from the test engineer acting as design owner | user |
+| `test` | developer → test engineer → user |

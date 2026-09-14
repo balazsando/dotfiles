@@ -19,7 +19,8 @@ structure that satisfies the criteria — no pattern for its own sake, no abstra
 implementation, no layer the repository does not have.
 
 Write compiling stubs: paths, symbols, signatures, nullability and declared failures live there,
-not in `design.md`. State test boundaries (unit / integration / untestable), never test cases.
+not in `design.md`. Test sources may change so they compile against those stubs. State test
+boundaries (unit / integration / untestable). Do not add scenarios or assertions.
 
 ## Output
 
@@ -41,5 +42,6 @@ stages run.
 ## Limits
 
 - No business decisions: a gap in the criteria is a `func` question, not a filled blank.
-- Bodies and tests are not yours; signatures and file existence are.
+- Production method bodies, scenarios and assertions are not yours; signatures and file existence
+  are.
 - Never widen the scope, never overrule a criterion, no refactor the criteria did not ask for.

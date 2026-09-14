@@ -32,8 +32,7 @@ Never duplicate or commit sensitive configuration into a project repository.
 
 Git hooks are stowed from `stow/git/.githooks/` and enabled globally by `core.hooksPath`, so they
 run in **every** repository on the machine — a new hook must be safe in a work repo, not just
-this one. `prepare-commit-msg` expands `category-message` into the final subject and strips
-tooling attribution.
+this one. `prepare-commit-msg` expands `category-message` into the final subject.
 
 Write them in POSIX `sh`: `shopt` and other bash-only builtins fail there, and a `.sh` extension
 does not make a file bash. Keep them fast — a slow or noisy hook gets bypassed reflexively, which

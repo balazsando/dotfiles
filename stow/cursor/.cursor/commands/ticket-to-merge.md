@@ -32,10 +32,9 @@ run's own ticket branch and nowhere else. Never touch existing history.
    the branch, the agents' builds, their commits, or the merge request.
 6. **Push and merge request** — the agents' atomic commits are the branch history; never squash
    or rewrite them. Push the ticket branch, open the MR (GitLab MCP, or `glab` when the MCP
-   cannot), link the ticket, and state the criteria coverage and the assumptions made. No tooling
-   attribution in the description — the commit hook cannot strip it there.
+   cannot), link the ticket, and state the criteria coverage and the assumptions made.
 7. **Pipeline** — watch it. A failure routes like any other defect: implementation → developer,
-   design → architect. Never fix a pipeline by weakening a test.
+   design → the agent that wrote `design.md`. Never fix a pipeline by weakening a test.
 
 ## Report
 

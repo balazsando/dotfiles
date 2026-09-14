@@ -295,7 +295,10 @@ Restating one layer in another is the defect this exists to prevent.
 How to change the tree, and the bar for a new agent, is `ai-config` (its
 `references/agent-architecture.md` for the agent model). How agents operate together is
 `agent-workflow`; how commands sequence them is `orchestration`; branch, build and commit
-mechanics are `change-delivery`.
+mechanics are `change-delivery`. Delivery is outside-in: tests before implementation, compile
+bar for the contract and the suite, green bar for the developer. The test engineer is the
+design owner when the flow has no architect. New-technology notes live in
+`$REPORTS/research.md` so later agents reuse them.
 
 A rule loaded on every request must change behaviour on turns that would never load the matching
 skill. Git, documentation, graphify and economy-of-words qualify. MCP configuration does not — it

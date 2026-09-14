@@ -102,11 +102,6 @@ parsed from the branch. Do not hand-write the expanded form and do not add the t
 Categories: `feat` `fix` `docs` `chore` `refactor` `style` `test` `deploy` `typo` `revert`
 `version`.
 
-**Never add tooling attribution** — no bot `Co-Authored-By` trailers, no `*-Session:` links, no
-"Generated with" footers — to commits, tags, or merge request descriptions. The hook strips them
-from commit messages as a safety net, but cannot touch MR descriptions and is bypassed by
-`--no-verify`.
-
 **Inside the exceptions**, each owns its own limits — read them there, they are not repeated here.
 Common to all: never `--no-verify`, never touch existing history, and never `--force` on a
 shared branch without explicit authorization.
