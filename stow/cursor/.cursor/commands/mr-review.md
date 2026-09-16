@@ -12,7 +12,7 @@ relay — you do not review, and you never change the code. Load
    a base and head commit. The reviewer takes a range, not an MR — state it before delegating
    anything.
 2. **Criteria** — the ticket key from `--ticket` or the branch name. When there is one, create
-   `$REPORTS`, write `prompt.md`, and delegate to the `requirements-agent` subagent. No ticket →
+   `$REPORTS`, write `prompt.md`, and delegate to the `plan-agent` subagent for the criteria only. No ticket →
    say the review runs without acceptance criteria and skip this stage.
 3. **Review** — delegate to the `reviewer-agent` subagent with the commit range, `$REPORTS` when
    it exists, and `--sonar` when the caller asked for it. It fetches its own diff.

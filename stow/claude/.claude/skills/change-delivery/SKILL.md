@@ -63,21 +63,20 @@ Two bars. **Compile** — production and test sources compile; failing assertion
 | Go | `go test -run '^$' ./...` | `go test ./...` |
 | Node | the project's typecheck / test compile | `npm test` |
 
-Architect and test engineer: compile. Developer, and any command that edits directly: green.
+A command that edits directly: green. An agent's brief names its own bar.
 
 - Formatting is part of the build, not a separate pass: run the project's formatter
   (`spotless:apply`, `gofmt`, `prettier`) **only** when the build requires it, and never as a
   change of its own.
 - Coverage ≥ 80 % on new or changed code where the project measures it, and only on a green bar.
   Below that, say the number and why it is justified — never pad with assertion-free tests.
-- Never commit a failed compile, or a red green-bar. Report it as skipped.
+- Never commit a failed compile or a red green-bar. Report it as skipped.
 
 ## 5. Commit
 
 One commit per agent, or one commit for a command that edits directly instead of spawning one —
-body listing what changed and why, one line per issue. Exception: the test engineer, when they
-own the design, commits `design.md` and the compiling stubs first, then the AC suite. Stage the
-paths you changed by name: `git add -A` sweeps in workspace artifacts that must not ship.
+body listing what changed and why, one line per issue. Stage the paths you changed by name:
+`git add -A` sweeps in workspace artifacts that must not ship.
 
 Subject `category-message` per the **Commit message format** in `~/.claude/CLAUDE.md`. Never
 `--no-verify`. Never touch existing history. Never push and never open a merge request unless the

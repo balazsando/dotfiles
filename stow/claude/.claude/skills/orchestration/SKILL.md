@@ -1,12 +1,12 @@
 ---
 name: orchestration
-description: "Shared contract for commands that sequence delivery agents: session directory, prompt.md, spawn, question routing, status. Load before /deliver, /ticket-to-merge, /mr-review, or /bug-fix."
+description: "Shared contract for commands that sequence delivery agents: session directory, prompt.md, spawn, numbered steps, status routing. Load before /deliver, /ticket-to-merge, /mr-review, or /bug-fix."
 argument-hint: "the command about to run"
 ---
 
 # Orchestration
 
-You size and sequence. You do not design, implement, test, document, or build.
+You sequence the steps. You do not plan, implement, test, document, or build.
 
 `$REPORTS` = `.claude/state/<session>/` — ticket key or short slug; repository root if that path
 cannot be created. Never commit it.
@@ -25,17 +25,26 @@ Write `prompt.md` as the user's prompt, or a concise equivalent that preserves i
 Spawn with the one-line task and `$REPORTS` only. Never a report's contents, never your
 conversation. Spawn once prerequisites hold. Re-spawn a correction; do not take the stage over.
 
-Find commits in `$REPORTS/commits.md`. Resume `PAUSED` by messaging the same agent.
+Find commits in `$REPORTS/commits.md`.
 
-`BLOCKED` → route, write the answer to `answers.md`, resume the asker. Never answer in the spawn
-prompt. `FAILED` → re-spawn once, then stop. `DONE` or `PAUSED` → continue.
+## The steps
 
-| Question | Route |
+| # | Step | Agent |
+| --- | --- | --- |
+| 1 | plan — criteria, design, stubs | `plan-agent` |
+| 2 | acceptance tests | `test-engineer-agent` |
+| 3 | implementation | `developer-agent` |
+| 4 | documentation | `doc-writer-agent` |
+
+## Routing
+
+Read the row; do not reason about it.
+
+| Status | Next |
 | --- | --- |
-| `tech`, architect present | developer / test engineer → architect → user |
-| `tech`, no architect | developer → test engineer → user |
-| `func`, requirements agent present | architect / developer / test engineer → requirements agent → user |
-| `func`, no requirements agent | agent → user |
-| any, from the requirements agent | user |
-| `tech`, from the test engineer acting as design owner | user |
-| `test` | developer → test engineer → user |
+| `DONE` | the next step in the flow |
+| `BLOCKED` | ask the user; append the question and the answer to `prompt.md` under `## Answers`, then resume the same agent |
+| `FAILED` | re-spawn that step once, then stop and report |
+
+A `created:` or `touched:` line above the status is the agent's record of what it did. Use it
+instead of re-deriving that state.

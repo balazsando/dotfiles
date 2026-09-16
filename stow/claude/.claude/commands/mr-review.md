@@ -12,8 +12,8 @@ not review, and you never change the code. Load `orchestration`.
    a base and head commit. The reviewer takes a range, not an MR — state it before spawning
    anything.
 2. **Criteria** — the ticket key from `--ticket` or the branch name. When there is one, create
-   `$REPORTS`, write `prompt.md`, and spawn `requirements-agent`. No ticket → say the review
-   runs without acceptance criteria and skip this stage.
+   `$REPORTS`, write `prompt.md`, and spawn `plan-agent` for the criteria only. No ticket → say
+   the review runs without acceptance criteria and skip this stage.
 3. **Review** — spawn `reviewer-agent` with the commit range, `$REPORTS` when it exists, and
    `--sonar` when the caller asked for it. It fetches its own diff.
 4. **Relay** the report unabridged: scope, criteria, CRITICAL / MAJOR / MINOR / INFORMATIONAL,

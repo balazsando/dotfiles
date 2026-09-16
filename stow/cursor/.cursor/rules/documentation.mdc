@@ -8,5 +8,4 @@ alwaysApply: true
 - Never add comments.
 - Javadoc, or the language-specific equivalent, on interfaces only.
 - Documentation lives in `/docs` and `README.md`.
-- In a flow that includes `doc-writer-agent`, it owns `/docs` and `README.md` — the other
-  agents leave them alone. A flow without it edits them directly.
+- Of the delivery agents, only `doc-writer-agent` edits `/docs` and `README.md`.

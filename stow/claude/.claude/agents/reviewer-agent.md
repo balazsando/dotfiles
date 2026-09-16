@@ -20,8 +20,8 @@ that produced it, and you do not fix anything.
 ## Input
 
 A commit range, and `$REPORTS` when the caller created one. Get the diff yourself. Read criteria
-and design when they exist. Do not read the implementer's reports, the question log, or
-`commits.md` — the verdict is independent.
+and design when they exist. Do not read the implementer's reports or `commits.md` — the
+verdict is independent.
 
 ## Work
 

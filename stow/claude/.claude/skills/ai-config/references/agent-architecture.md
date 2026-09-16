@@ -1,7 +1,8 @@
 # Agent architecture
 
 Why the agent layer is shaped this way, and the bar a new agent has to clear. Delivery agents
-follow `agent-workflow`. Orchestrating commands follow `orchestration`. Neither is repeated here.
+follow `agent-workflow`. Orchestrating commands follow `orchestration`. Neither is repeated here,
+and neither is any agent's brief.
 
 ## The model
 
@@ -23,66 +24,47 @@ agent. Departing from that needs a documented reason in this file.
 ## Agent rules
 
 1. One primary responsibility, stated in the first line of the body.
-2. Explicit **capabilities** (`tools:`) and explicit **limits** (`## Limits`). Every capability
-   has a reason; every limit prevents a specific creep.
+2. Explicit **capabilities** (`tools:`) and explicit **limits** (`## Limits`), in the agent's own
+   brief and nowhere else — no agent reads another's. Every capability has a reason; every limit
+   prevents a specific creep. Enforce a limit through `tools:` where it can be.
 3. Only the context the responsibility needs: reports and paths, never the conversation that
    produced them. `$REPORTS` is open — list it and read what the task needs. Do not name
    required files in the brief.
 4. It writes the reports its own brief names and nothing else, and that brief carries their
-   schema: a schema belongs to its writer, never to the shared contract every agent loads. Shared
-   session files (`questions.md`, `research.md`) are the exception; `agent-workflow` owns those.
-   The design owner writes the compiling stubs — the contract the test engineer and developer
-   share.
-5. No agent-to-agent calls. A blocked agent writes a question and returns `BLOCKED`; the
-   orchestrator routes it. That makes circular delegation impossible rather than discouraged.
+   schema: a schema belongs to its writer, never to the shared contract every agent loads.
+   `research.md` is the exception; `agent-workflow` owns it.
+5. No agent-to-agent calls and no questions between agents. An agent researches its own unknowns.
 6. An agent that changes files builds and commits its own work; it never pushes and never
-   rewrites history. A read-only agent produces a report and commits nothing. Which build bar
-   applies is `change-delivery` §4.
+   rewrites history. A read-only agent produces a report and commits nothing.
 7. An agent is reachable from at least one command from the day it is added.
 8. Description in one or two lines: the responsibility and what it leaves behind. Shared
-   workflow rules live in `agent-workflow`, never restated per agent.
+   workflow rules live in `agent-workflow`, never restated per agent; agent-specific rules never
+   enter a shared skill.
 9. Every other named skill costs a file read on every spawn. Name only what the responsibility
-   needs. Fence writes and harmful operations; do not fence research.
+   needs, and load the conditional ones on their condition. Fence writes and harmful operations;
+   do not fence research.
 
-## Roles and their fences
+## Where the boundaries are, and why
 
-| Agent | Owns | Must not |
-| --- | --- | --- |
-| `requirements-agent` | business intent, acceptance criteria | design, code, tests, commits |
-| `architect-agent` | intended structure, decisions, compiling stubs (production and test sources) | business decisions, production behaviour, scenarios, assertions |
-| `developer-agent` | production implementation against the design and the criteria | tests, design, documentation files when a doc writer is in the flow |
-| `test-engineer-agent` | test strategy and tests; design and stubs when the flow has no architect | production behaviour, criteria |
-| `reviewer-agent` | the verdict | any change at all |
-| `doc-writer-agent` | `/docs` and `README.md` | production source, tests, design or business decisions |
+Only independence justifies a boundary: `model:` cannot vary across the Claude–Cursor contract, so
+no split pays for itself with a cheaper model.
 
-A compiling stub may change a test file's types, constructors and imports so `test-compile`
-succeeds. It may not add a scenario or assertion — those are test cases, and they belong to the
-test engineer. The developer never edits a test to make the suite pass.
+- **Tests and implementation never share an agent.** The author of the code cannot be its
+  independent check, so a change with nothing to assert drops the tests rather than reassigning
+  them.
+- **Criteria, design and contract are one agent.** A separate analyst researched what the prompt
+  already answered, and a skippable architect left the tests with no contract. The context that
+  settles a criterion is the context that shapes its signature.
+- **Design and stubs stay together.** A separate stub writer was tried and reverted: `design.md`
+  had to enumerate every signature for a second agent to transcribe.
+- **Facts are not a service.** A research step, then questions routed between agents, each cost an
+  orchestrator round trip for what a lookup answers.
+- **Record-worthy decisions are the user's.** An implementer that wrote its own ADR turned a
+  configuration tweak into architecture history. Agents propose; the user decides.
 
-Tests belong to someone who cannot edit production behaviour, so a red test is reported rather
-than deleted. The verdict belongs to someone who never read the implementer's reasoning, so the
-review judges the diff rather than re-deriving it.
-
-Most fences are prose, because four agents hold unrestricted `Edit`/`Write` and `Bash`. The
-reviewer's "no edits" fence is enforced by its `tools:` line, which omits `Edit`.
-
-`/deliver` sizes the flow, and size never drops the test engineer — only a diff with no
-behaviour to assert does. A flow that kept the developer and dropped its check would put the
-author of the code back in charge of judging it, so the exemption removes the tests rather than
-reassigning them.
-
-## Sequence
-
-Outside-in: criteria, then the contract, then the failing tests, then the implementation that
-makes them green. The test engineer always runs before the developer. When the flow has no
-architect, the test engineer is the design owner: `design.md` and stubs in one commit, the AC
-suite in a second. `tech` questions follow the design owner. A `test-fail.md` finding is
-production behaviour; a suite that contradicts the criteria is a `test` question, not a test
-edit by the developer.
-
-Two agents still do not share a tree mid-task. Splitting one role across several agents is
-deliberately not done; the precondition for revisiting it is disjoint file sets declared in
-`design.md`.
+Routing is the orchestrator's, from the returned status alone: an agent narrow enough to be cheap
+cannot see enough to route, and an agent that cannot call another cannot delegate in a circle.
+Two agents never share a tree mid-task; revisiting that needs disjoint file sets declared up front.
 
 ## Adding to this
 

@@ -36,7 +36,7 @@ Read the skill file when the work starts; do not rely on memory. Skills live in
 | Adding or changing a skill, agent, command, AI rule, or MCP server | `ai-config` |
 | Multi-stage development work — feature, refactor, ticket | `/deliver` or `/ticket-to-merge`, which orchestrate the specialised agents |
 | Orchestrating delivery agents — session directory, spawn, routing, status | `orchestration` |
-| Running a delivery agent — reports, questions, status, commits | `agent-workflow` |
+| Running a delivery agent — reports, research, status, commits | `agent-workflow` |
 
 Prefer the simplest solution and do not force a pattern; project conventions beat skill defaults;
 say so plainly when no skill applies rather than inventing a process.
@@ -113,5 +113,4 @@ shared branch without explicit authorization.
 - Never add comments.
 - Javadoc, or the language-specific equivalent, on interfaces only.
 - Documentation lives in `/docs` and `README.md`.
-- In a flow that includes `doc-writer-agent`, it owns `/docs` and `README.md` — the other
-  agents leave them alone. A flow without it edits them directly.
+- Of the delivery agents, only `doc-writer-agent` edits `/docs` and `README.md`.

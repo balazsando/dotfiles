@@ -61,8 +61,8 @@ Three, and a command is exactly one of them:
 - **Dispatcher** — one agent owns the job. `/create-tech-ticket`, `/enhance-jira-description`,
   `/dotfiles-devops`: spawn it, relay unabridged, resume the **same** agent via SendMessage
   rather than spawning a second one.
-- **Orchestrator** — several narrow agents, with the flow conditions and the question routing.
-  `/deliver` (three sizes), `/ticket-to-merge`, `/mr-review`, `/bug-fix`. It sizes and routes; it
+- **Orchestrator** — several narrow agents, with the step conditions and the status routing.
+  `/deliver`, `/ticket-to-merge`, `/mr-review`, `/bug-fix`. It sizes and routes; it
   never does a stage itself, and it never builds. It spawns each agent only once that agent's
   prerequisites hold, never the whole flow up front. It loads `orchestration`; it does not load
   the agent contract.
@@ -146,7 +146,7 @@ organisation or its network must not enter a tracked file, including as an examp
    only. Did a rule mirroring a `CLAUDE.md` section change (`git`, `documentation`, `layers`,
    `economy-of-words`)? Both copies.
 4. Added or changed an agent? It must be invoked by a command in the same change, its
-   capabilities and limits must match `references/agent-architecture.md`, its questions and status
+   capabilities and limits live in its own brief per `references/agent-architecture.md`, its status and research
    `agent-workflow`, and the schema of every report it writes lives in its own brief. An
    orchestrating command loads `orchestration`, not the agent contract. Removed one? Remove every
    reference in both trees.

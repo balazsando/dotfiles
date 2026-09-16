@@ -279,33 +279,21 @@ fi
 
 Two assistants (Claude Code, Cursor) share one instruction set. Skills and agents are authored
 once in `stow/claude/.claude/`; Cursor discovers them from `~/.claude`. A same-named copy under
-`stow/cursor/` would shadow the shared file silently — `check-ai-parity.sh` fails that, and
-`stow.sh` runs it before stowing. What is Cursor-specific, and why, is in `README.md`.
+`stow/cursor/` would shadow the shared file silently, so `check-ai-parity.sh` fails on it and
+`stow.sh` runs that check first. What is Cursor-specific is in `README.md`.
 
-**Layers, no overlap.** A *command* sequences and relays. An *agent* owns one responsibility, its
-tools, its output, and its write fence. A *skill* owns domain knowledge and any MCP server it
-fronts. The *router* (`CLAUDE.md`) maps situation → skill and holds standing contracts (git,
-documentation, economy-of-words). Cursor has no router: *rules* carry those same contracts
-(`alwaysApply`) or bind a file type to a skill (`globs`) — never a second routing table. That
-mirroring is the tree's only intentional duplication.
+**Layers, no overlap.** The router (`CLAUDE.md`, or always-on Cursor rules) holds standing
+contracts and maps situations to skills. Skills hold domain knowledge and front MCP servers.
+Agents each own one responsibility. Commands sequence agents and relay their output.
 
-Commands do not do an agent's work. Agents do not teach domain knowledge. Skills do not dispatch.
-Restating one layer in another is the defect this exists to prevent.
+**Delivery is orchestrated.** Commands such as `/deliver` run a change through narrow agents —
+plan, tests, implementation, documentation — each in its own context, sharing a session report
+directory and returning a status the command routes on. Tests and implementation never share an
+agent. Findings worth keeping persist to `~/.claude/knowledge/`, and `repos-index.sh` catalogs
+local repositories' graphify graphs so lookups are queries rather than crawls.
 
-How to change the tree, and the bar for a new agent, is `ai-config` (its
-`references/agent-architecture.md` for the agent model). How agents operate together is
-`agent-workflow`; how commands sequence them is `orchestration`; branch, build and commit
-mechanics are `change-delivery`. Delivery is outside-in: tests before implementation, compile
-bar for the contract and the suite, green bar for the developer. The test engineer is the
-design owner when the flow has no architect. New-technology notes live in
-`$REPORTS/research.md` so later agents reuse them.
-
-A rule loaded on every request must change behaviour on turns that would never load the matching
-skill. Git, documentation, graphify and economy-of-words qualify. MCP configuration does not — it
-lives in `ai-config`.
-
-Organisation-specific values live in `~/.claude/local/*.md`, untracked. Skills name the file;
-they never inline it. `~/.cursor/local` is a symlink to the same directory.
+How to change any of it is the `ai-config` skill. Organisation-specific values live in
+`~/.claude/local/*.md`, untracked; `~/.cursor/local` links to the same directory.
 
 ---
 

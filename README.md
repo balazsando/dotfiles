@@ -88,6 +88,23 @@ want those in the graph too. `graphify claude install` adds an always-on nudge t
 mode (nudge toward `graphify query`) is the default, pinned by `GRAPHIFY_HOOK_STRICT=0` in
 `env.zsh`, and `--strict` blocks the first raw file read of a session instead.
 
+### Cross-repo lookup and the knowledge store
+
+A graph only helps an agent that knows it exists. `repos-index.sh` walks `$REPOS_DIR` and writes
+`~/.claude/local/code-index.md` — every repo, its graph path and node count — so a question about
+another repository is a `graphify query --graph <path> --budget N` rather than a filesystem crawl.
+Run it by hand; the bootstrap does not.
+
+```bash
+bash ~/.local/share/dotfiles/scripts/repos-index.sh             # refresh graphs, then catalog
+bash ~/.local/share/dotfiles/scripts/repos-index.sh --no-update # catalog only
+```
+
+`~/.claude/knowledge/` is the second half: one file per finding, one line per file in `INDEX.md`,
+so research done in one session is not repeated in the next. The order agents consult both in is
+`agent-workflow`. Both directories are unversioned and machine-local, because their contents name
+internal repositories.
+
 ### Keeping secrets out of the repository
 
 This repository is public and configures a machine that works against private infrastructure,
