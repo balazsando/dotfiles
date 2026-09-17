@@ -15,7 +15,6 @@ Read the skill file when the work starts; do not rely on memory. Skills live in
 
 | When | Load |
 | --- | --- |
-| Exploring an unfamiliar or large codebase — "how does X connect to Y" | `graphify` (`/graphify .`, then `graphify query`) |
 | Writing or changing Java / Spring / Maven code | `java-standards`, then `clean-code` |
 | Micrometer meters, naming, tags, Observation API, or registries | `micrometer` |
 | Spring Boot 4 observability wiring — Actuator, auto-instrumentation, OTLP, Prometheus scrape | `spring-observability`, then `micrometer` |

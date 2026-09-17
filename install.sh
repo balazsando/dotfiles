@@ -261,18 +261,7 @@ else
     else
       run uv tool install "$_tool" >/dev/null && ok "$_name"
     fi
-  done < <(grep -v '^#\|^[[:space:]]*$' "$DOTFILES/packages/uv-tools.txt")
-fi
-
-# The graphify routing row in CLAUDE.md makes its own registration a no-op.
-if $DRY_RUN; then
-  echo "  → would register the graphify skill"
-elif ! has graphify; then
-  skip "graphify not on PATH — skill registration"
-elif [[ -f "$HOME/.claude/skills/graphify/SKILL.md" ]]; then
-  skip "graphify skill"
-else
-  graphify install >/dev/null && ok "graphify skill"
+  done < <(grep -v '^#\|^[[:space:]]*$' "$DOTFILES/packages/uv-tools.txt" || true)
 fi
 
 # ── 12. Post-install ──────────────────────────────────────────────────────────

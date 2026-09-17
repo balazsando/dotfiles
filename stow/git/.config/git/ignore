@@ -52,5 +52,4 @@ Desktop.ini
 **/.claude/settings.local.json
 CLAUDE.md
 .jirlab/
-graphify-out/
 .env.local

@@ -139,11 +139,11 @@ TPM (Tmux Plugin Manager) is cloned separately from the main tool install becaus
 
 ### Step 11c — Agent token tooling
 
-Both tools hook *below* the agent rather than wrapping it: rtk rewrites the agent's bash calls through a `PreToolUse` hook, graphify is a skill it calls. Registration targets `~/.claude/settings.json` and `~/.claude/skills/` — live runtime state, the same reason MCP servers go through the CLI in step 11b. `~/.claude/settings.json` stays untracked: it carries machine-local work context.
+rtk hooks *below* the agent rather than wrapping it: it rewrites the agent's bash calls through a `PreToolUse` hook. Registration targets `~/.claude/settings.json` — live runtime state, the same reason MCP servers go through the CLI in step 11b. `~/.claude/settings.json` stays untracked: it carries machine-local work context.
 
-Only the graphify skill is registered here. The rtk hook is left to the `claude` and `ai` shell functions, which check it on every launch — one code path instead of two, and it self-heals if `settings.json` is reset.
+The rtk hook is left to the `claude` and `ai` shell functions, which check it on every launch — one code path instead of two, and it self-heals if `settings.json` is reset.
 
-Two choices keep the tools out of tracked files. `rtk init --hook-only` suppresses `RTK.md` and its `@`-reference. The graphify row in `stow/claude/.claude/CLAUDE.md`'s routing table makes `graphify install`'s own registration a no-op — `~/.claude/CLAUDE.md` symlinks into that tracked file.
+`rtk init --hook-only` suppresses `RTK.md` and its `@`-reference, so nothing tracked is written.
 
 Ordered after step 8 (provides `uv`) and step 9 (the CLAUDE.md symlink must exist).
 
@@ -292,8 +292,85 @@ directory and returning a status the command routes on. Tests and implementation
 agent. Findings worth keeping persist to `~/.claude/knowledge/`, and `repos-index.sh` catalogs
 local repositories' graphify graphs so lookups are queries rather than crawls.
 
-How to change any of it is the `ai-config` skill. Organisation-specific values live in
-`~/.claude/local/*.md`, untracked; `~/.cursor/local` links to the same directory.
+Cursor has no router: it discovers skills by their `description`, so a rule exists only to state
+a standing contract (`alwaysApply`) or to bind a file type to a skill (`globs`) — never to
+duplicate the routing table. The always-on rules that mirror a `CLAUDE.md` section — git,
+documentation, layers (precedence), economy-of-words — are the tree's only intentional duplication.
+
+**Agents are roles, not pipelines.** A heavy workflow is six narrow agents — requirements,
+architect, developer, test engineer, reviewer, doc writer — each with one responsibility, a
+`tools:` fence, an explicit limits section, and the reports it owns. A single agent that read the
+ticket, designed, implemented, tested and judged its own work kept everything in one window, so
+the review reasoned over the noise of the implementation and the agent that wrote a test was the
+one that wanted it to pass. Orchestrating commands (`/deliver`,
+`/ticket-to-merge`, `/mr-review`, `/bug-fix`) size the work and sequence the agents; they never
+implement, never modify project files and never run a build. Each agent is spawned only once its
+own prerequisites hold — the reports it reads exist, the commit it reads is in place — so the doc
+writer starts after the implementation is complete and the build is green, never at the top of
+the flow. `/mr-review` is the only command that runs the reviewer, so the verdict is a separate
+request against a finished branch. `/deliver` sizes the flow — small (developer, test engineer),
+medium (plus requirements), deep (plus architect and doc writer) — and anything unanswerable is
+deep. Size never drops the test engineer; only a diff with no behaviour to assert does, and then
+the tests are skipped rather than handed to the developer, so the author of the code never judges
+it. A diff that outgrows its estimate escalates mid-run.
+
+**Agents communicate through files.** `~/.claude/skills/agent-workflow/SKILL.md` is the single
+contract: the session report directory `.claude/state/<session>/`, the schemas (`prompt.md`,
+`requirements.md`, `design.md`, `developer-design.md`, `test-fail.md`), question routing and the
+status signals. What each agent reads, writes and builds is in its own brief, not restated in the
+contract. Nothing travels in a command argument or a conversational relay, so nothing carries the
+previous agent's reasoning or tool output. A blocked agent appends its question to
+`questions.md` and returns `BLOCKED`; the orchestrator routes it — technical questions to the
+architect and then the user, functional ones to the requirements agent and then the user — and
+writes the answer back to `answers.md`. Agents never call each other, which makes circular
+delegation impossible rather than discouraged. Each returns one status token: `DONE`, `BLOCKED`,
+`PAUSED` (complete but resumable, so a later question reaches it without a cold restart) or
+`FAILED`, and a `FAILED` agent commits nothing. The reviewer deliberately never sees the
+implementer's reports — it judges the diff against the criteria.
+
+**Every agent owns its build and its commit.** The architect's stubs compile, the developer's
+implementation compiles, the test engineer's and the doc writer's trees are green with tests, and
+each commits its own work atomically — the architect first, since it is the first to touch
+repository files. Orchestrators hold the `CLAUDE.md` commit exception for the agents they spawn
+and never build themselves, so a red result stops the agent that caused it rather than travelling
+up. The exception is bounded by a branch, not by a command: an orchestrator resolves the base and
+cuts the run's own branch (`change-delivery` §1–3) before the first agent that edits, naming it
+after the ticket key when there is one. A protected branch — the base, `main`, `master`,
+`develop`, `release`, `release/*` — is never worked on, so no agent can commit where the
+exception was not meant to reach.
+
+**Stubs are what makes the deep flow parallel.** The architect writes compiling stubs that fix the
+structure — signatures and file existence, never behaviour — against the project's own build. The
+developer fills the bodies in the main worktree while the test engineer writes tests from the
+criteria and those same stubs in a detached worktree of its own; both commit atomically. The
+orchestrator merges the test worktree when the developer is done and resumes the test engineer,
+which builds the merged tree with the tests — the pair's green bar is verified by the agent that
+wrote them, not by the orchestrator that cannot build. Remaining failures go back as
+`test-fail.md`. Where the isolation costs too much the two run in order instead: no safe
+isolation, no concurrency. Agents cannot renegotiate mid-task, so
+parallelism is only ever safe against a contract frozen in a file before both start.
+
+**Shared rules live in one place.** The workflow contract is `agent-workflow`; branch, build and
+report mechanics are `change-delivery`; every Jira MCP call is `jira-tickets`, as Sonar and Loki
+access already were in `sonarqube-validation` and `app-bug-detection`. Documentation is one rule
+in the router — no comments, documentation on interfaces only, and `/docs` and `README.md` owned
+by the doc writer in any flow that includes one — and no agent or skill restates it. There is no
+formatter agent: formatting is a build step, so it is a bounded permission inside the agents that
+build. The rules for adding the
+next agent, skill or command are in `ai-config/references/agent-architecture.md`.
+
+**What earns a resident slot.** A rule loaded on every request must change behaviour on a turn
+where the matching skill would never load — prohibitions and defaults qualify, reference
+knowledge does not. Git and documentation qualify: by the time you would think to look
+them up, the commit, the omission, or the grep has already happened. Brevity qualifies for its
+floor only, because the turns it governs are the ones too small to trigger a skill. MCP
+configuration does not — it is consulted when `mcp.json` is open — so it lives in `ai-config`
+and the router keeps a table row.
+
+**Machine-local overlay.** Anything organisation-specific — project keys, board ids,
+documentation repositories, cluster names — lives in `~/.claude/local/*.md`, restored from
+Bitwarden and never tracked. Skills name the file to read; they never inline its contents.
+`~/.cursor/local` symlinks to the same directory, so one copy serves both.
 
 ---
 

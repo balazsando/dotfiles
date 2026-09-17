@@ -19,7 +19,7 @@ source ~/.config/zsh/env.zsh
 
 # --- Oh My Zsh Core Config ---
 ZSH_THEME="powerlevel10k/powerlevel10k"
-plugins=(git docker kubectl zsh-autosuggestions zsh-syntax-highlighting)
+plugins=(git kubectl zsh-autosuggestions zsh-syntax-highlighting)
 source $ZSH/oh-my-zsh.sh
 
 # --- Aliases & Functions ---
