@@ -75,7 +75,7 @@
       }
     },
     "codebase-memory-mcp": {
-      "command": "/home/bando/.local/bin/codebase-memory-mcp",
+      "command": "codebase-memory-mcp",
       "args": []
     }
   }

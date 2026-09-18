@@ -16,11 +16,12 @@ line for line, but the *server list* stays in step when one is added or removed.
 Registered: `sonarqube`, `jira`, `atlassian-rovo-mcp`, `gitlab`, and four distinct Grafana
 instances — `grafana` (the default non-prod instance, `$GRAFANA_URL`), `grafana-prep` and
 `grafana-prep-connector` (pre-prod), and `grafana-prod` (production, read-only; the only one
-`app-bug-detection` queries).
+`app-bug-detection` queries), and `codebase-memory-mcp`, called by bare name — its installer puts
+it on `PATH`.
 
 Prefer a plain `npx`/`uvx` entry over a launcher script. The one remaining launcher
 (`~/.local/share/dotfiles/scripts/jira-mcp.sh`) is shared by both assistants — edit it there,
-never fork a per-agent copy. Cursor only injects the env vars listed in `mcp.json`, which is the
+never fork a per-assistant copy. Cursor only injects the env vars listed in `mcp.json`, which is the
 one case that still justifies a launcher.
 
 Node ignores the OS trust store. `env.zsh` rebuilds the `~/certs` bundle through `node-ca.sh` on
@@ -36,7 +37,8 @@ Never duplicate or commit sensitive configuration into a project repository.
 
 Git hooks are stowed from `stow/git/.githooks/` and enabled globally by `core.hooksPath`, so they
 run in **every** repository on the machine — a new hook must be safe in a work repo, not just
-this one. `prepare-commit-msg` expands `category-message` into the final subject.
+this one. `prepare-commit-msg` expands `category-message` into the final subject and strips
+tooling attribution.
 
 Write them in POSIX `sh`: `shopt` and other bash-only builtins fail there, and a `.sh` extension
 does not make a file bash. Keep them fast — a slow or noisy hook gets bypassed reflexively, which

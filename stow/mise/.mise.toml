@@ -10,8 +10,8 @@ node               = "lts"
 python             = "latest"
 go                 = "latest"
 # rust               = "latest"
-java               = "21"
-maven              = "latest"
+# java               = "21"
+# maven              = "latest"
 kotlin             = "latest"
 
 # ─── Python tooling ───────────────────────────────────────────────────────────

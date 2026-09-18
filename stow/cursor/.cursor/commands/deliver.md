@@ -1,39 +1,65 @@
 ---
-description: "Run a change through the delivery agents: plan, tests, implementation, documentation"
+description: "Deliver a change from a Jira ticket or a plain-text task on its own branch, up to a merge request"
 ---
 
-Deliver the text after `/deliver` through the delivery agents. You orchestrate. You do not plan,
-implement, test, document, or build.
+Deliver the change named after `/deliver`.
 
-Load `orchestration` for the steps and the routing table. Branch mechanics are `change-delivery`.
-This command carries the `git` rule's commit exception for the subagents it delegates to: they
-commit on this run's own branch and nowhere else, and nothing is pushed.
+Load `change-delivery` for branch, validation, commit and report mechanics, and `jira-tickets`
+when there is a ticket. This command carries the `git` rule's commit exception, on this run's
+own branch and nowhere else.
 
-## Run
+## Input
 
-1. **Preconditions and base branch** — `change-delivery` §1–2. A dirty tree stops the run.
-2. Create `$REPORTS` and write `prompt.md`.
-3. **Branch** — `change-delivery` §3, before the first delegation. A caller that already branched
-   (`/ticket-to-merge`) keeps its branch — never branch twice.
-4. Run the steps below in order, one at a time, and route each returned status per
-   `orchestration`. State a skipped step and why.
-5. **Hand back** — `change-delivery` §6.
+A leading ticket key (`ABC-123`, or a bare number per `jira-tickets`) is the ticket; the rest of
+the text, minus flags, is the task or the clarification.
+
+| Input | Criteria from | Ends with |
+| --- | --- | --- |
+| Ticket | the ticket | push and merge request |
+| Ticket + text | the ticket, refined by the text | push and merge request |
+| Text | the text | local commits; ask before pushing |
+| Nothing | ask | — |
+
+**Clarification** refines the ticket for this run only; the ticket itself is never edited. Where
+the text is more specific, it wins. Where it contradicts a ticket criterion or widens the scope,
+ask before editing. State which criteria it changed.
+
+## Rules
+
+- Never present an inference as a source. No testable criterion in any source, or the intent needs
+  a business decision → ask.
+- The design that fits the repository beats a blank-page one: smallest structure that satisfies
+  the criteria, no refactor they did not ask for.
+- Never weaken, skip or delete an existing test to make the code fit.
+- Ask before pushing to a shared branch and before commenting on an existing merge request.
 
 ## Steps
 
-1. **Plan** — always. With `--from <KEY>`, the ticket is its source.
-2. **Tests** — after the plan, including its stub commit when it made one. Skipped only where the
-   diff has nothing to assert: documentation, formatter output, or configuration no runtime reads.
-   A dependency bump qualifies when no call site changed. Anything the application reads or
-   executes at run time is not exempt, and neither is a diff you cannot classify. The developer
-   never writes the tests in its place.
-3. **Implementation** — always, after the test commit when step 2 ran. A change with nothing to
-   implement is not this command.
-4. **Documentation** — after the implementation commit and a `DONE`, when grep over `/docs` and
-   `README.md` hits a symbol, command, path or flag the diff touched, or `design.md` marks a
-   decision `(ADR)`. Neither → no delegation. `--no-docs` skips it.
+1. **Repository** — with a ticket, when the current directory is not the right repo, match the
+   ticket's component and labels against the repositories under `$REPOS_DIR`; ask only when the
+   ranking is tied, or when `$REPOS_DIR` is unset. Without one, the current repository.
+2. **Preconditions and base branch** — `change-delivery` §1–2.
+3. **Criteria** — the ticket with its comments and links, or the text; then the repository's
+   `/docs` and `README.md`, and the documentation repositories in `~/.cursor/local/doc-repos.md`
+   (missing → say so). State the criteria and assumptions before branching.
+4. **Branch** — `change-delivery` §3, before the first edit. With a ticket, the slug starts with
+   its key.
+5. **Tests** — for the criteria: `atdd` for feature, API or domain tests, `java-standards`
+   `references/tests.md` for Java. Skipped only when the diff has nothing to assert —
+   documentation, formatter output, configuration no runtime reads.
+6. **Implement** — with the language skills the code needs (`java-standards`, then `clean-code`,
+   for Java/Spring/Maven), until `change-delivery` §4 is green.
+7. **Documentation** — unless `--no-docs`, update `/docs` and `README.md` where they name a
+   symbol, command, path or flag the diff touched. Propose an ADR only for a high-impact or
+   lock-in decision; write it once the user confirms.
+8. **Commit** — `change-delivery` §5.
+9. **Push and merge request** — with a ticket, or when the user agrees: push the branch, open the
+   MR (GitLab MCP, or `glab`), link the ticket when there is one, and state criteria coverage and
+   assumptions.
+10. **Pipeline** — when pushed, watch it. Fix a failure with a new commit on the branch; never by
+    weakening a test.
 
 ## Done when
 
-Every criterion is met or explicitly waived by the user, the tests pass, coverage is met or its
-shortfall justified, and step 4 has run or been recorded as not needed.
+Every criterion is met or waived by the user, the tests pass, and coverage is met or its shortfall
+justified. Report per `change-delivery` §6, plus the merge request URL.

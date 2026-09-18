@@ -17,8 +17,8 @@ Fix the SonarQube findings that are mechanically safe; leave everything else in 
   `refactor/*` branch, one local commit. Never push, never open a merge request.
 - Fix only behaviour-preserving changes provable by a compile plus the existing tests; every
   change maps to a real issue key from the collected report.
-- The fixes below are mechanical and single-file, so this command edits directly rather than
-  spawning a developer: anything needing judgement is on the skip list. Never widen that list.
+- The fixes below are mechanical and single-file; anything needing judgement is on the skip list.
+  Never widen that list.
 - Stop and ask when the project match is ambiguous or the build cannot be validated locally —
   plus the `change-delivery` §1 stop conditions.
 

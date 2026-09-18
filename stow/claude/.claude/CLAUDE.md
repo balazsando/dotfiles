@@ -33,16 +33,13 @@ Read the skill file when the work starts; do not rely on memory. Skills live in
 | Neovim, LazyVim, tmux configuration | `neovim-lua`, `lazyvim`, `nvim-tmux` |
 | Bitwarden CLI (`bw`), secrets upload/restore, vault scripting | `bitwarden-cli` |
 | Adding or changing a skill, agent, command, AI rule, or MCP server | `ai-config` |
-| Multi-stage development work — feature, refactor, ticket | `/deliver` or `/ticket-to-merge`, which orchestrate the specialised agents |
-| Orchestrating delivery agents — session directory, spawn, routing, status | `orchestration` |
-| Running a delivery agent — reports, research, status, commits | `agent-workflow` |
 
 Prefer the simplest solution and do not force a pattern; project conventions beat skill defaults;
 say so plainly when no skill applies rather than inventing a process.
 
 ---
 
-# Communication
+## Communication
 
 Use simple English in the shortest form that is still complete and correct.
 
@@ -80,7 +77,8 @@ Prefer, in order:
 - Make the smallest correct change.
 - Avoid speculative abstractions, extensibility, generalization, and future-proofing.
 - Do not modify unrelated code.
-- Never remove validation, error handling, security, accessibility, or data-loss protection to reduce code.
+- Never remove validation, error handling, security, accessibility, or data-loss protection to
+  reduce code.
 - Verify with appropriate tests or validation.
 
 Lazy about the solution, never lazy about understanding the problem.
@@ -98,8 +96,8 @@ missing, ask rather than guess.
 ## Git operations
 
 **Committing and history rewriting are prohibited.** The only exceptions are `/deliver`,
-`/ticket-to-merge`, `/sonar-fix`, and `/bug-fix` while they are running, and the agents they
-spawn. Reading history, diffs, status, blame, logs, and branch state is always allowed.
+`/sonar-fix`, and `/bug-fix` while they are running. Reading history, diffs, status, blame, logs,
+and branch state is always allowed.
 
 Prohibited outside those commands: `git commit` (including `--amend`); staging or unstaging
 (`git add`, `git rm --cached`, `git restore --staged`, index edits); any history-altering command
@@ -114,6 +112,11 @@ parsed from the branch. Do not hand-write the expanded form and do not add the t
 Categories: `feat` `fix` `docs` `chore` `refactor` `style` `test` `deploy` `typo` `revert`
 `version`.
 
+**Never add tooling attribution** — no bot `Co-Authored-By` trailers, no `*-Session:` links, no
+"Generated with" footers — to commits, tags, or merge request descriptions. The hook strips them
+from commit messages as a safety net, but cannot touch MR descriptions and is bypassed by
+`--no-verify`.
+
 **Inside the exceptions**, each owns its own limits — read them there, they are not repeated here.
 Common to all: never `--no-verify`, never touch existing history, and never `--force` on a
 shared branch without explicit authorization.
@@ -125,4 +128,3 @@ shared branch without explicit authorization.
 - Never add comments.
 - Javadoc, or the language-specific equivalent, on interfaces only.
 - Documentation lives in `/docs` and `README.md`.
-- Of the delivery agents, only `doc-writer-agent` edits `/docs` and `README.md`.

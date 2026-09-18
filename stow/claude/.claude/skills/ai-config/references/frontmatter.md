@@ -1,7 +1,5 @@
 # Frontmatter shapes — skill, agent, command, Cursor rule
 
-## Frontmatter
-
 **Skill** — `skills/<name>/SKILL.md`:
 ```yaml
 ---
@@ -20,15 +18,9 @@ tools: Read, Grep, Glob, Edit, Bash, mcp__server__tool   # omit = inherits every
 ---
 ```
 
-`tools:` is the capability fence — list the smallest set the responsibility needs. MCP tools go
-in by full name (`mcp__jira__jira_get_issue`); there is no server-wide wildcard, and a name that
-does not resolve is simply absent, so a missing server costs nothing. Omitting the key inherits
-every tool the session has, which is what the old compound agents did and why they could commit,
-write Jira, and reformat a repository from a review task.
-
-Claude Code enforces `tools:`; treat Cursor's handling of it as unverified. State every limit in
-the body as well — the `## Limits` section is the contract of record, the frontmatter is the
-guard rail. `model:` is accepted too; leave it unset unless a role has a measured reason.
+`tools:` is the capability fence: the smallest set the responsibility needs, MCP tools by full
+name (no server wildcard). Claude Code enforces it; Cursor's handling is unverified, so state
+every limit in a `## Limits` section of the body as well.
 
 **Command** — `commands/<name>.md`:
 ```yaml

@@ -1,7 +1,20 @@
 ---
-description: "Consult the dotfiles DevOps specialist for stow/bootstrap/symlink work"
+description: "Organise, deploy, or troubleshoot a dotfiles repo — stow packages, symlinks, bootstrap"
 ---
 
-The text after `/dotfiles-devops` is the question or task. Delegate to the
-`dotfiles-devops-agent` subagent in the foreground, passing the text verbatim as the task prompt.
-Relay its recommendations and any file/command output back to the user directly.
+Handle the dotfiles task named after `/dotfiles-devops`; ask for one if it is missing. Goal: a
+fresh machine comes up from one command, with no manual steps and no secrets in version control.
+
+Load `dotfiles` and `stow`. Java, Kubernetes, Grafana, or editor configuration inside the repo
+goes to the skill that owns it.
+
+## Steps
+
+1. **Read before proposing** — the packages, `.stowrc`, `stow.sh`, `install.sh`, and any
+   bootstrap scripts. Match what is there; never restructure a working repo to fit a preference.
+2. **Diagnose from the filesystem** — `stow.sh -n` or `stow --simulate`, `readlink` on the
+   suspect paths, the package's own tree. State what you observed before what you conclude.
+3. **Change the smallest thing that fixes it.** A conflict is usually one file in the wrong
+   package, not a reason to redesign the layout. Scripts stay idempotent, with a failure message
+   per precondition and dry-run support where they change the filesystem.
+4. **Verify** — re-run the simulation, check the symlinks resolve, and name the commands you ran.

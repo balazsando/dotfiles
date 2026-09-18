@@ -1,7 +1,7 @@
 # dotfiles
 
-Personal dotfiles for Debian/Ubuntu/WSL2, managed with [GNU Stow](https://www.gnu.org/software/stow/)
-and [mise](https://mise.jdx.dev/).
+Personal dotfiles for Debian/Ubuntu/WSL2, managed with
+[GNU Stow](https://www.gnu.org/software/stow/) and [mise](https://mise.jdx.dev/).
 
 [![Version](https://img.shields.io/badge/version-1.6.0-blue)](CHANGELOG.md)
 
@@ -15,9 +15,9 @@ dotfiles/
 ├── stow/                   # GNU Stow packages — each maps to $HOME
 │   ├── bat/                # bat config + themes
 │   ├── bin/                # Standalone binaries (win32yank.exe for the WSL clipboard)
-│   ├── claude/             # Claude Code: CLAUDE.md, agents, commands, skills, MCP
+│   ├── claude/             # Claude Code: CLAUDE.md, commands, skills, MCP
 │   ├── cursor/             # Cursor: rules, commands, MCP (skills/agents shared from claude/)
-│   ├── git/                # .gitconfig, .githooks, .config/git/{ignore,credentials}
+│   ├── git/                # .gitconfig, .githooks, .config/git/ignore
 │   ├── java/               # Maven settings, Eclipse formatter
 │   ├── lf/                 # lf file manager
 │   ├── mise/               # .mise.toml — runtimes, CLI tools, tasks
@@ -31,9 +31,8 @@ dotfiles/
 │   └── work-wsl/           # Work-machine WSL overrides
 ├── packages/
 │   ├── apt.txt             # APT packages
-│   ├── pip.txt             # pip packages
 │   └── uv-tools.txt        # Python CLI tools installed as uv tools
-├── .claude/commands/       # Project commands: /release, /review-staged (.cursor/commands/ mirrors them)
+├── .claude/commands/       # /release, /review-staged (mirrored in .cursor/commands/)
 ├── CLAUDE.md               # Project rules — never publish secrets
 ├── install.sh              # Bootstrap — run once on a new machine
 ├── stow.sh                 # Idempotent re-stow
@@ -57,8 +56,8 @@ Do not "fix" these.
   directory; no script edit.
 - `--no-folding` in `.stowrc` links each file individually. It keeps `~/.config/zsh/` a real
   directory, so `~/.config/zsh/secrets` is not written into the working tree.
-- `~/.config/nvim` stays a real directory — LazyVim writes lockfiles and caches there. The distro
-  `~/.zshrc` is removed before stowing, so no `.bak` appears.
+- `~/.config/nvim` stays a real directory — LazyVim writes lockfiles and caches there. A real
+  `~/.zshrc` (the distro's or Oh-My-Zsh's) is moved to `~/.zshrc.pre-stow` once before stowing.
 - After stowing, `stow.sh` removes symlinks that dangle into `stow/` and the directories that
   emptied. A stale link is otherwise still discovered — a deleted skill kept loading that way.
   `-n` reports instead.
@@ -74,7 +73,7 @@ Do not "fix" these.
   `~/.config/zsh/secrets`, which is uploaded back into the vault it unlocks.
 - Infrastructure-identifying values live in `~/.config/zsh/secrets` as variables (`JIRA_*`,
   `NEXUS_SERVER_ID`, `WORK_K8S_*`, `WIN_USER`, the kubeconfig aliases), and in `~/.claude/local/`
-  as markdown for skills and agents.
+  as markdown for skills and commands.
 
 **Runtime state**
 
@@ -84,6 +83,15 @@ Do not "fix" these.
   (`git status` → `rtk git status`); `Read`/`Grep`/`Glob` bypass it. The `claude` and `ai` shell
   functions register it on launch when missing, so it self-heals after a `settings.json` reset.
   `rtk init --hook-only` writes nothing tracked. `rtk gain` shows the savings.
+- codebase-memory-mcp comes from its upstream installer, not mise. The installer is pinned to a
+  release commit and SHA256-verified, like `jirlab`, and `CBM_DOWNLOAD_URL` points it at the same
+  release, whose `checksums.txt` it checks the binary against; bump `CBM_TAG`, `CBM_COMMIT` and
+  `CBM_SHA256` together. It copies the binary to `~/.local/bin` and points its hooks at that
+  path. `--clients=claude` also writes its three `codebase-memory*` agents, its skill, and its
+  hooks into `~/.claude` — untracked, and the only agents on the machine. Cursor is left out because the installer would write an absolute path
+  into the stowed `mcp.json`; it finds the agents and skill in `~/.claude`. `SHELL=/bin/sh`
+  sends the installer's PATH line to `~/.profile` instead of the stowed `.zshrc`. Step 13
+  registers the servers afterwards, replacing the absolute path it writes to `~/.claude.json`.
 
 ## AI assistant configuration
 
@@ -103,19 +111,21 @@ re-run on a half-bootstrapped machine.
 | **1. APT** | `packages/apt.txt`, including `npm` — `bw` must exist before mise |
 | **2. WSL PATH guard** | Non-System32 `/mnt/c/` on `PATH` → copies `host/wsl.conf` to `/etc/wsl.conf` and exits; run `wsl --shutdown`, then re-run |
 | **3. BW CLI** | `@bitwarden/cli` and `tree-sitter-cli` via npm into `~/.npm-global` |
-| **4. Secrets + certs** | `bw-restore.sh`, then `update-ca-certificates`; TLS validates normally from here |
+| **4. Secrets + certs** | Offers `bw-restore.sh`, which also installs the corporate CA; TLS validates normally from here |
 | **5. Oh-My-Zsh** | OMZ, `zsh-autosuggestions`, `zsh-syntax-highlighting`, Powerlevel10k |
 | **6. GitHub binaries** | `jirlab`, pinned to a commit and SHA256-verified; `cursor-agent` from Cursor's installer (the npm package of that name is unrelated) |
 | **7. Default shell** | `chsh` to zsh |
-| **8. mise** | Runtimes and CLI tools from `.mise.toml`. SDKMAN is sourced by `.zshrc` if present; not installed here |
-| **9. Stow** | `stow.sh` |
-| **10. tmux TPM** | Clones TPM |
-| **11. Git identity** | `~/.gitconfig_local` from `GIT_USER_NAME`/`GIT_USER_EMAIL`, or a prompt |
-| **11b. MCP servers** | `~/.claude/bin/install-mcp-servers.sh` registers into `~/.claude.json` |
-| **11c. Agent token tooling** | uv tools from `packages/uv-tools.txt` |
-| **12. Post-install** | `addcerts.sh` (Java keystore), `Lazy! sync`, tmux plugins, `repos-restore.sh` |
+| **8. mise** | Runtimes and CLI tools from `.mise.toml` |
+| **9. SDKMAN** | Upstream installer with `rcupdate=false` — `.zshrc` already sources it. Then the newest Temurin 21 (`JAVA_MAJOR`, resolved from the SDKMAN API, which lists only the latest patch per major) and Maven |
+| **10. Stow** | `stow.sh` |
+| **11. tmux TPM** | Clones TPM |
+| **12. Git identity** | `~/.gitconfig_local` from `GIT_USER_NAME`/`GIT_USER_EMAIL`, or a prompt |
+| **13. MCP servers** | codebase-memory-mcp from its pinned, verified installer, then `~/.claude/bin/install-mcp-servers.sh` registers into `~/.claude.json` |
+| **14. uv tools** | `packages/uv-tools.txt` |
+| **15. Post-install** | `addcerts.sh` (Java truststore — SDKMAN JDK), `Lazy! sync`, tmux plugins, `repos-restore.sh` |
 
-Every step follows one pattern — `has <cmd>` for presence, `run` so `--dry-run` holds:
+Every step follows one pattern — a presence guard, `run` (or `curl_pipe` for upstream installers)
+so `--dry-run` holds:
 
 ```bash
 step "Step name"

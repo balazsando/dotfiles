@@ -13,6 +13,5 @@ Machine-local specifics — Jira project keys, boards, documentation repositorie
 live in `~/.cursor/local/`, unversioned (symlinked to `~/.claude/local/`). Read the file a
 command or skill names; if it is missing, ask rather than guess.
 
-Commands, agents, and skills each own one layer and never restate another's. Each command carries
-its own dispatch contract; `ai-config` owns the rest, and its `references/agent-architecture.md`
-owns the agent model.
+Commands, agents, and skills each own one layer and never restate another's; `ai-config` owns
+the model.

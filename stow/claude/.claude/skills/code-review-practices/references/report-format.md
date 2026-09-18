@@ -1,6 +1,6 @@
 # Structured review report
 
-For a review handed back as one document (a merge request, a workflow's review stage) rather
+For a review handed back as one document (`/mr-review`) rather
 than as inline comments. The inline severity labels in `SKILL.md` still apply per comment; this
 is how the whole review is shaped. Same finding, two scales:
 

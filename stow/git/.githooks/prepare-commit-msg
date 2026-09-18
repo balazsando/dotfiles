@@ -13,6 +13,14 @@ case "$commit_source" in
     ;;
 esac
 
+# --- Drop machine-generated attribution ---
+# Bot co-author trailers, tool session links, and "Generated with" footers.
+# Must run before the message is read below, or it gets written back.
+sed -i -E '/^Co-[Aa]uthored-[Bb]y:.*<[^>]*noreply@[^>]*>[[:space:]]*$/d;
+           /^[A-Za-z][A-Za-z-]*-Session:[[:space:]]*http/d;
+           /Generated with \[/d' "$commit_msg_file"
+printf '%s\n' "$(cat "$commit_msg_file")" > "$commit_msg_file"
+
 # --- Read current commit message ---
 # Subject only — matching the whole message meant a trailer line such as
 # "Signed-off-by:" was read as {type}-{msg} and mangled the body.

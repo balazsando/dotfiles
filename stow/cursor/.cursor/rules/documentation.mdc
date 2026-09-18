@@ -8,4 +8,3 @@ alwaysApply: true
 - Never add comments.
 - Javadoc, or the language-specific equivalent, on interfaces only.
 - Documentation lives in `/docs` and `README.md`.
-- Of the delivery agents, only `doc-writer-agent` edits `/docs` and `README.md`.
