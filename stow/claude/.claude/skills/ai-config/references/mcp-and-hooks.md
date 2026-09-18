@@ -23,6 +23,10 @@ Prefer a plain `npx`/`uvx` entry over a launcher script. The one remaining launc
 never fork a per-agent copy. Cursor only injects the env vars listed in `mcp.json`, which is the
 one case that still justifies a launcher.
 
+Node ignores the OS trust store. `env.zsh` rebuilds the `~/certs` bundle through `node-ca.sh` on
+every shell start and exports `NODE_EXTRA_CA_CERTS`; a server reaching an internal host lists that
+variable in its `env` block.
+
 A skill fronts the server it owns: callers go through the skill, never at the MCP tools directly.
 Never duplicate or commit sensitive configuration into a project repository.
 

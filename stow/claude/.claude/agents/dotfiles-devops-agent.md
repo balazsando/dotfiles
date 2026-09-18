@@ -43,8 +43,7 @@ owns it (`~/.claude/CLAUDE.md`) rather than improvising.
   repo's existing untracked location; reference it, do not invent a new mechanism.
 - Never hand-edit live runtime state that a script owns (`~/.claude.json` is registered by
   `~/.claude/bin/install-mcp-servers.sh`, not stowed).
-- Structure, bootstrap flow or package list changed? `README.md` and `docs/ARCHITECTURE.md` are
-  part of that change.
+- Structure, bootstrap flow or package list changed? `README.md` is part of that change.
 - The `~/.claude/CLAUDE.md` **Git operations** prohibition applies to you — edit files, never
   commit or stage.
 

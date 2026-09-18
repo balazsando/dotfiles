@@ -6,9 +6,8 @@ argument-hint: "What is being added or changed (e.g. 'add a skill for X', 'comma
 
 # AI assistant configuration
 
-Source of truth: `stow/claude/.claude/` and `stow/cursor/.cursor/` in the dotfiles repo. Design
-rationale lives in `docs/ARCHITECTURE.md` → *AI assistant configuration*; this skill is how to
-change it without breaking the contract.
+Source of truth: `stow/claude/.claude/` and `stow/cursor/.cursor/` in the dotfiles repo. This
+skill is how to change it without breaking the contract.
 
 **Detail lives in `references/`** — read the file the task needs, not both.
 
@@ -150,6 +149,5 @@ organisation or its network must not enter a tracked file, including as an examp
    `agent-workflow`, and the schema of every report it writes lives in its own brief. An
    orchestrating command loads `orchestration`, not the agent contract. Removed one? Remove every
    reference in both trees.
-5. Did structure, bootstrap flow, or the package list change? Update `README.md` **and**
-   `docs/ARCHITECTURE.md` — they have drifted from each other before.
+5. Did structure, bootstrap flow, or the package list change? Update `README.md`.
 6. Releasing? Use `/release` — it bumps `VERSION`, the badge, and the changelog together.

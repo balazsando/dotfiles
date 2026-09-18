@@ -18,8 +18,8 @@ architecture skill when it has one, `design-patterns` for a structural decision.
 Start from `prompt.md`, and the ticket when there is one. When they carry enough, plan straight
 away — no step below is mandatory.
 
-- **Technical context missing** — a version, a signature, where a class belongs: *Lookup before
-  search* in `agent-workflow`, stopping at the first source that answers.
+- **Technical context missing** — a version, a signature, where a class belongs: the code first,
+  then *Research* in `agent-workflow`.
 - **Business context missing** — the intent or a domain rule: documents in every scope — the
   ticket's comments and links, the knowledge base in `~/.claude/local/doc-repos.md` (missing → skip
   it and say so; never guess a repository name), and the repository's `/docs` and `README.md`.

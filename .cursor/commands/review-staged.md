@@ -29,13 +29,11 @@ the user — the `git` rule's **Git operations** prohibitions are not suspended 
      that is not re-runnable.
    - **Critical** — it installs but is wrong: a documented command, path, flag, or guard that no
      longer matches what the repository actually does.
-   - **Inconsistency** — two tracked sources contradicting each other: `README.md` against
-     `docs/ARCHITECTURE.md` (layout blocks, package list, bootstrap steps), `VERSION` against the
-     README badge and the newest changelog heading, a command against the skill it loads, a Claude
-     file against its Cursor twin, a package-list or bootstrap change whose `README.md` and
-     `docs/ARCHITECTURE.md` lines were left behind.
-   - **Not shippable** — a generated or machine-local artifact (`repos.txt`, `.claude/state/`,
-     graph output), a secrets file, an editor or OS leftover.
+   - **Inconsistency** — two tracked sources contradicting each other: `README.md` against the
+     repository (layout block, package list, bootstrap steps), `VERSION` against the README badge
+     and the newest changelog heading, a command against the skill it loads, a Claude file against
+     its Cursor twin.
+   - **Not shippable** — a generated or machine-local artifact (`repos.txt`, `.claude/state/`), a secrets file, an editor or OS leftover.
    - **Unrelated** — belongs to a different commit than the rest of the set, or pure churn mixed
      into a behaviour change. Staged scope only; not a finding for a rev range.
 4. **Report** — the findings and nothing else, worst severity first:
