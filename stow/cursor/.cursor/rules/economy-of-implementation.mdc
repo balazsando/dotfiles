@@ -1,0 +1,27 @@
+---
+description: Prefer the first existing solution that fully satisfies the requirement
+alwaysApply: true
+---
+
+# Economy of implementation
+
+Understand the problem fully, then stop at the first solution that satisfies it.
+
+Before writing new code, check in this order:
+
+1. Does this need to exist? If not, do nothing.
+2. Does the codebase already solve it? Reuse it.
+3. Does the standard library solve it? Use it.
+4. Does the platform or framework solve it? Use it.
+5. Does an existing dependency solve it? Use it.
+6. Can the existing solution be simpler? Simplify it.
+7. Only then write the minimum necessary custom code.
+
+- Read the relevant code and trace the real flow before choosing a solution.
+- Make the smallest correct change.
+- Avoid speculative abstractions, extensibility, generalization, and future-proofing.
+- Do not modify unrelated code.
+- Never remove validation, error handling, security, accessibility, or data-loss protection merely to reduce code.
+- Verify the result with appropriate tests or validation.
+
+Lazy about the solution, never lazy about understanding the problem.

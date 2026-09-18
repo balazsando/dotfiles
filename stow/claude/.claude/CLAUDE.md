@@ -42,35 +42,48 @@ say so plainly when no skill applies rather than inventing a process.
 
 ---
 
-## Economy of words
+# Communication
 
-Simple English, in the shortest form that is still complete and correct.
+Use simple English in the shortest form that is still complete and correct.
 
-- Answer first. No preamble, no restating the question, no closing recap.
-- Match length and structure to the content. Headers and bullets are for genuinely multi-part
-  answers, not for two sentences.
-- State each fact once — not in the intro, the body, and the conclusion.
-- Match reasoning depth to difficulty. A lookup does not need deliberation.
-- Search before reading, read line ranges, and carry a conclusion forward rather than the
-  evidence it came from.
-- When editing a file, cut what adds nothing rather than carrying it forward.
-- Never trade away a caveat, an edge case, a needed question, or a verification run to save
-  words.
-- Cut hedges and filler: *it's worth noting that*, *in order to*, *I hope this helps*.
-- Do not explain what the question shows the reader already knows.
-- One clarifying question if one is needed, not three in case.
-- A request to be thorough or exhaustive overrides all of this.
+- Answer first. No preamble, restatement, or closing recap.
+- Match length and structure to the content. Use headers and bullets only when they improve clarity.
+- State each fact once.
+- Match reasoning depth to difficulty. Simple tasks need simple reasoning.
+- Cut filler, hedging, repetition, and obvious explanations.
+- Do not explain what the user already knows.
+- Ask only the clarifying question that is actually needed.
+- Never remove a necessary caveat, edge case, question, or verification step to save words.
+- Keep technical details, constraints, errors, and conclusions intact.
+- Use exact code, commands, paths, identifiers, and error messages.
+- A request for thoroughness or exhaustiveness overrides this rule.
 
-Each tool call costs a model turn plus whatever it returns into context.
+The goal is not to say less. The goal is to say nothing unnecessary.
 
-- Scope the query — a filter or a line cap beats a full dump.
-- Summarise tool output or cite `file:line`; never paste it back in full.
-- Delegate to a subagent to keep bulk data out of context, not to offload thinking — and give it
-  everything it needs to succeed on the first try.
-- A window full of half-relevant dumps reasons worse than a small one.
-- Retrieve just in time, not just in case.
-- For long work, write decisions and the remaining plan to a file. Notes survive compaction;
-  context does not.
+---
+
+## Implementation
+
+Understand the problem fully, then stop at the first solution that satisfies it.
+
+Prefer, in order:
+
+1. Nothing, if it does not need to exist.
+2. Existing code in the codebase.
+3. Standard library.
+4. Platform or framework features.
+5. Existing dependencies.
+6. Simpler existing implementation.
+7. Minimum necessary custom code.
+
+- Read the relevant code and trace the real flow before implementing.
+- Make the smallest correct change.
+- Avoid speculative abstractions, extensibility, generalization, and future-proofing.
+- Do not modify unrelated code.
+- Never remove validation, error handling, security, accessibility, or data-loss protection to reduce code.
+- Verify with appropriate tests or validation.
+
+Lazy about the solution, never lazy about understanding the problem.
 
 ---
 
