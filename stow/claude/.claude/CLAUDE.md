@@ -16,30 +16,26 @@ Read the skill file when the work starts; do not rely on memory. Skills live in
 | When | Load |
 | --- | --- |
 | Writing or changing Java / Spring / Maven code | `java-standards`, then `clean-code` |
-| Micrometer meters, naming, tags, Observation API, or registries | `micrometer` |
-| Spring Boot 4 observability wiring — Actuator, auto-instrumentation, OTLP, Prometheus scrape | `spring-observability`, then `micrometer` |
-| Structural decision, new component, abstraction boundary | `design-patterns` |
+| Metrics, tracing, Observation API, Actuator, OTLP, Prometheus scrape | `micrometer` |
 | Ports and adapters, layering, where a class belongs in a hexagonal service | `hexagonal-architecture` |
-| Changing behaviour, or adding feature / API or domain tests | `atdd` |
+| Writing feature, API, or domain acceptance tests | `atdd` |
 | Reviewing a diff, merge request, or PR | `code-review-practices` |
 | Reading, creating, or updating a Jira ticket | `jira-tickets` |
-| Running a command that branches, validates, and commits | `change-delivery` |
-| After changing code in a repo with a SonarQube project | `sonarqube-validation` |
+| SonarQube issues, quality gate, or report | `sonarqube-validation` |
 | Production errors, exceptions, "what is failing in prod" | `app-bug-detection` |
-| Dotfiles, stow packages, symlinks, bootstrap | `dotfiles`, `stow` |
+| Dotfiles, stow packages, symlinks, bootstrap | `dotfiles` |
 | Kubernetes, clusters, an environment's state | `kubectl` |
 | Grafana, dashboards, PromQL / LogQL, alerting | `grafana` |
-| Calling the Jira or GitLab APIs | `jira-api`, `gitlab-api` |
-| Neovim, LazyVim, tmux configuration | `neovim-lua`, `lazyvim`, `nvim-tmux` |
+| Neovim, LazyVim, tmux configuration | `lazyvim`, `nvim-tmux` |
 | Bitwarden CLI (`bw`), secrets upload/restore, vault scripting | `bitwarden-cli` |
 | Adding or changing a skill, agent, command, AI rule, or MCP server | `ai-config` |
 
-Prefer the simplest solution and do not force a pattern; project conventions beat skill defaults;
-say so plainly when no skill applies rather than inventing a process.
+Project conventions beat skill defaults. When no skill applies, say so rather than inventing a
+process.
 
 ---
 
-## Communication
+## Economy of words
 
 Use simple English in the shortest form that is still complete and correct.
 
@@ -59,7 +55,7 @@ The goal is not to say less. The goal is to say nothing unnecessary.
 
 ---
 
-## Implementation
+## Economy of implementation
 
 Understand the problem fully, then stop at the first solution that satisfies it.
 
@@ -125,6 +121,7 @@ shared branch without explicit authorization.
 
 ## Documentation
 
-- Never add comments.
-- Javadoc, or the language-specific equivalent, on interfaces only.
+- Never add comments. Exceptions: Javadoc, or the language's equivalent, on interfaces and
+  contracts when the signature does not already convey the intent; `// given`, `// when`,
+  `// then` markers in tests.
 - Documentation lives in `/docs` and `README.md`.

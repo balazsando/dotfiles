@@ -34,8 +34,7 @@ read last.
 2. **A workflow the user starts by name?** → command.
 3. **Work that needs its own context window or tool fence?** → agent, spawned by a command in the
    same change. None are authored here: multi-agent orchestration cost more than it saved, so add
-   one only against a measured gain. The `codebase-memory*` agents are installed, untracked, by
-   codebase-memory-mcp's own installer (`README.md` → *Runtime state*).
+   one only against a measured gain.
 4. **Changes what to load in a situation?** → one `CLAUDE.md` table row. Cursor picks skills
    from their `description`, so add a `.mdc` only to scope a skill to a file type (`globs`).
 
@@ -43,6 +42,12 @@ A standing contract earns a resident slot only if it changes behaviour on turns 
 would load — prohibitions and defaults, not reference knowledge. Every router line costs tokens on
 every request. Never copy the routing table into a Cursor rule, and never add an always-on rule
 whose only content is "load skill X".
+
+What earns a line anywhere: house preferences (formatting, naming, architecture, tooling
+choices) and knowledge the model would otherwise get wrong. Not textbook content it already
+knows, not a restated contract, and not a way of working — the only process forced on every
+turn is YAGNI, accuracy, and token efficiency, in that order. When two layers say the same
+thing, delete it from the on-demand one.
 
 A command takes external data from the skill that owns it (`sonarqube-validation`,
 `app-bug-detection`, `jira-tickets`), never from the MCP server directly, and branch, build and
@@ -65,8 +70,8 @@ Cursor-specific, and nothing else:
 - `rules/*.mdc` — one concern per file. Always-on rules mirror a `CLAUDE.md` section: `git`,
   `documentation`, `layers` (precedence, machine-local), `economy-of-words`,
   `economy-of-implementation`. `globs` rules: `java`, `neovim`.
-- `commands/*.md` — no `$ARGUMENTS` or `argument-hint`, and `~/.cursor/local/` paths; otherwise
-  identical to the Claude copy.
+- `commands/*.md` — no `argument-hint`, no arguments placeholder ("the text after
+  `/<command>`" instead), and `~/.cursor/local/` paths; otherwise identical to the Claude copy.
 - `mcp.json` — same server list, `${env:VAR}` instead of `${VAR}`.
 
 Mirrored rules and command twins are the only intentional duplication. Change both copies in the
@@ -77,7 +82,7 @@ same edit.
 ## Size
 
 A `SKILL.md` over roughly 200 lines is doing two jobs. Move the long tail to
-`references/<topic>.md` and link it from the body (see `dotfiles`, `stow`, `grafana`,
+`references/<topic>.md` and link it from the body (see `dotfiles`, `micrometer`,
 `bitwarden-cli`). Templates and scaffolds go in `assets/` (see `atdd/assets/feature.template`).
 
 ---

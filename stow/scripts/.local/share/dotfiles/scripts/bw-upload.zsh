@@ -220,7 +220,7 @@ main() {
 
   print "\n${C_BOLD}${C_GREEN}✔ Upload complete!${C_RESET}"
   print "  Items stored as Bitwarden secure notes under the ${C_CYAN}dotfiles/${C_RESET} prefix."
-  print "  Run ${C_CYAN}scripts/bw-restore.zsh${C_RESET} on a new machine to restore them."
+  print "  Run ${C_CYAN}bash ~/.local/share/dotfiles/scripts/bw-restore.sh${C_RESET} on a new machine to restore them."
 }
 
 main "$@"

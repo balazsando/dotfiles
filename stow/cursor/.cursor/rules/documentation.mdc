@@ -1,10 +1,11 @@
 ---
-description: Documentation — no comments, interfaces only, /docs and README.md
+description: Documentation — no comments except contract docs and test markers; /docs and README.md
 alwaysApply: true
 ---
 
 # Documentation
 
-- Never add comments.
-- Javadoc, or the language-specific equivalent, on interfaces only.
+- Never add comments. Exceptions: Javadoc, or the language's equivalent, on interfaces and
+  contracts when the signature does not already convey the intent; `// given`, `// when`,
+  `// then` markers in tests.
 - Documentation lives in `/docs` and `README.md`.

@@ -7,8 +7,7 @@ argument-hint: "ticket key, or the ticket to create"
 # Jira tickets
 
 Single owner of everything that talks to a Jira MCP server. Commands that need ticket data follow
-this file instead of calling the MCP their own way. Writing Go or HTTP code against the REST API is
-a different job — that is `jira-api`.
+this file instead of calling the MCP their own way.
 
 ## Conventions are machine-local
 

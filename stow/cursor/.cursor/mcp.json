@@ -73,10 +73,6 @@
         "GRAFANA_URL": "${env:GRAFANA_URL_PROD}",
         "GRAFANA_SERVICE_ACCOUNT_TOKEN": "${env:GRAFANA_MCP_TOKEN_PROD}"
       }
-    },
-    "codebase-memory-mcp": {
-      "command": "codebase-memory-mcp",
-      "args": []
     }
   }
 }

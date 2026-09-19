@@ -1,8 +1,7 @@
 # Structured review report
 
-For a review handed back as one document (`/mr-review`) rather
-than as inline comments. The inline severity labels in `SKILL.md` still apply per comment; this
-is how the whole review is shaped. Same finding, two scales:
+For a review handed back as one document (`/mr-review`) rather than as inline comments. Same
+finding, two scales:
 
 | Report severity | Inline label | Meaning |
 | --- | --- | --- |
@@ -34,8 +33,7 @@ READY | CHANGES REQUESTED — <one sentence>
 
 - Every finding carries a `file:line`. A finding with no location is not actionable — drop it or
   turn it into a question.
-- Judge the change that is there, not the one you would have written. An alternative you prefer
-  is INFORMATIONAL unless the code is wrong.
+- An alternative you prefer is INFORMATIONAL unless the code is wrong.
 - Unverifiable is its own answer. Never mark a criterion met because the code looks plausible.
 - One CRITICAL is enough for CHANGES REQUESTED. Never soften a finding to reach READY, and never
   invent one to look thorough.

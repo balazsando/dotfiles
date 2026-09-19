@@ -13,8 +13,8 @@ API. Dependencies point inward only:
 adapters → application → domain
 ```
 
-Class shape, injection, and Lombok rules come from `java-standards`; structural pattern
-choices from `design-patterns`. This skill owns only the boundaries.
+Class shape, injection, and Lombok rules come from `java-standards`. This skill owns only the
+boundaries.
 
 ## Package layout
 
@@ -24,7 +24,8 @@ choices from `design-patterns`. This skill owns only the boundaries.
 ├── application/
 │   ├── ports/in/            use-case interfaces the driving adapters call
 │   ├── ports/out/           capabilities the use cases need from outside
-│   └── service/             use-case orchestration and application policy
+│   ├── service/             use-case orchestration and application policy
+│   └── exceptions/          application failures
 ├── adapters/
 │   ├── in/                  REST controllers, message listeners, schedulers, CLI
 │   └── out/                 HTTP/GraphQL clients, producers, persistence
@@ -51,30 +52,16 @@ choices from `design-patterns`. This skill owns only the boundaries.
    errors into application or domain failures at the edge.
 5. Application services orchestrate, validate, and sequence — no transport or client detail,
    no infrastructure imports.
-6. Constructor injection only, dependencies `final`; no `@Autowired` on a single constructor.
-7. Prefer plain classes, records, and enums in the domain over framework annotations.
-8. Do not add an interface for a single implementation unless it is a real boundary or a
-   second implementation is imminent.
-9. Prefer composition and the simplest design; do not force a pattern to satisfy the shape.
 
 ## Testing
 
-- Domain rules and application services: no Spring context, fakes at the outbound ports.
+- Domain rules and application services: no Spring context, test doubles at the outbound
+  ports.
 - Acceptance scenarios: drive through the inbound port or a thin adapter; replace external
   systems at the outbound ports (see `atdd`).
 - Adapters: tested separately for mapping, serialization, protocol, and auth behaviour.
 - A test that needs the whole context to exercise a business rule is a signal the rule
   escaped the domain.
-
-## Review checklist
-
-- [ ] Dependencies point inward only.
-- [ ] Domain has no framework or infrastructure imports.
-- [ ] Application code depends on ports, never on a client or template directly.
-- [ ] Adapters own mapping, protocol, and error translation.
-- [ ] Ports named for the need; adapters named for the technology.
-- [ ] Constructor injection throughout, dependencies `final`.
-- [ ] Each behaviour tested at the ring that owns it.
 
 When an existing module cannot follow this, document the exception and its migration path
 rather than silently reversing a dependency direction.

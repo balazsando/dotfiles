@@ -7,7 +7,8 @@ Both assistants run the same server list; each registers it its own way.
 **Claude Code.** Servers are registered at user scope in `~/.claude.json`, managed by the
 `claude mcp` CLI — never hand-edit it. The source of truth is `~/.claude/mcp-servers.json`, one
 config per server, applied with `~/.claude/bin/install-mcp-servers.sh`. A server added to the
-file but never applied is not registered.
+file but never applied is not registered. Java intelligence is the `jdtls-lsp` plugin, which
+runs Mason's `jdtls` from `PATH`.
 
 **Cursor.** `~/.cursor/mcp.json`, read directly; restart the agent to apply. Same server list,
 `${env:VAR}` instead of `${VAR}`. The two configs are maintained separately and need not match
@@ -16,8 +17,7 @@ line for line, but the *server list* stays in step when one is added or removed.
 Registered: `sonarqube`, `jira`, `atlassian-rovo-mcp`, `gitlab`, and four distinct Grafana
 instances — `grafana` (the default non-prod instance, `$GRAFANA_URL`), `grafana-prep` and
 `grafana-prep-connector` (pre-prod), and `grafana-prod` (production, read-only; the only one
-`app-bug-detection` queries), and `codebase-memory-mcp`, called by bare name — its installer puts
-it on `PATH`.
+`app-bug-detection` queries).
 
 Prefer a plain `npx`/`uvx` entry over a launcher script. The one remaining launcher
 (`~/.local/share/dotfiles/scripts/jira-mcp.sh`) is shared by both assistants — edit it there,

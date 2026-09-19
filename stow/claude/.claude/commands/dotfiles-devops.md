@@ -6,7 +6,7 @@ argument-hint: "<question or task>"
 Handle the dotfiles task in `$ARGUMENTS`; ask for one if it is missing. Goal: a fresh machine
 comes up from one command, with no manual steps and no secrets in version control.
 
-Load `dotfiles` and `stow`. Java, Kubernetes, Grafana, or editor configuration inside the repo
+Load `dotfiles`. Java, Kubernetes, Grafana, or editor configuration inside the repo
 goes to the skill that owns it.
 
 ## Steps

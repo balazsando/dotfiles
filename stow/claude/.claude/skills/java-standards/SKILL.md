@@ -8,8 +8,8 @@ argument-hint: "Optional: the class, module, or pom to apply the standards to"
 
 Copy the class shape from [references/examples.md](./references/examples.md). The rules below
 are what an example cannot show. Depth lives elsewhere: `clean-code` for naming and
-function-level smells, `design-patterns` for structural choices, `atdd` for acceptance
-tests, and [references/tests.md](./references/tests.md) for writing unit tests.
+function-level smells, `atdd` for acceptance tests, and
+[references/tests.md](./references/tests.md) for writing unit tests.
 
 ## Rules an example cannot show
 
@@ -20,13 +20,11 @@ stays framework-free: those services carry no stereotype and are declared as `@B
 
 **Layering.** Business logic never in infrastructure, infrastructure never in a domain model — no
 persistence, HTTP, or framework annotation on a domain type. Identify the right layer before
-changing anything; do not introduce new architecture unless the change justifies it.
+changing anything.
 
-**Restraint.** SOLID, DRY, YAGNI, KISS. No god classes, no hidden side effects, no premature
-optimisation, no abstraction without a second caller. Java 21 features when they improve
-readability or safety, not for their own sake — explicit logic beats a clever functional chain.
-Preserve existing behaviour unless the task says otherwise; remove duplication only when it is
-safe.
+**Abstractions.** No interface or abstraction without a second implementation or caller, unless
+it is a real boundary (a hexagonal port). Java 21 features when they improve readability or
+safety, not for their own sake — explicit logic beats a clever functional chain.
 
 **Lombok** is required for boilerplate — getters, setters, constructors, builders,
 `equals`/`hashCode`. Hand-written boilerplate is a defect; a `record` has none to remove. It must

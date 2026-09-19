@@ -83,15 +83,6 @@ Do not "fix" these.
   (`git status` → `rtk git status`); `Read`/`Grep`/`Glob` bypass it. The `claude` and `ai` shell
   functions register it on launch when missing, so it self-heals after a `settings.json` reset.
   `rtk init --hook-only` writes nothing tracked. `rtk gain` shows the savings.
-- codebase-memory-mcp comes from its upstream installer, not mise. The installer is pinned to a
-  release commit and SHA256-verified, like `jirlab`, and `CBM_DOWNLOAD_URL` points it at the same
-  release, whose `checksums.txt` it checks the binary against; bump `CBM_TAG`, `CBM_COMMIT` and
-  `CBM_SHA256` together. It copies the binary to `~/.local/bin` and points its hooks at that
-  path. `--clients=claude` also writes its three `codebase-memory*` agents, its skill, and its
-  hooks into `~/.claude` — untracked, and the only agents on the machine. Cursor is left out because the installer would write an absolute path
-  into the stowed `mcp.json`; it finds the agents and skill in `~/.claude`. `SHELL=/bin/sh`
-  sends the installer's PATH line to `~/.profile` instead of the stowed `.zshrc`. Step 13
-  registers the servers afterwards, replacing the absolute path it writes to `~/.claude.json`.
 
 ## AI assistant configuration
 
@@ -120,7 +111,7 @@ re-run on a half-bootstrapped machine.
 | **10. Stow** | `stow.sh` |
 | **11. tmux TPM** | Clones TPM |
 | **12. Git identity** | `~/.gitconfig_local` from `GIT_USER_NAME`/`GIT_USER_EMAIL`, or a prompt |
-| **13. MCP servers** | codebase-memory-mcp from its pinned, verified installer, then `~/.claude/bin/install-mcp-servers.sh` registers into `~/.claude.json` |
+| **13. MCP servers** | `~/.claude/bin/install-mcp-servers.sh` registers into `~/.claude.json` |
 | **14. uv tools** | `packages/uv-tools.txt` |
 | **15. Post-install** | `addcerts.sh` (Java truststore — SDKMAN JDK), `Lazy! sync`, tmux plugins, `repos-restore.sh` |
 

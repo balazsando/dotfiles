@@ -5,7 +5,7 @@ description: "Organise, deploy, or troubleshoot a dotfiles repo — stow package
 Handle the dotfiles task named after `/dotfiles-devops`; ask for one if it is missing. Goal: a
 fresh machine comes up from one command, with no manual steps and no secrets in version control.
 
-Load `dotfiles` and `stow`. Java, Kubernetes, Grafana, or editor configuration inside the repo
+Load `dotfiles`. Java, Kubernetes, Grafana, or editor configuration inside the repo
 goes to the skill that owns it.
 
 ## Steps

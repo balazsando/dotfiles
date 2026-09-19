@@ -136,6 +136,8 @@ sdk_install() {
 JAVA_MAJOR=21
 if [[ -e "$HOME/.sdkman/candidates/java/current" ]]; then
   skip "java"
+elif $DRY_RUN; then
+  echo "  → sdk install java <latest Temurin $JAVA_MAJOR>"
 else
   java_id="$(curl -fsSL 'https://api.sdkman.io/2/candidates/java/linuxx64/versions/list?installed=' |
     grep -oE "\b$JAVA_MAJOR\.[0-9.+]*-tem\b" | sort -uV | tail -1 || true)"
@@ -189,23 +191,6 @@ fi
 
 # ── 13. MCP servers ───────────────────────────────────────────────────────────
 step "MCP servers"
-CBM_TAG="v0.11.0"
-CBM_COMMIT="8972ea69c6ad94b1ef1d4ffbf0a92d78d2db1798"
-CBM_SHA256="13049c7cc51bc508d68b8ecb8a9fd9574ecb7c6f2c9dd5a19bf7d4c187321145"
-if has codebase-memory-mcp; then
-  skip "codebase-memory-mcp"
-elif $DRY_RUN; then
-  echo "  → would fetch the codebase-memory-mcp $CBM_TAG installer and verify sha256"
-else
-  tmp=$(mktemp)
-  curl -fsSLo "$tmp" "https://raw.githubusercontent.com/DeusData/codebase-memory-mcp/$CBM_COMMIT/install.sh"
-  echo "$CBM_SHA256  $tmp" | sha256sum -c --status - ||
-    { rm -f "$tmp"; echo "  ✗ codebase-memory-mcp installer checksum mismatch — refusing to install" >&2; exit 1; }
-  CBM_DOWNLOAD_URL="https://github.com/DeusData/codebase-memory-mcp/releases/download/$CBM_TAG" \
-    SHELL=/bin/sh bash "$tmp" --clients=claude
-  rm -f "$tmp"
-  ok "codebase-memory-mcp $CBM_TAG (verified)"
-fi
 mcp_install="$HOME/.claude/bin/install-mcp-servers.sh"
 if ! has claude || [[ ! -x "$mcp_install" ]]; then
   skip "claude CLI or install-mcp-servers.sh missing — MCP registration"

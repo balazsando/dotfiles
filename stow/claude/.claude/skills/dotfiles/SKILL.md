@@ -23,19 +23,6 @@ steps, and where secrets live — read it before a structural change; never rest
 - Unclear target platform, two packages that could own one file, or a move that could clobber
   unversioned local changes → ask.
 
-Stow mechanics are the `stow` skill. General background — strategy comparison (chezmoi, yadm,
+General background — strategy comparison (chezmoi, yadm,
 dotbot, bare git), an idempotent install template, shell frameworks, multi-machine setups, XDG
 base dirs — is `references/patterns.md`.
-
-## Common gotchas
-
-| Problem | Fix |
-|---|---|
-| install.sh runs but changes don't load | `source ~/.zshrc` or open new terminal |
-| Oh-My-Zsh overwrites `.zshrc` on install | Run install with `--keep-zshrc` flag |
-| p10k wizard resets on new machine | Commit `.p10k.zsh`; wizard only runs if file missing |
-| Tool not found after install | Check PATH; may need new shell session |
-| TPM plugins not loading | Run `prefix + I` inside tmux; check `~/.tmux/plugins/` |
-| LazyVim not finding plugins | `~/.config/nvim` must be a real directory holding the stowed files |
-| WSL2 path issues | Avoid `/mnt/c/` paths in configs; keep everything in `~` |
-| `ln -sf` fails with "too many levels of symbolic links" | Destination already is a symlink to the same target; skip |

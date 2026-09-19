@@ -1,6 +1,6 @@
 # Canonical shapes
 
-Inbound port and application service first — copy those. Then package layout, adapter, domain
+Inbound port, application service and its wiring first — copy those. Then adapter, domain
 types. Same house formatter: 4 spaces, 120 columns, continuation indented one level, LF.
 
 Rules those examples cannot show: [SKILL.md](../SKILL.md).
@@ -37,15 +37,7 @@ public interface PlaceOrderUseCase {
 package com.example.ordering.application.service;
 
 import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Service;
 
-/**
- * Application service for the order-placement use case.
- *
- * <p>Orchestrates the domain and the outbound ports; holds no transport or persistence
- * detail of its own.
- */
-@Service
 @RequiredArgsConstructor
 public class OrderService implements PlaceOrderUseCase {
     private final OrderRepositoryPort orderRepository;
@@ -66,42 +58,37 @@ public class OrderService implements PlaceOrderUseCase {
 }
 ```
 
+```java
+package com.example.ordering.infrastructure.configuration;
+
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+
+@Configuration
+public class OrderingConfiguration {
+    @Bean
+    PlaceOrderUseCase placeOrderUseCase(OrderRepositoryPort orderRepository, StockPort stock) {
+        return new OrderService(orderRepository, stock);
+    }
+}
+```
+
 What that class is showing, and what breaking it costs:
 
 | It shows | Because |
 | --- | --- |
 | `@RequiredArgsConstructor` + `private final` fields | Constructor injection, no `@Autowired`, no hand-written constructor |
-| `@Service` on the class | A stereotype declares the bean — not a `@Configuration` + `@Bean` pair |
+| No stereotype; a `@Bean` in `infrastructure/configuration` | The application layer stays framework-free |
 | `implements PlaceOrderUseCase` | The inbound port is the contract; the service is one implementation |
 | `...UseCase` / `...Port` / `...Service` names | Inbound port, outbound port, application service — the name says the role |
-| Javadoc on the interface, none on `place` in the impl | Public API carries the contract; `@Override` does not repeat it |
+| Javadoc on the interface only — none on the class or `place` | The contract states what the signature cannot (stock reservation, the thrown exception); implementations do not repeat it |
 | The early `throw`, then the blank line | Early exit over nesting; one blank line before a `return` or `throw` |
 | `var order = ...` then `return` | One operation per line — an intermediate name, not a stacked call chain |
 
 ## Package layout
 
-One layout, from a hexagonal service — follow the project's own architecture instead where it
-has one.
-
-```
-<module>/src/main/java/com/example/ordering/
-  application/
-    ports/in/PlaceOrderUseCase.java        ← inbound port: what the service offers
-    ports/out/StockPort.java               ← outbound port: what the service needs
-    service/OrderService.java              ← use-case orchestration
-    exceptions/OutOfStockException.java
-  domain/
-    order/Order.java                       ← no framework annotations below here
-    shared/CustomerId.java
-  adapters/
-    in/rest/OrderController.java           ← protocol → inbound port
-    out/http/HttpStockClient.java          ← outbound port → protocol
-  infrastructure/
-    config/StockClientConfig.java          ← beans, properties, framework wiring
-```
-
-An outbound port is named for what the application needs (`StockPort`), never for the technology
-that happens to satisfy it. The adapter is named for the technology (`HttpStockClient`).
+Layout and port naming: `hexagonal-architecture`. Follow the project's own architecture instead
+where it has one.
 
 ## Outbound adapter with configured dependencies
 
@@ -117,12 +104,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.WebClient;
 
-/**
- * Outbound adapter that reserves stock over HTTP.
- *
- * <p>Translates a transport failure into a rejected {@link Reservation} rather than
- * propagating it: the application layer knows nothing about HTTP status codes.
- */
 @Slf4j
 @Component
 public class HttpStockClient implements StockPort {
@@ -157,7 +138,7 @@ public class HttpStockClient implements StockPort {
         } catch (WebClientResponseException e) {
             log.warn("Stock reservation failed: {}", e.getStatusCode(), e);
 
-            return Reservation.rejected(e.getStatusCode());
+            return Reservation.unavailable();
         }
     }
 }
@@ -188,5 +169,5 @@ public class OrderDraft {
 
 - An exception is one class, one failure, no ceremony — unchecked unless the caller can genuinely
   recover.
-- Framework wiring (`@Configuration`, `@Bean`) lives in `infrastructure/config`, never beside the
-  class it configures.
+- Framework wiring (`@Configuration`, `@Bean`) lives in `infrastructure/configuration`, never
+  beside the class it configures.

@@ -60,6 +60,4 @@ is `underTest`; collaborators are plain `mock()` fields built in `@BeforeEach`; 
 - POJOs, configuration classes and straightforward delegation get no test at all.
 - Mock external dependencies only.
 - Parameterise when several inputs prove the same behaviour, rather than copying the method.
-- Prefer test-first iterations: failing test → minimal implementation → refactor.
-- Keep tests deterministic and readable. Past those markers, a test that needs a comment to be
-  understood is a smell.
+- A test that needs a comment beyond the markers to be understood is a smell.

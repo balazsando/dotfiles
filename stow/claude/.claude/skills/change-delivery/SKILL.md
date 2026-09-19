@@ -30,9 +30,9 @@ If unset, take the first that exists: `develop`, `release`, the newest `release/
 ## 3. Branch
 
 Never edit or commit on a protected branch — the resolved base, `main`, `master`, `develop`,
-`release`, `release/*`. Standing on one of those, branch before the first edit.
-Standing anywhere else, that branch is the run's branch: stay on it and say so, unless the run
-has a ticket key its name does not carry.
+`release`, `release/*`. Every run works on its own branch, created before the first edit.
+Reuse the current branch instead only when it is not protected and its name carries the run's
+ticket key or matches its subject; say so.
 
 ```
 git switch -c <prefix>/<slug> --no-track origin/<base>
@@ -73,9 +73,8 @@ One commit per run unless the command says otherwise, body listing what changed 
 per issue. Stage the paths you changed by name: `git add -A` sweeps in workspace artifacts that
 must not ship.
 
-Subject `category-message` per the **Commit message format** in `~/.claude/CLAUDE.md`. Never
-`--no-verify`. No attribution trailers. Never touch existing history. Never push and never
-open a merge request unless the invoking command says so explicitly.
+Subject and trailers per the git contract in `~/.claude/CLAUDE.md`. Never push and never open a
+merge request unless the invoking command says so explicitly.
 
 ## 6. Hand back
 

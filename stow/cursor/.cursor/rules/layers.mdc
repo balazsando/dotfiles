@@ -6,12 +6,9 @@ alwaysApply: true
 # Precedence
 
 Project rules override these; repository documentation (`/docs`, `README.md`, ADRs) overrides
-both. Prefer the simplest solution; project conventions beat skill defaults; say so plainly when
-no skill applies rather than inventing a process.
+both. Project conventions beat skill defaults. When no skill applies, say so rather than
+inventing a process.
 
 Machine-local specifics — Jira project keys, boards, documentation repositories, cluster names —
 live in `~/.cursor/local/`, unversioned (symlinked to `~/.claude/local/`). Read the file a
 command or skill names; if it is missing, ask rather than guess.
-
-Commands, agents, and skills each own one layer and never restate another's; `ai-config` owns
-the model.
