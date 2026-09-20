@@ -15,7 +15,6 @@ Reference: [Google Engineering Practices](https://google.github.io/eng-practices
 - Is what was intended good for end-users and future developer-users?
 - Edge cases handled?
 - No obvious bugs readable from the code?
-- UI changes: are they sensible, do they look correct? (Consider requesting a demo.)
 
 ## Complexity
 
@@ -25,8 +24,8 @@ Reference: [Google Engineering Practices](https://google.github.io/eng-practices
 
 ## Naming, Comments, Tests
 
-The bar is `clean-code/references/rules.md` — chapters 2 (names), 4 (comments) and 9 (unit tests,
-FIRST). Review against it rather than a second list here.
+The bar is the `clean-code` skill (names, tests) and the documentation rule in
+`~/.claude/CLAUDE.md` (comments). Review against those rather than a second list here.
 
 Only these are review-process questions the rules do not cover:
 
@@ -38,7 +37,7 @@ Only these are review-process questions the rules do not cover:
 
 - Follows the project / language style guide?
 - Personal style preferences that aren't in the guide → `Nit:` only, never blocking.
-- If existing code is inconsistent with the style guide, encourage the author to file a bug/TODO rather than mixing style changes into this CL.
+- Existing style inconsistencies go in a separate ticket, not mixed into this change.
 - Author should not include mass reformatting mixed with functional changes.
 
 ## Documentation
@@ -69,8 +68,3 @@ Only these are review-process questions the rules do not cover:
 - Read the change in the context of the full file, not just the diff hunk.
 - Is the change improving or degrading overall system code health?
 - Does the changed function/class still need to be broken up after this addition?
-
-## Mentoring Opportunities
-
-- If a comment is purely educational and not blocking, prefix with `Nit:` or `FYI:`.
-- Acknowledge good practices explicitly — reinforcement is as important as correction.

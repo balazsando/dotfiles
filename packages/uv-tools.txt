@@ -1,1 +1,2 @@
-graphifyy
+# Python CLI tools installed as uv tools (uv tool install)
+serena-agent

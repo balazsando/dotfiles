@@ -7,21 +7,35 @@ Both assistants run the same server list; each registers it its own way.
 **Claude Code.** Servers are registered at user scope in `~/.claude.json`, managed by the
 `claude mcp` CLI — never hand-edit it. The source of truth is `~/.claude/mcp-servers.json`, one
 config per server, applied with `~/.claude/bin/install-mcp-servers.sh`. A server added to the
-file but never applied is not registered.
+file but never applied is not registered. Java intelligence is the `jdtls-lsp` plugin, which
+runs Mason's `jdtls` from `PATH`.
 
 **Cursor.** `~/.cursor/mcp.json`, read directly; restart the agent to apply. Same server list,
-`${env:VAR}` instead of `${VAR}`. The two configs are maintained separately and need not match
-line for line, but the *server list* stays in step when one is added or removed.
+`${env:VAR}` instead of `${VAR}`, plus `serena` — Cursor has no LSP plugin of its own. The two
+configs are maintained separately and need not match line for line, but the *shared* server list
+stays in step when one is added or removed.
 
 Registered: `sonarqube`, `jira`, `atlassian-rovo-mcp`, `gitlab`, and four distinct Grafana
 instances — `grafana` (the default non-prod instance, `$GRAFANA_URL`), `grafana-prep` and
 `grafana-prep-connector` (pre-prod), and `grafana-prod` (production, read-only; the only one
-`app-bug-detection` queries).
+`app-bug-detection` queries). Cursor-only: `serena`.
+
+Serena reuses Mason's `jdtls` instead of downloading its own, through
+`ls_specific_settings.java.jdtls_path` and `lombok_path` in `~/.serena/serena_config.yml` —
+untracked (absolute paths), appended by `install.sh` after Neovim has synced. The Cursor GUI does
+not load `env.zsh`, so the `serena` entry carries `JAVA_HOME` and an sdkman `java` on `PATH`
+itself. `serena-agent` is installed from `packages/uv-tools.txt`. Cursor's Serena MCP uses
+`--context ide` (built-in; file and shell tools stay with Cursor). `--context ide-assistant`
+aliases to `claude-code` and is the wrong context here.
 
 Prefer a plain `npx`/`uvx` entry over a launcher script. The one remaining launcher
 (`~/.local/share/dotfiles/scripts/jira-mcp.sh`) is shared by both assistants — edit it there,
-never fork a per-agent copy. Cursor only injects the env vars listed in `mcp.json`, which is the
+never fork a per-assistant copy. Cursor only injects the env vars listed in `mcp.json`, which is the
 one case that still justifies a launcher.
+
+Node ignores the OS trust store. `env.zsh` rebuilds the `~/certs` bundle through `node-ca.sh` on
+every shell start and exports `NODE_EXTRA_CA_CERTS`; a server reaching an internal host lists that
+variable in its `env` block.
 
 A skill fronts the server it owns: callers go through the skill, never at the MCP tools directly.
 Never duplicate or commit sensitive configuration into a project repository.

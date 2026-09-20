@@ -181,7 +181,7 @@ install_certs_to_trust_store() {
       shopt -s nullglob
       for cert in "$cert_dir"/*.crt "$cert_dir"/*.pem; do
         [[ -f "$cert" ]] || continue
-        sudo cp "$cert" "/usr/local/share/ca-certificates/$(basename "$cert")"
+        sudo install -m 644 "$cert" "/usr/local/share/ca-certificates/$(basename "$cert")"
       done
     )
     sudo update-ca-certificates
@@ -192,7 +192,7 @@ install_certs_to_trust_store() {
       shopt -s nullglob
       for cert in "$cert_dir"/*.crt "$cert_dir"/*.pem; do
         [[ -f "$cert" ]] || continue
-        sudo cp "$cert" "/etc/ca-certificates/trust-source/anchors/$(basename "$cert")"
+        sudo install -m 644 "$cert" "/etc/ca-certificates/trust-source/anchors/$(basename "$cert")"
       done
     )
     sudo update-ca-trust extract

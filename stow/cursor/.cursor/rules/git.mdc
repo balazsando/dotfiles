@@ -1,13 +1,13 @@
 ---
-description: Git — no commit or history rewrite except the delivery commands; category-message subjects
+description: Git — no commit or history rewrite except the branch-owning commands; category-message subjects
 alwaysApply: true
 ---
 
 # Git operations
 
 **Committing and history rewriting are prohibited.** The only exceptions are `/deliver`,
-`/ticket-to-merge`, `/sonar-fix`, and `/bug-fix` while they are running, and the agents they
-spawn. Reading history, diffs, status, blame, logs, and branch state is always allowed.
+`/sonar-fix`, and `/bug-fix` while they are running. Reading history, diffs, status, blame, logs,
+and branch state is always allowed.
 
 Prohibited outside those commands: `git commit` (including `--amend`); staging or unstaging
 (`git add`, `git rm --cached`, `git restore --staged`, index edits); any history-altering command

@@ -1,7 +1,6 @@
 # Observation
 
-One lifecycle, many handlers: metrics, traces, logs. Check existing instrumentation before
-adding your own.
+One lifecycle, many handlers: metrics, traces, logs.
 
 ## Pieces
 

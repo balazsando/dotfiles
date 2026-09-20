@@ -1,30 +1,10 @@
-# host/ — Machine-specific configuration templates
+# host/ — machine-level config
 
-This directory contains templates for machine-specific config that **must not be committed**.
+Copied, never stowed: these files live outside `$HOME` or on the Windows side.
 
-## Usage
+| File | Destination | Applied by |
+|---|---|---|
+| `wsl.conf` | `/etc/wsl.conf` | `install.sh` step 2, when the Windows `PATH` leaks in; `wslconf-sync.zsh` (via `sync.sh`) copies it back |
+| `work-wsl/.wslconfig` | `C:\Users\<user>\.wslconfig` | By hand on the Windows side, then `wsl --shutdown` |
 
-Each subdirectory represents a machine profile. Copy the relevant template to your home directory:
-
-```zsh
-# Work WSL machine
-cp ~/dotfiles/host/work-wsl/.zshrc.local ~/.zshrc.local
-$EDITOR ~/.zshrc.local    # fill in your tokens, adjust paths
-```
-
-`~/.zshrc.local` is sourced automatically at the end of `~/.zshrc`. It is gitignored.
-
-## Available profiles
-
-| Profile | Description |
-|---|---|
-| `work-wsl/` | Windows WSL, company Jira/GitLab, project-specific aliases |
-
-## What belongs here
-
-- Company URLs (`JIRA_URL`, `GITLAB_API_URL`, etc.)
-- API tokens and credentials → prefer `~/.zsh_secrets` (stored in Bitwarden)
-- WSL/Windows-specific paths (`/mnt/c/...`)
-- `$KUBECONFIG` variants per environment
-- Project-specific aliases (`pet`, `hinst`, `hupd`, etc.)
-- Anything that differs between machines or reveals internal infrastructure
+Nothing here may identify corporate infrastructure; values stay in `~/.config/zsh/secrets`.

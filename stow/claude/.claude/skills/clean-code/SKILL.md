@@ -1,102 +1,63 @@
 ---
 name: clean-code
-description: "Readability and maintainability: naming, function and class design, comments, formatting, error handling, test quality, code smells, SOLID, DRY, FIRST. Use when writing, refactoring, or reviewing code for clarity and complexity."
+description: "Readability and maintainability: naming, function and class design, formatting, error handling, test quality, code smells, SOLID, DRY, FIRST. Use when writing, refactoring, or reviewing code for clarity and complexity."
 argument-hint: "file, function, or snippet to evaluate or improve"
 ---
 
 # Clean Code
 
-Source: *Clean Code* — Robert C. Martin (Uncle Bob)
+House rules, after *Clean Code* (Robert C. Martin). Language skills (`java-standards`) and the
+project's conventions win where they are more specific. Comments: the documentation rule in
+`~/.claude/CLAUDE.md` — rename or extract instead of explaining.
 
-> "The only way to go fast is to keep the code clean."
+## Names
 
-## When to Use
+- Reveal intent: `elapsedTimeInDays`, not `d`. Searchable constants instead of magic numbers.
+- No abbreviations, encodings (`m_`, `I` prefix), or type suffixes (`nameString`).
+- Classes are nouns, never vague (`Manager`, `Processor`, `Data`, `Info`); methods are verbs;
+  booleans are predicates (`isReady`, `hasError`).
+- One word per concept — do not mix `fetch` / `retrieve` / `get`. No puns: separate names for
+  separate semantics.
 
-- Writing a new function, class, or module and want to apply clean code from the start
-- Refactoring existing code to improve readability or reduce complexity
-- Naming a variable, function, or class and unsure if the name is clear enough
-- Auditing a file for code smells
-- Improving test quality using FIRST principles
-- Applying Single Responsibility or other SOLID principles
+## Functions
 
-## Workflow
+- Small: rarely over 20 lines. Blocks inside `if` / `else` / `while` ideally one call.
+- Do one thing, at one level of abstraction. If a sub-function can be extracted with a name that
+  is not a restatement of the code, the original did more than one thing.
+- Stepdown order: callers above callees, high level first.
+- Arguments: 0–2; 3 is a smell; 4+ needs a reason. Related arguments become an object. No flag
+  (boolean) arguments — split the function.
+- No hidden side effects. Command/query separation: change state or return a value, not both.
 
-### 1. Audit — Identify Violations
+## Error handling
 
-Scan the target code using [the rules reference](./references/rules.md). Look for violations in this priority order:
+- Exceptions, not return codes or error flags. Messages carry enough context to act on.
+- Extract `try`/`catch` bodies into their own function; error handling is one thing.
+- Define exception classes by how callers handle them. Translate third-party exceptions into
+  domain ones at the boundary.
+- Do not return or pass `null` where `Optional`, an empty collection, or an exception fits.
 
-1. **Names** — unclear, abbreviated, misleading, or encoded names
-2. **Functions** — too large, doing more than one thing, mixed abstraction levels
-3. **Comments** — every one outside an interface contract; rename or extract instead
-4. **Error handling** — returning null, using error codes instead of exceptions
-5. **Classes** — too large, low cohesion, multiple responsibilities
-6. **Tests** — missing, brittle, or violating FIRST
-7. **Formatting / structure** — inconsistent vertical/horizontal spacing
+## Classes
 
-### 2. Prioritize
+- Small by responsibility, not lines: one reason to change. A name that needs "And" or "Or"
+  has too many.
+- High cohesion — most methods use most fields; low cohesion means split.
+- Law of Demeter: no train wrecks (`a.getB().getC().doSomething()`).
+- Separate construction from use: wiring lives in configuration, not in unrelated constructors.
+- Member order: public static constants → private static fields → private instance fields →
+  public methods, each followed by the private helpers it calls.
 
-| Priority | Issue type |
-|----------|-----------|
-| High | Incorrect behavior risk (null returns, swallowed exceptions, misleading names) |
-| Medium | Maintainability (large functions, low cohesion, duplication) |
-| Low | Polish (formatting, minor naming nits, unnecessary comments) |
+## Formatting
 
-### 3. Refactor — Iteratively
+The project formatter owns layout; never fight it. Blank lines between concepts, none inside
+one thought. Lines ≤ 120 characters.
 
-Apply changes in small steps. **Never make the code worse to make it cleaner.** After each step:
-- Code must still pass all tests
-- Each function must still do exactly one thing
-- Run the full test suite before committing
+## Tests
 
-### 4. Validate
+FIRST — fast, independent, repeatable, self-validating. One concept per test, given–when–then
+structure, same care as production code.
 
-- [ ] All names reveal intent without needing a comment to explain them
-- [ ] Every function is small and does one thing at one level of abstraction
-- [ ] No comments outside interface documentation
-- [ ] No null returns or null parameters
-- [ ] Tests cover the changed code and follow FIRST
-- [ ] No duplication (DRY)
-- [ ] Classes have a single, clear responsibility
+## Smells
 
-## Quick Rules (Full details in [rules.md](./references/rules.md))
-
-### Names
-- Use intention-revealing names: `elapsedTimeInDays` not `d`
-- No abbreviations, encodings (`m_`, `I`), or type suffixes (`nameString`)
-- Classes → nouns; Methods → verbs; Booleans → predicates (`isReady`, `hasError`)
-- One word per concept: don't mix `fetch`/`retrieve`/`get` for the same operation
-
-### Functions
-- **Small** — ideally ≤ 20 lines, rarely more than one screen
-- **Do one thing** — if you can extract a meaningful sub-function, the original did more than one thing
-- **One level of abstraction** — don't mix high-level logic with low-level details in the same function
-- **≤ 2 arguments** preferred; > 3 is a strong smell
-- **No side effects** — a function named `checkPassword` must not also initialize a session
-- **Command/Query separation** — a function either changes state or returns a value, not both
-
-### Error Handling
-- Use exceptions, not return codes or error flags
-- Never return `null` — throw an exception or use a Null Object / Optional
-- Never pass `null` as an argument
-- Wrap third-party APIs so exceptions are translated to domain types
-- Provide context in exception messages
-
-### Classes
-- **Small** — measured by responsibilities, not line count
-- **Single Responsibility Principle** — one reason to change
-- **High cohesion** — instance variables used by most methods
-- **Open/Closed** — open for extension, closed for modification
-- Organize: public static constants → private static variables → private instance variables → public functions → private utilities
-
-### Tests (FIRST)
-- **Fast** — tests must run quickly or they won't be run
-- **Independent** — no test depends on another
-- **Repeatable** — same result in any environment
-- **Self-Validating** — boolean pass/fail, no manual inspection
-- **Timely** — written just before the production code (TDD) or at worst in the same PR
-
-### Emergence (Kent Beck's 4 Rules, in priority order)
-1. Runs all the tests
-2. Contains no duplication
-3. Expresses the intent of the programmer
-4. Minimizes the number of classes and methods
+Rigidity, fragility, immobility, needless complexity, needless repetition, opacity. Duplication
+is removed when it is real, not when two lines merely look alike.

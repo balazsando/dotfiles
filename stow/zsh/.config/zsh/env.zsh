@@ -8,9 +8,6 @@ export REPOS_DIR="$HOME/repos"
 export EDITOR=nvim
 export VISUAL=nvim
 
-# --- Agent token tooling ---
-export GRAPHIFY_HOOK_STRICT=0
-
 # --- Node TLS ---
 # Node ignores the OS trust store, so the corporate chain must be passed
 # explicitly. Rebuild the ~/certs bundle here and export NODE_EXTRA_CA_CERTS:
@@ -21,7 +18,7 @@ if [[ -r "$HOME/.local/share/dotfiles/scripts/node-ca.sh" ]]; then
 fi
 
 # --- PATH ---
-export PATH="$HOME/.npm-global/bin:$GOPATH/bin:$HOME/.local/bin:$PATH"
+export PATH="$HOME/.local/share/nvim/mason/packages/jdtls:$HOME/.npm-global/bin:$GOPATH/bin:$HOME/.local/bin:$PATH"
 
 # --- fzf ---
 export FZF_DEFAULT_OPTS="

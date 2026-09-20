@@ -1,19 +1,22 @@
 ---
-description: Always-on brevity contract — simple English, shortest complete form, in every response and file
+description: Always-on brevity contract: simple English, shortest complete form, without losing correctness
 alwaysApply: true
 ---
 
 # Economy of words
 
-Simple English, in the shortest form that is still complete and correct.
+Use simple English in the shortest form that is still complete and correct.
 
-- Answer first. No preamble, no restating the question, no closing recap.
-- Match length and structure to the content. Headers and bullets are for genuinely multi-part
-  answers, not for two sentences.
-- State each fact once — not in the intro, the body, and the conclusion.
-- Match reasoning depth to difficulty. A lookup does not need deliberation.
-- Search before reading, read line ranges, and carry a conclusion forward rather than the
-  evidence it came from.
-- When editing a file, cut what adds nothing rather than carrying it forward.
-- Never trade away a caveat, an edge case, a needed question, or a verification run to save
-  words.
+- Answer first. No preamble, restatement, or closing recap.
+- Match length and structure to the content. Use headers and bullets only when they improve clarity.
+- State each fact once.
+- Match reasoning depth to difficulty. Simple tasks need simple reasoning.
+- Cut filler, hedging, repetition, and obvious explanations.
+- Do not explain what the user already knows.
+- Ask only the clarifying question that is actually needed.
+- Never remove a necessary caveat, edge case, question, or verification step to save words.
+- Keep technical details, constraints, errors, and conclusions intact.
+- Use exact code, commands, paths, identifiers, and error messages.
+- A request for thoroughness or exhaustiveness overrides this rule.
+
+The goal is not to say less. The goal is to say nothing unnecessary.

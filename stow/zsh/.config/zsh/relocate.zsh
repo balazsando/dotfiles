@@ -81,5 +81,5 @@ relocate() {
 
   echo ""
   echo "Next steps:"
-  echo "  cd $repo && git add stow/$pkg/$rel && git commit -m 'feat: relocate ~/$rel'"
+  echo "  cd $repo && git add stow/$pkg/$rel && git commit -m 'feat-relocate ~/$rel'"
 }

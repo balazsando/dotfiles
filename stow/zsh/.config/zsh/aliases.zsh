@@ -1,5 +1,6 @@
 #!/usr/bin/env zsh
 # --- Aliases ---
+alias ai='cursor-agent'
 alias aig='gh copilot'
 alias d="docker"
 alias k="kubectl"
@@ -22,6 +23,7 @@ alias mkst='minikube stop'
 alias mkt='minikube tunnel'
 alias pimp='nvim ~/.zshrc'
 alias re='source ~/.zshrc'
+alias sindex='serena project index'
 alias wslconf-sync='zsh ~/.local/share/dotfiles/scripts/wslconf-sync.zsh'
 alias jl='jirlab board'
 

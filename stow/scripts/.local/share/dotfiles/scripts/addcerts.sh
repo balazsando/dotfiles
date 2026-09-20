@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # addcerts — Import ~/certs/*.crt into the Java truststore via keytool.
-# Called by install.sh (bash) and sourced by .zshrc for interactive use.
+# Called by install.sh and by the addcerts function in functions.zsh.
 # Confirms each cert (it becomes trusted by every Java process). --yes to skip.
 
 addcerts() {
@@ -11,8 +11,9 @@ addcerts() {
   [[ -d "$cert_dir" ]] || { echo "  ⊘ ~/certs not found — skipping"; return; }
 
   local java_bin
-  java_bin="$(mise which java 2>/dev/null || command -v java 2>/dev/null || true)"
-  [[ -n "$java_bin" ]] || { echo "  ⊘ java not found — skipping"; return; }
+  java_bin="$(mise which java 2>/dev/null || command -v java 2>/dev/null ||
+    echo "$HOME/.sdkman/candidates/java/current/bin/java")"
+  [[ -x "$java_bin" ]] || { echo "  ⊘ java not found — skipping"; return; }
 
   local java_home keytool keystore
   java_home="$(dirname "$(dirname "$(readlink -f "$java_bin")")")"

@@ -16,9 +16,8 @@ plus filters (`--severity`, `--new-code`, `--path`, `--rule`).
   local commit. Never push, never open a merge request.
 - Fix only behaviour-preserving changes provable by a compile plus the existing tests; every
   change maps to a real issue key from the collected report.
-- The fixes below are mechanical and single-file, so this command edits directly rather than
-  delegating to a developer: anything needing judgement is on the skip list. Never widen that
-  list.
+- The fixes below are mechanical and single-file; anything needing judgement is on the skip list.
+  Never widen that list.
 - Stop and ask when the project match is ambiguous or the build cannot be validated locally —
   plus the `change-delivery` §1 stop conditions.
 
@@ -34,8 +33,8 @@ plus filters (`--severity`, `--new-code`, `--path`, `--rule`).
 5. **Fix** — bugs → vulnerabilities → smells, highest severity first. Smallest edit per issue,
    project formatter, no new abstractions, no drive-by reformatting.
 6. **Validate** — `change-delivery` §4. Revert any fix that fails and skip that issue.
-7. **Commit** — `change-delivery` §5, subject `fix-…` (bugs, vulnerabilities), `refactor-…`
-   (smells) or `style-…`; body lists rule and `file:line` per issue.
+7. **Commit** — `change-delivery` §5, subject `fix-…` when any bug or vulnerability is fixed,
+   otherwise `refactor-…`; body lists rule and `file:line` per issue.
 8. **Report** — `change-delivery` §6, plus the validation skill's §5 report.
 
 ## Fix / skip

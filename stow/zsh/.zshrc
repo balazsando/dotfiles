@@ -19,7 +19,7 @@ source ~/.config/zsh/env.zsh
 
 # --- Oh My Zsh Core Config ---
 ZSH_THEME="powerlevel10k/powerlevel10k"
-plugins=(git docker kubectl zsh-autosuggestions zsh-syntax-highlighting)
+plugins=(git kubectl zsh-autosuggestions zsh-syntax-highlighting)
 source $ZSH/oh-my-zsh.sh
 
 # --- Aliases & Functions ---
@@ -42,3 +42,7 @@ if command -v tmux >/dev/null 2>&1; then
     tmux attach 2>/dev/null || tmux
   fi
 fi
+
+#THIS MUST BE AT THE END OF THE FILE FOR SDKMAN TO WORK!!!
+export SDKMAN_DIR="$HOME/.sdkman"
+[[ -s "$HOME/.sdkman/bin/sdkman-init.sh" ]] && source "$HOME/.sdkman/bin/sdkman-init.sh"

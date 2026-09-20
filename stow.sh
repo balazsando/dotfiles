@@ -110,21 +110,27 @@ fi
 # path components the packages actually claim.
 mapfile -t _roots < <(find "$STOW_DIR" -mindepth 2 -maxdepth 2 -printf '%f\n' | sort -u)
 _pruned_dirs=()
-for _c in "${_roots[@]}"; do
-  [[ -e "$TARGET_DIR/$_c" || -L "$TARGET_DIR/$_c" ]] || continue
-  while IFS= read -r _link; do
-    _dest="$(realpath -m "$_link")"
-    if [[ "$_dest" == "$STOW_DIR"/* ]]; then
-      if $DRY_RUN; then
-        echo "  → would prune dangling $_link"
-      else
-        rm -f "$_link"
-        _pruned_dirs+=("$(dirname "$_link")")
-        echo "  ✂ pruned dangling ${_link/#$HOME/\~}"
-      fi
+_prune_candidates() {
+  # $HOME itself at depth 1: a deleted top-level package file is gone from
+  # _roots, so its link would otherwise never be scanned again.
+  find "$TARGET_DIR" -maxdepth 1 -xtype l 2>/dev/null
+  for _c in "${_roots[@]}"; do
+    [[ -e "$TARGET_DIR/$_c" || -L "$TARGET_DIR/$_c" ]] || continue
+    find "$TARGET_DIR/$_c" -xtype l 2>/dev/null
+  done
+}
+while IFS= read -r _link; do
+  _dest="$(realpath -m "$_link")"
+  if [[ "$_dest" == "$STOW_DIR"/* ]]; then
+    if $DRY_RUN; then
+      echo "  → would prune dangling $_link"
+    else
+      rm -f "$_link"
+      _pruned_dirs+=("$(dirname "$_link")")
+      echo "  ✂ pruned dangling ${_link/#$HOME/\~}"
     fi
-  done < <(find "$TARGET_DIR/$_c" -xtype l 2>/dev/null)
-done
+  fi
+done < <(_prune_candidates | sort -u)
 if ! $DRY_RUN && [[ ${#_pruned_dirs[@]} -gt 0 ]]; then
   for _d in "${_pruned_dirs[@]}"; do
     # remove newly emptied dirs, but never a top-level deployed dir (~/.cursor)

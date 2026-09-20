@@ -7,6 +7,97 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [2.0.0] — 2026-09-20
+
+Retires the multi-agent delivery layer and the agent token tooling, cuts the skills down to what
+the model does not already know, and moves the JVM off mise onto SDKMAN.
+
+### Added
+
+- **SDKMAN**, as bootstrap step 9: the newest Temurin 21 resolved from the SDKMAN API, plus Maven.
+  Installed with `rcupdate=false` because `.zshrc` sources `sdkman-init.sh` itself. `addcerts.sh`
+  falls back to `~/.sdkman/candidates/java/current/bin/java`, so the corporate CA still reaches the
+  Java truststore when mise has no JVM.
+- **Serena**, Cursor's Java code intelligence: `serena-agent` in `packages/uv-tools.txt`, a
+  `serena` entry in `stow/cursor/.cursor/mcp.json`, and a post-install step that appends
+  `ls_specific_settings` to `~/.serena/serena_config.yml` pointing at Mason's jdtls. The MCP entry
+  carries its own `JAVA_HOME` and `PATH` — an MCP server does not load `env.zsh`. Claude keeps its
+  native `jdtls-lsp` plugin. `sindex` indexes the current repository; `~/.serena/` is gitignored
+  globally and never stowed, since it holds absolute paths and a project list.
+- `micrometer/references/spring-boot.md` — the Boot 4 wiring the `spring-observability` skill used
+  to own, now behind the one skill that covers metrics and tracing.
+
+### Changed
+
+- **The delivery commands do their own work.** All nine agents, the `agent-workflow` skill and
+  `/ticket-to-merge` are gone. `/deliver`, `/bug-fix`, `/mr-review`, `/create-tech-ticket`,
+  `/enhance-jira-description` and `/dotfiles-devops` each carry their own steps and load the
+  skills they need. Orchestration cost more context than it saved: every spawn re-derived what the
+  caller already had, and the report directory, status tokens and question routing existed only to
+  move it back. `/deliver` absorbs `/ticket-to-merge` — it takes a ticket key or plain text, and
+  pushes and opens a merge request when there is a ticket.
+- **Skills keep house rules and machine-local pointers, not textbook content.** `kubectl`,
+  `lazyvim`, `nvim-tmux`, `grafana`, `dotfiles` and `code-review-practices` lost the reference
+  material the model already has; what is left is the part it would otherwise get wrong. `stow`
+  folded into `dotfiles`, `neovim-lua` into `lazyvim` and `nvim-tmux`, `spring-observability` into
+  `micrometer`. `design-patterns`, `economy-of-words`, `jira-api` and `gitlab-api` are gone — the
+  first two were textbook, the last two duplicated the MCP servers the `jira-tickets` skill owns.
+  Net effect under `stow/claude/.claude/` and `stow/cursor/.cursor/`: 5,573 lines removed against
+  876 added.
+- `ai-config` now states what earns a line in any layer — house preferences and knowledge the
+  model gets wrong — and that a new agent needs a measured gain, not a plausible one.
+- `change-delivery` splits validation into a compile step and a green step per build system, so a
+  new test can be seen failing for the right reason before the fix. Coverage counts only on a
+  green bar, and one commit per run replaces one commit per agent.
+- The JVM is no longer a mise tool. `java` and `maven` are commented out in `.mise.toml` and come
+  from SDKMAN instead, which is what Mason's jdtls and Serena expect to find.
+- `install.sh` is rebuilt around one shape — presence guard, `run`, `ok`/`skip` — so every step
+  reads the same and `--dry-run` holds through all of them. `curl_pipe` runs upstream installers
+  under `pipefail`. The WSL `PATH` check uses the shared `is_wsl` and a single `awk` pass, and
+  respects `--dry-run` instead of exiting through it. `jirlab` installs with `install -m 755`
+  rather than `mv`.
+- `bw-restore.sh` installs CA certificates with `install -m 644` instead of `cp`, which copied the
+  mode-600 the restore's own `umask 077` had given them into the system trust directory.
+- **rtk and graphify are gone**, with everything that carried them: the `post-commit` hook that
+  rebuilt the code graph, the `graphify` Cursor rule and router row, `GRAPHIFY_HOOK_STRICT`, the
+  `claude`/`ai` hook-registration functions, the `rtk` mise tool, and the `graphify-out/` ignore
+  entry. Both existed to cut what the agents read; with the agent layer gone, they cost a hook on
+  every commit and an always-on rule for a graph nothing consulted.
+- `ai` is a plain alias for `cursor-agent`, and `claude` is the binary again — both wrapper
+  functions existed only to register the rtk hook.
+- `packages/pip.txt` is deleted: it listed no packages and only explained where Python packages do
+  not belong.
+- `docker` dropped from the Oh-My-Zsh plugin list; the plugin only adds completions.
+
+### Fixed
+
+- `stow.sh` now also prunes dangling links directly in `$HOME`. A deleted top-level package file
+  left a link that nothing scanned again, because the pruner only walked the directories the
+  surviving packages claimed — a removed skill kept being discovered through it.
+- `sync.sh` printed a `chore: …` commit message, which the `prepare-commit-msg` hook does not
+  match; it now prints the `category-message` form the hook expands.
+- `bw-upload.zsh` referred to `~/.zsh_secrets`, `~/.git-credentials` and a `bw-restore.zsh` that
+  does not exist. Its messages now name the XDG paths it actually reads and the restore script's
+  real name.
+
+### Documentation
+
+- `README.md` is rewritten as the repository's reference: a **Load-bearing decisions** section
+  that says why `--no-folding`, why `bw-restore.sh` disables Node TLS verification around `bw`
+  alone, why `BW_SESSION` is never persisted, and which runtime files are written by CLIs rather
+  than stowed; the bootstrap table covering all fifteen steps with the three constraints that fix
+  their order; and a **Known limitations** section.
+- `docs/ARCHITECTURE.md` is deleted. It and `README.md` described the same repository and had
+  drifted apart repeatedly; `README.md` is now the single source, and the `/release` audit, the
+  project `CLAUDE.md`, the `no-leaks` Cursor rule and `ai-config` no longer ask for both.
+- `host/README.md` is a two-row table of what is copied where, replacing instructions for a
+  `~/.zshrc.local` profile mechanism the repository does not have.
+- The documentation rule now names two allowed comment kinds instead of forbidding all of them:
+  contract Javadoc where the signature does not convey the intent, and `// given` / `// when` /
+  `// then` markers in tests.
+
+---
+
 ## [1.6.0] — 2026-09-11
 
 Gives the delivery agents one shared operating contract, moves the commit from the orchestrator to

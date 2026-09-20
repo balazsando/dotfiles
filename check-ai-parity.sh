@@ -33,7 +33,7 @@ done
 if [[ "$violations" -eq 1 ]]; then
   echo ""
   echo "Move the file(s) to stow/claude/.claude/ (Cursor discovers them from ~/.claude natively),"
-  echo "then re-run. See README.md → Repository layout → AI assistant configs."
+  echo "then re-run. See README.md → AI assistant configuration."
   exit 1
 fi
 

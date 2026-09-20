@@ -1,328 +1,268 @@
 #!/usr/bin/env bash
-# install.sh — Dotfiles bootstrap for Debian/Ubuntu
-# Usage: bash install.sh [--dry-run]
-# Safe to re-run — every step is guarded.
+# install.sh — Dotfiles bootstrap for Debian/Ubuntu/WSL2
+# Usage: bash install.sh [--dry-run]   Safe to re-run — every step is guarded.
 
 set -euo pipefail
 
 export DOTFILES="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+SCRIPTS="$DOTFILES/stow/scripts/.local/share/dotfiles/scripts"
+export PATH="$HOME/.local/bin:$HOME/.npm-global/bin:$PATH"
 
 BOLD='\033[1m'; GREEN='\033[0;32m'; CYAN='\033[0;36m'; YELLOW='\033[1;33m'; RESET='\033[0m'
 step() { echo -e "\n${BOLD}${CYAN}▶ $*${RESET}"; }
 ok()   { echo -e "  ${GREEN}✔ $*${RESET}"; }
-skip() { echo -e "  ${YELLOW}⊘ $*${RESET} (already present)"; }
+skip() { echo -e "  ${YELLOW}⊘ $*${RESET}"; }
 has()  { command -v "$1" >/dev/null 2>&1; }
+list() { grep -v '^#\|^[[:space:]]*$' "$DOTFILES/packages/$1" || true; }
 DRY_RUN=false
-[[ "${1:-}" == "--dry-run" ]] && { DRY_RUN=true; echo -e "${YELLOW}▶ DRY RUN${RESET}\n"; }
-run() { $DRY_RUN && echo "  → $*" || "$@"; }
+[[ "${1:-}" == "--dry-run" ]] && { DRY_RUN=true; echo -e "${YELLOW}▶ DRY RUN${RESET}"; }
+run() { if $DRY_RUN; then echo "  → $*"; else "$@"; fi; }
+curl_pipe() { run bash -o pipefail -c "curl -fsSL '$1' | $2"; }
 
 echo -e "${BOLD}dotfiles bootstrap — Debian${RESET}"
 
-# ── 1. APT packages ───────────────────────────────────────────────────────────
+# ── 1. APT ────────────────────────────────────────────────────────────────────
 step "APT packages"
+mapfile -t apt_pkgs < <(list apt.txt)
 run sudo apt-get update -qq
-run sudo apt-get install -y --no-install-recommends \
-  $(grep -v '^#\|^[[:space:]]*$' "$DOTFILES/packages/apt.txt" | tr '\n' ' ')
+run sudo apt-get install -y --no-install-recommends "${apt_pkgs[@]}"
 ok "apt packages"
 
-# ── 2. WSL PATH guard (prevents Windows bw.exe shadowing Linux bw) ────────────
+# ── 2. WSL PATH guard ─────────────────────────────────────────────────────────
 step "WSL PATH"
-# shellcheck source=stow/scripts/.local/share/dotfiles/scripts/wsl-detect.sh
-source "$DOTFILES/stow/scripts/.local/share/dotfiles/scripts/wsl-detect.sh"
-needs_fix=false
-while IFS= read -r e; do
-  [[ "$e" != /mnt/c/* ]] && continue
-  case "${e,,}" in
-    /mnt/c/windows/system32|/mnt/c/windows/system32/*) ;;
-    *) needs_fix=true; break ;;
-  esac
-done <<<"${PATH//:/$'\n'}"
-if $needs_fix; then
-  sudo cp "$DOTFILES/host/wsl.conf" /etc/wsl.conf
-  echo -e "\n❗ Windows PATH detected — restart required: wsl --shutdown"
-  [[ -n "${WSL_DISTRO_NAME:-}" ]] && exit 1
+source "$SCRIPTS/wsl-detect.sh"
+if is_wsl && printf %s "$PATH" | awk -v RS=: '
+  { p = tolower($0) } p ~ /^\/mnt\/c\// && p !~ /^\/mnt\/c\/windows\/system32(\/|$)/ { f = 1 }
+  END { exit !f }'; then
+  run sudo cp "$DOTFILES/host/wsl.conf" /etc/wsl.conf
+  echo -e "\n❗ Windows PATH detected — run: wsl --shutdown, then re-run install.sh"
+  $DRY_RUN || exit 1
 fi
 ok "WSL PATH clean"
 
-# ── 3. BW CLI (installed early — secrets include corporate VPN certs) ─────────
+# ── 3. Bitwarden CLI ──────────────────────────────────────────────────────────
 step "Bitwarden CLI"
-if ! has bw; then
-  run mkdir -p "$HOME/.npm-global"
-  run npm config set prefix "$HOME/.npm-global"
-  export PATH="$HOME/.npm-global/bin:$PATH"
-  run npm install -g --silent @bitwarden/cli tree-sitter-cli
-fi
-ok "bw, tree-sitter-cli"
+run npm config set prefix "$HOME/.npm-global"
+if has bw; then skip "bw"; else run npm install -g --silent @bitwarden/cli; ok "bw"; fi
+if has tree-sitter; then skip "tree-sitter-cli"; else run npm install -g --silent tree-sitter-cli; ok "tree-sitter-cli"; fi
 
-# ── 4. Secrets + VPN certs (NODE_TLS_REJECT_UNAUTHORIZED=0 scoped to BW only) ─
+# ── 4. Secrets + certs ────────────────────────────────────────────────────────
 step "Bitwarden secrets"
 if [[ -f "$HOME/.config/zsh/secrets" && -f "$HOME/.config/git/credentials" ]]; then
-  skip "secrets already present"
+  skip "secrets"
 elif $DRY_RUN; then
-  echo "  → would prompt: Restore secrets from Bitwarden? [y/N]"
+  echo "  → would offer to run bw-restore.sh"
 else
-  read -rp "  Restore secrets from Bitwarden? [y/N] " _bw_reply
-  if [[ "${_bw_reply,,}" == "y" ]]; then
+  read -rp "  Restore secrets from Bitwarden? [y/N] " reply
+  if [[ "${reply,,}" == "y" ]]; then
     export NODE_TLS_REJECT_UNAUTHORIZED=0
-    bash "$DOTFILES/stow/scripts/.local/share/dotfiles/scripts/bw-restore.sh" || true
+    bash "$SCRIPTS/bw-restore.sh" && ok "secrets + certs" ||
+      echo "  ⚠ restore failed — re-run: bash $SCRIPTS/bw-restore.sh"
     unset NODE_TLS_REJECT_UNAUTHORIZED
-    run sudo update-ca-certificates
-    source "$HOME/.config/zsh/secrets"
-    ok "secrets + certs"
   fi
 fi
 
-# ── 5. Oh-My-Zsh + plugins ────────────────────────────────────────────────────
+# ── 5. Oh-My-Zsh ──────────────────────────────────────────────────────────────
 step "Oh-My-Zsh"
-if [[ ! -d "$HOME/.oh-my-zsh" ]]; then
-  if $DRY_RUN; then
-    echo "  → would install Oh-My-Zsh"
-  else
-    sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)" "" --unattended
-  fi
-  ok "Oh-My-Zsh"
-else
+if [[ -d "$HOME/.oh-my-zsh" ]]; then
   skip "Oh-My-Zsh"
+else
+  curl_pipe https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh 'sh -s -- --unattended'
+  ok "Oh-My-Zsh"
 fi
 ZSH_CUSTOM="${ZSH_CUSTOM:-$HOME/.oh-my-zsh/custom}"
-_clone_plugin() {
-  local repo="${1%% *}" target="${1#* }"
-  [[ -d "$ZSH_CUSTOM/$target" ]] && { echo "  ⊘ $(basename "$target") (already present)"; return; }
-  run git clone --depth=1 "https://github.com/$repo" "$ZSH_CUSTOM/$target" \
-    && ok "$(basename "$target")"
-}
-_clone_plugin "zsh-users/zsh-autosuggestions plugins/zsh-autosuggestions" &
-_clone_plugin "zsh-users/zsh-syntax-highlighting plugins/zsh-syntax-highlighting" &
-_clone_plugin "romkatv/powerlevel10k themes/powerlevel10k" &
+for p in plugins:zsh-users/zsh-autosuggestions plugins:zsh-users/zsh-syntax-highlighting themes:romkatv/powerlevel10k; do
+  repo="${p#*:}" dir="$ZSH_CUSTOM/${p%%:*}/${p##*/}"
+  if [[ -d "$dir" ]]; then skip "${p##*/}"; else run git clone -q --depth=1 "https://github.com/$repo" "$dir" && ok "${p##*/}"; fi &
+done
 wait
 
-# ── 6. GitHub binary installs ─────────────────────────────────────────────────
+# ── 6. GitHub binaries ────────────────────────────────────────────────────────
 step "GitHub binaries"
 # Bump both together for a newer build.
 JIRLAB_COMMIT="9687157457747d5ec8e11dc1f2836e93b0b0149f"
 JIRLAB_SHA256="a4b9ece41791e2e8a49462b2a9541524782a9b40073af2ef77782f90029dece4"
-if $DRY_RUN; then
-  echo "  → would fetch jirlab @ ${JIRLAB_COMMIT:0:7} and verify sha256"
-elif ! has jirlab; then
-  tmp=$(mktemp)
-  curl -fsSLo "$tmp" \
-    "https://github.com/balazsando/jirlab/raw/$JIRLAB_COMMIT/bin/jirlab"
-  if ! echo "$JIRLAB_SHA256  $tmp" | sha256sum -c --status -; then
-    rm -f "$tmp"
-    echo "  ✗ jirlab checksum mismatch — refusing to install" >&2
-    echo "    expected $JIRLAB_SHA256" >&2
-    exit 1
-  fi
-  chmod +x "$tmp"
-  run sudo mv "$tmp" /usr/local/bin/jirlab
-  ok "jirlab (verified)"
-else
+if has jirlab; then
   skip "jirlab"
-fi
-
-# ── 6b. cursor-agent ──────────────────────────────────────────────────────────
-step "cursor-agent"
-# Not npm — the npm package of that name is an unrelated third-party project.
-if $DRY_RUN; then
-  echo "  → would install cursor-agent"
-elif ! has cursor-agent && [[ ! -x "$HOME/.local/bin/cursor-agent" ]]; then
-  sh -c "$(curl -fsSL https://cursor.com/install)"
-  ok "cursor-agent"
+elif $DRY_RUN; then
+  echo "  → would fetch jirlab @ ${JIRLAB_COMMIT:0:7} and verify sha256"
 else
+  tmp=$(mktemp)
+  curl -fsSLo "$tmp" "https://github.com/balazsando/jirlab/raw/$JIRLAB_COMMIT/bin/jirlab"
+  echo "$JIRLAB_SHA256  $tmp" | sha256sum -c --status - ||
+    { rm -f "$tmp"; echo "  ✗ jirlab checksum mismatch — refusing to install" >&2; exit 1; }
+  sudo install -m 755 "$tmp" /usr/local/bin/jirlab && rm -f "$tmp"
+  ok "jirlab (verified)"
+fi
+if has cursor-agent; then
   skip "cursor-agent"
+else
+  curl_pipe https://cursor.com/install sh
+  ok "cursor-agent"
 fi
 
-# ── 7. Default shell → zsh ────────────────────────────────────────────────────
+# ── 7. Default shell ──────────────────────────────────────────────────────────
 step "Default shell"
-_zsh="$(command -v zsh || true)"
-if [[ -n "$_zsh" && "${SHELL:-}" != "$_zsh" ]]; then
-  # $USER is set by login/PAM but not by e.g. `docker run`, and set -u makes
-  # that fatal — id -un always works.
-  run sudo chsh -s "$_zsh" "${USER:-$(id -un)}" && ok "default shell → zsh"
+zsh_bin="$(command -v zsh || true)"
+if [[ -z "$zsh_bin" || "${SHELL:-}" == "$zsh_bin" ]]; then
+  skip "default shell"
 else
-  skip "default shell already zsh"
+  run sudo chsh -s "$zsh_bin" "$(id -un)" && ok "default shell → zsh"
 fi
 
-# ── 8. mise + all tools ───────────────────────────────────────────────────────
+# ── 8. mise ───────────────────────────────────────────────────────────────────
 step "mise"
-if $DRY_RUN; then
-  echo "  → would install mise"
-elif ! has mise && [[ ! -x "$HOME/.local/bin/mise" ]]; then
-  curl -fsSL https://mise.run | sh
-  ok "mise installed"
-else
-  skip "mise ($(mise --version 2>/dev/null))"
-fi
-export PATH="$HOME/.local/bin:$PATH"
+if has mise; then skip "mise"; else curl_pipe https://mise.run sh; ok "mise"; fi
 if ! $DRY_RUN; then
   cd "$DOTFILES/stow/mise"
   mise trust
-  eval "$(mise activate bash)"
   mise install
-  npm config set prefix "$HOME/.npm-global"
+  eval "$(mise activate bash)"
   ok "tools installed via mise"
 fi
 
-# ── 9. GNU Stow ───────────────────────────────────────────────────────────────
+# ── 9. SDKMAN ─────────────────────────────────────────────────────────────────
+step "SDKMAN"
+if [[ -s "$HOME/.sdkman/bin/sdkman-init.sh" ]]; then
+  skip "SDKMAN"
+else
+  curl_pipe 'https://get.sdkman.io?rcupdate=false' bash
+  ok "SDKMAN"
+fi
+sdk_install() {
+  run bash -c 'source "$HOME/.sdkman/bin/sdkman-init.sh" && sdk install "$@"' _ "$@" &&
+    ok "$*" || echo "  ⚠ sdk install $* failed — re-run it in a new shell"
+}
+JAVA_MAJOR=21
+if [[ -e "$HOME/.sdkman/candidates/java/current" ]]; then
+  skip "java"
+elif $DRY_RUN; then
+  echo "  → sdk install java <latest Temurin $JAVA_MAJOR>"
+else
+  java_id="$(curl -fsSL 'https://api.sdkman.io/2/candidates/java/linuxx64/versions/list?installed=' |
+    grep -oE "\b$JAVA_MAJOR\.[0-9.+]*-tem\b" | sort -uV | tail -1 || true)"
+  if [[ -n "$java_id" ]]; then sdk_install java "$java_id"; else echo "  ⚠ no Temurin $JAVA_MAJOR found — run: sdk install java"; fi
+fi
+if [[ -e "$HOME/.sdkman/candidates/maven/current" ]]; then skip "maven"; else sdk_install maven; fi
+
+# ── 10. Stow ──────────────────────────────────────────────────────────────────
 step "GNU Stow"
 run bash "$DOTFILES/stow.sh"
 run mise trust "$HOME/.mise.toml" 2>/dev/null || true
 
-# ── 10. tmux TPM ──────────────────────────────────────────────────────────────
+# ── 11. tmux TPM ──────────────────────────────────────────────────────────────
 step "tmux TPM"
-if [[ ! -d "$HOME/.tmux/plugins/tpm" ]]; then
-  run mkdir -p "$HOME/.tmux/plugins"
-  run git clone --depth=1 https://github.com/tmux-plugins/tpm "$HOME/.tmux/plugins/tpm"
-  ok "tmux TPM"
-else
+if [[ -d "$HOME/.tmux/plugins/tpm" ]]; then
   skip "tmux TPM"
+else
+  run git clone -q --depth=1 https://github.com/tmux-plugins/tpm "$HOME/.tmux/plugins/tpm"
+  ok "tmux TPM"
 fi
 
-# ── 11. Git identity ──────────────────────────────────────────────────────────
+# ── 12. Git identity ──────────────────────────────────────────────────────────
 step "Git identity"
-
-_write_git_identity() {
-  cat >"$HOME/.gitconfig_local" <<EOF
-[user]
-    name  = $GIT_USER_NAME
-    email = $GIT_USER_EMAIL
-EOF
-  chmod 600 "$HOME/.gitconfig_local"
-  ok "~/.gitconfig_local written"
-}
-
-# Kept out of the versioned .gitconfig. Added idempotently so existing machines
-# get it too, rather than silently losing git auth for non-`gh` hosts.
-_ensure_credential_helper() {
-  local f="$HOME/.gitconfig_local"
-  [[ -f "$f" ]] || return 0
-  grep -q '^\[credential\]' "$f" && return 0
-  cat >>"$f" <<'EOF'
-
-[credential]
-    helper = store --file ~/.config/git/credentials
-EOF
-  ok "credential helper added to ~/.gitconfig_local"
-}
-
-if [[ -f "$HOME/.gitconfig_local" ]] || $DRY_RUN; then
-  skip "~/.gitconfig_local"
-  $DRY_RUN || _ensure_credential_helper
+secrets="$HOME/.config/zsh/secrets" gitlocal="$HOME/.gitconfig_local"
+if $DRY_RUN; then
+  echo "  → would ensure ~/.gitconfig_local (user + credential helper)"
 else
-  if [[ ! -f "$HOME/.config/zsh/secrets" ]]; then
-    read -rp "  Git user name:  " GIT_USER_NAME
-    read -rp "  Git user email: " GIT_USER_EMAIL
-    mkdir -p "$HOME/.config/zsh"
-    cat >"$HOME/.config/zsh/secrets" <<EOF
-export GIT_USER_NAME="$GIT_USER_NAME"
-export GIT_USER_EMAIL="$GIT_USER_EMAIL"
-# export JIRA_URL=""
-# export JIRA_EMAIL=""
-# export JIRA_TOKEN=""
-EOF
-    chmod 600 "$HOME/.config/zsh/secrets"
-    ok "~/.config/zsh/secrets created"
+  if [[ -f "$gitlocal" ]]; then
+    skip "~/.gitconfig_local"
+  else
+    if [[ ! -f "$secrets" ]]; then
+      read -rp "  Git user name:  " GIT_USER_NAME
+      read -rp "  Git user email: " GIT_USER_EMAIL
+      mkdir -p "${secrets%/*}"
+      (umask 077; printf 'export GIT_USER_NAME="%s"\nexport GIT_USER_EMAIL="%s"\n' \
+        "$GIT_USER_NAME" "$GIT_USER_EMAIL" >"$secrets")
+      ok "~/.config/zsh/secrets created"
+    fi
+    set +u; source "$secrets"; set -u
+    [[ -n "${GIT_USER_NAME:-}" ]] || read -rp "  Git user name:  " GIT_USER_NAME
+    [[ -n "${GIT_USER_EMAIL:-}" ]] || read -rp "  Git user email: " GIT_USER_EMAIL
+    (umask 077; printf '[user]\n    name  = %s\n    email = %s\n' \
+      "$GIT_USER_NAME" "$GIT_USER_EMAIL" >"$gitlocal")
+    ok "~/.gitconfig_local written"
   fi
-  set +u
-  # shellcheck disable=SC1091
-  source "$HOME/.config/zsh/secrets"
-  set -u
-  _write_git_identity
-  _ensure_credential_helper
+  if ! grep -q '^\[credential\]' "$gitlocal"; then
+    printf '\n[credential]\n    helper = store --file ~/.config/git/credentials\n' >>"$gitlocal"
+    ok "credential helper added to ~/.gitconfig_local"
+  fi
 fi
 
-# ── 11b. MCP server registration ──────────────────────────────────────────────
+# ── 13. MCP servers ───────────────────────────────────────────────────────────
 step "MCP servers"
-# ~/.claude.json is live runtime state, so register via the CLI, not stow.
-_mcp_install="$HOME/.claude/bin/install-mcp-servers.sh"
-if $DRY_RUN; then
-  echo "  → would register MCP servers from ~/.claude/mcp-servers.json"
-elif ! has claude; then
-  skip "claude CLI not installed — MCP registration"
-elif [[ -x "$_mcp_install" ]]; then
-  bash "$_mcp_install" || echo "  ⚠ MCP registration failed — re-run: $_mcp_install"
+mcp_install="$HOME/.claude/bin/install-mcp-servers.sh"
+if ! has claude || [[ ! -x "$mcp_install" ]]; then
+  skip "claude CLI or install-mcp-servers.sh missing — MCP registration"
 else
-  skip "install-mcp-servers.sh not stowed yet"
+  run bash "$mcp_install" || echo "  ⚠ MCP registration failed — re-run: $mcp_install"
 fi
 
-# ── 11c. Agent token tooling ──────────────────────────────────────────────────
-step "Agent token tooling"
-# The rtk hook is registered lazily by the claude/ai shell functions.
-
-if $DRY_RUN; then
-  echo "  → would install uv tools from packages/uv-tools.txt"
-elif ! has uv; then
+# ── 14. uv tools ──────────────────────────────────────────────────────────────
+step "uv tools"
+if ! has uv; then
   skip "uv not on PATH — uv tools"
 else
-  while IFS= read -r _tool; do
-    _name="${_tool%%\[*}"
-    if uv tool list 2>/dev/null | grep -q "^$_name "; then
-      skip "$_name"
-    else
-      run uv tool install "$_tool" >/dev/null && ok "$_name"
-    fi
-  done < <(grep -v '^#\|^[[:space:]]*$' "$DOTFILES/packages/uv-tools.txt")
+  uv_installed="$(uv tool list 2>/dev/null || true)"
+  while IFS= read -r tool; do
+    name="${tool%%\[*}"
+    if grep -q "^$name " <<<"$uv_installed"; then skip "$name"; else run uv tool install -q "$tool" && ok "$name"; fi
+  done < <(list uv-tools.txt)
 fi
 
-# The graphify routing row in CLAUDE.md makes its own registration a no-op.
-if $DRY_RUN; then
-  echo "  → would register the graphify skill"
-elif ! has graphify; then
-  skip "graphify not on PATH — skill registration"
-elif [[ -f "$HOME/.claude/skills/graphify/SKILL.md" ]]; then
-  skip "graphify skill"
-else
-  graphify install >/dev/null && ok "graphify skill"
-fi
-
-# ── 12. Post-install ──────────────────────────────────────────────────────────
+# ── 15. Post-install ──────────────────────────────────────────────────────────
 step "Post-install"
+run bash "$SCRIPTS/addcerts.sh" || echo "  ⚠ some certificates were not imported — re-run: addcerts"
 
-if ! $DRY_RUN; then
-  bash "$DOTFILES/stow/scripts/.local/share/dotfiles/scripts/addcerts.sh" \
-    || echo "  ⚠ some certificates were not imported — re-run: addcerts"
-fi
-
-_nvim="$(mise which nvim 2>/dev/null || command -v nvim 2>/dev/null || true)"
-if $DRY_RUN; then
-  echo "  → would sync Neovim plugins and install tmux plugins"
-elif [[ -n "$_nvim" && -x "$_nvim" && -f "$HOME/.config/nvim/init.lua" ]]; then
-  TERM=xterm-256color "$_nvim" --headless "+Lazy! sync" +qa 2>&1 | tail -5 || true
+nvim_bin="$(mise which nvim 2>/dev/null || command -v nvim || true)"
+if [[ -x "$nvim_bin" && -f "$HOME/.config/nvim/init.lua" ]]; then
+  run env TERM=xterm-256color "$nvim_bin" --headless "+Lazy! sync" +qa 2>&1 | tail -5 || true
   ok "Neovim plugins synced"
 else
-  echo "  ⊘ nvim not ready — skipping plugin sync"
+  skip "nvim not ready — plugin sync"
 fi
 
-_tpm="$HOME/.tmux/plugins/tpm/scripts/install_plugins.sh"
-if ! $DRY_RUN && [[ -f "$_tpm" ]] && [[ -f "$HOME/.config/tmux/tmux.conf" || -L "$HOME/.config/tmux/tmux.conf" ]]; then
+# Serena (Cursor's Java code intelligence) reuses Mason's jdtls, which Lazy! sync
+# just installed. Appended, never rewritten — the file is full of upstream comments.
+serena_cfg="$HOME/.serena/serena_config.yml"
+jdtls_dir="$HOME/.local/share/nvim/mason/packages/jdtls"
+if ! has serena; then
+  skip "serena not installed — Java LSP settings"
+elif [[ ! -d "$jdtls_dir" ]]; then
+  skip "Mason jdtls absent — re-run install.sh after Neovim has synced"
+elif [[ -f "$serena_cfg" ]] && grep -q '^ls_specific_settings:' "$serena_cfg"; then
+  skip "serena Java LSP settings"
+else
+  [[ -f "$serena_cfg" ]] || run serena init
+  run bash -c "printf '\nls_specific_settings:\n  java:\n    jdtls_path: \"%s\"\n    lombok_path: \"%s/lombok.jar\"\n' \"\$1\" \"\$1\" >>\"\$2\"" _ "$jdtls_dir" "$serena_cfg"
+  ok "serena Java LSP settings"
+fi
+
+tpm="$HOME/.tmux/plugins/tpm/scripts/install_plugins.sh"
+if ! $DRY_RUN && [[ -f "$tpm" && -e "$HOME/.config/tmux/tmux.conf" ]]; then
   tmux start-server 2>/dev/null || true
   tmux source-file "$HOME/.config/tmux/tmux.conf" 2>/dev/null || true
-  TMUX_PLUGIN_MANAGER_PATH="$HOME/.tmux/plugins/" bash "$_tpm" 2>&1 | tail -5 || true
+  TMUX_PLUGIN_MANAGER_PATH="$HOME/.tmux/plugins/" bash "$tpm" 2>&1 | tail -5 || true
   ok "tmux plugins installed"
 fi
 
-_repos="$DOTFILES/repos.txt"
-_restore="$DOTFILES/stow/scripts/.local/share/dotfiles/scripts/repos-restore.sh"
-if [[ -f "$_repos" ]] && [[ -f "$_restore" ]]; then
-  run bash "$_restore" || true
-  ok "repos restored"
+if [[ -f "$DOTFILES/repos.txt" ]]; then
+  run bash "$SCRIPTS/repos-restore.sh" || true
 fi
 
 echo -e "\n${BOLD}${GREEN}✔ Bootstrap complete!${RESET}"
 
-_missing=()
-[[ -f "$HOME/.config/zsh/secrets"     ]] || _missing+=("~/.config/zsh/secrets (tokens, work config)")
-[[ -f "$HOME/.config/git/credentials" ]] || _missing+=("~/.config/git/credentials")
-compgen -G "$HOME/certs/*.crt"     >/dev/null 2>&1 || _missing+=("~/certs/ (corporate CA)")
-compgen -G "$HOME/.kube/config-*"  >/dev/null 2>&1 || _missing+=("~/.kube/config-* (cluster access)")
-compgen -G "$HOME/.claude/local/*.md" >/dev/null 2>&1 || _missing+=("~/.claude/local/ (AI work context)")
-
-if (( ${#_missing[@]} )); then
+missing=()
+[[ -f "$HOME/.config/zsh/secrets" ]]                  || missing+=("~/.config/zsh/secrets (tokens, work config)")
+[[ -f "$HOME/.config/git/credentials" ]]              || missing+=("~/.config/git/credentials")
+compgen -G "$HOME/certs/*.crt" >/dev/null             || missing+=("~/certs/ (corporate CA)")
+compgen -G "$HOME/.kube/config-*" >/dev/null          || missing+=("~/.kube/config-* (cluster access)")
+compgen -G "$HOME/.claude/local/*.md" >/dev/null      || missing+=("~/.claude/local/ (AI work context)")
+if (( ${#missing[@]} )); then
   echo -e "\n  ${YELLOW}⚠ Not restored from Bitwarden:${RESET}"
-  printf '      • %s\n' "${_missing[@]}"
+  printf '      • %s\n' "${missing[@]}"
   echo -e "    The shell and tooling work without these. To fetch them:"
   echo -e "      ${CYAN}bash ~/.local/share/dotfiles/scripts/bw-restore.sh${RESET}"
 fi
 
-echo -e "\n  Run ${CYAN}exec zsh${RESET} to start your new shell."
-echo -e "  Or: ${CYAN}mise run sync${RESET} to pull updates and restow."
+echo -e "\n  Run ${CYAN}exec zsh${RESET} to start your new shell, or ${CYAN}mise run sync${RESET} to pull and restow."

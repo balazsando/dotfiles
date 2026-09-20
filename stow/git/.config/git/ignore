@@ -49,8 +49,8 @@ Desktop.ini
 ### Personal tooling — not the project's business ###
 /.github/
 /.claude/**
+/.serena/**
 **/.claude/settings.local.json
 CLAUDE.md
 .jirlab/
-graphify-out/
 .env.local

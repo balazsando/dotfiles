@@ -1,151 +1,135 @@
 # dotfiles
 
-Personal dotfiles managed with [GNU Stow](https://www.gnu.org/software/stow/) and [mise](https://mise.jdx.dev/).  
-Targeting **Debian/Ubuntu/WSL2**.
+Personal dotfiles for Debian/Ubuntu/WSL2, managed with
+[GNU Stow](https://www.gnu.org/software/stow/) and [mise](https://mise.jdx.dev/).
 
-[![Version](https://img.shields.io/badge/version-1.6.0-blue)](CHANGELOG.md)
+[![Version](https://img.shields.io/badge/version-2.0.0-blue)](CHANGELOG.md)
 
----
+The repository is public. What may enter a tracked file is ruled by `CLAUDE.md`, mirrored for
+Cursor in `.cursor/rules/no-leaks.mdc`.
 
-## Repository layout
+## Layout
 
 ```
 dotfiles/
-├── stow/                   # GNU Stow packages (each maps to $HOME)
-│   ├── bat/                # bat syntax-highlighter config + themes
-│   ├── bin/                # Standalone binaries
-│   ├── claude/             # Claude Code: CLAUDE.md, agents, commands, skills, MCP
+├── stow/                   # GNU Stow packages — each maps to $HOME
+│   ├── bat/                # bat config + themes
+│   ├── bin/                # Standalone binaries (win32yank.exe for the WSL clipboard)
+│   ├── claude/             # Claude Code: CLAUDE.md, commands, skills, MCP
 │   ├── cursor/             # Cursor: rules, commands, MCP (skills/agents shared from claude/)
-│   ├── git/                # .gitconfig, .githooks, .config/git/{ignore,credentials}
+│   ├── git/                # .gitconfig, .githooks, .config/git/ignore
 │   ├── java/               # Maven settings, Eclipse formatter
-│   ├── lf/                 # lf file manager config
-│   ├── mise/               # .mise.toml — all runtimes and CLI tools
-│   ├── nvim/               # LazyVim / Neovim config
-│   ├── posting/            # Posting HTTP client config
+│   ├── lf/                 # lf file manager
+│   ├── mise/               # .mise.toml — runtimes, CLI tools, tasks
+│   ├── nvim/               # LazyVim
+│   ├── posting/            # Posting HTTP client
 │   ├── scripts/            # Operational scripts → ~/.local/share/dotfiles/scripts/
-│   ├── tmux/               # tmux config
+│   ├── tmux/               # tmux
 │   └── zsh/                # .zshrc, .p10k.zsh, ~/.config/zsh/ fragments
-├── host/                   # Machine-specific config (copied, never symlinked)
-│   ├── wsl.conf            # Applied to /etc/wsl.conf on WSL2 machines
+├── host/                   # Machine-specific config — copied, never symlinked
+│   ├── wsl.conf            # → /etc/wsl.conf on WSL2
 │   └── work-wsl/           # Work-machine WSL overrides
 ├── packages/
-│   ├── apt.txt             # System-level APT packages
-│   ├── pip.txt             # pip packages (if any)
-│   └── uv-tools.txt        # Python CLI tools installed as isolated uv tools
-├── docs/
-│   └── ARCHITECTURE.md     # Design decisions and rationale
-├── CLAUDE.md               # Project rules — never publish secrets (.cursor/rules/ mirrors it)
-├── .claude/commands/       # Project commands: /release, /review-staged (.cursor/commands/ mirrors them)
-├── install.sh              # Bootstrap entry point — run once on a new machine
-├── stow.sh                 # Idempotent re-stow — safe to run at any time
-├── check-ai-parity.sh      # Guard: no skills/agents under stow/cursor (they shadow the shared ones)
-└── sync.sh                 # Pre-migration export (wsl.conf, repos, BW secrets)
+│   ├── apt.txt             # APT packages
+│   └── uv-tools.txt        # Python CLI tools installed as uv tools
+├── .claude/commands/       # /release, /review-staged (mirrored in .cursor/commands/)
+├── CLAUDE.md               # Project rules — never publish secrets
+├── install.sh              # Bootstrap — run once on a new machine
+├── stow.sh                 # Idempotent re-stow
+├── check-ai-parity.sh      # Guard: no skills/agents under stow/cursor
+├── sync.sh                 # Pre-migration export (wsl.conf, repos, BW secrets)
+├── CHANGELOG.md            # Keep a Changelog, SemVer
+├── VERSION                 # Current version, mirrored by the badge above
+└── repos.txt               # Repo manifest — gitignored, restored from Bitwarden
 ```
 
-### AI assistant configs (claude/ + cursor/)
+Scripts resolve the repository through `$DOTFILES` (exported by `install.sh`, default
+`~/dotfiles`).
 
-Skills and agents are authored **once** in `stow/claude/.claude/` and consumed by both
-assistants: Cursor natively discovers `~/.claude/skills/` and `~/.claude/agents/`
-([compatibility paths](https://cursor.com/docs/skills)). Never add `skills/` or `agents/`
-under `stow/cursor/` — a same-named copy there takes precedence and shadows the shared
-original. `stow.sh` runs `check-ai-parity.sh` to enforce this.
+## Load-bearing decisions
 
-The cursor package keeps only what is genuinely platform-specific:
+Do not "fix" these.
 
-- `rules/*.mdc` — one concern per file (Cursor needs `.mdc` frontmatter): always-on contracts
-  (`git`, `documentation`, `layers`, `economy-of-words`, `graphify`), and `globs` rules that pull in a skill
-  for a file type (`java`, `neovim`)
-- `commands/*.md` — thin dispatchers (Cursor has no `$ARGUMENTS`; agents do the work)
-- `mcp.json` — same server list as `mcp-servers.json`, Cursor's `${env:VAR}` syntax
+**Stow**
 
-Machine-local files (Jira conventions, doc repos, k8s environments) live once in
-`~/.claude/local/`; `~/.cursor/local` is a symlink to it, so both assistants read the same
-unversioned files.
+- `stow.sh` discovers packages with `find -maxdepth 1 -mindepth 1 -type d`. A new package is a new
+  directory; no script edit.
+- `--no-folding` in `.stowrc` links each file individually. It keeps `~/.config/zsh/` a real
+  directory, so `~/.config/zsh/secrets` is not written into the working tree.
+- `~/.config/nvim` stays a real directory — LazyVim writes lockfiles and caches there. A real
+  `~/.zshrc` (the distro's or Oh-My-Zsh's) is moved to `~/.zshrc.pre-stow` once before stowing.
+- After stowing, `stow.sh` removes symlinks that dangle into `stow/` and the directories that
+  emptied. A stale link is otherwise still discovered — a deleted skill kept loading that way.
+  `-n` reports instead.
 
-### Agent token tooling (rtk + graphify)
+**Secrets**
 
-Both cut what the agents *read*. Neither wraps the agent process:
-[rtk](https://github.com/rtk-ai/rtk) is a `PreToolUse` hook that rewrites bash calls
-(`git status` → `rtk git status`), and [graphify](https://github.com/Graphify-Labs/graphify)
-is a skill that answers codebase questions from a graph instead of a grep. The `claude` and
-`ai` shell functions register the hook for their agent if it is missing, then launch it.
+- `bw-restore.sh` and `bw-upload.zsh` are the only Bitwarden entry points.
+- `bw-restore.sh` sets `NODE_TLS_REJECT_UNAUTHORIZED=0` around `bw` on purpose: the corporate CA
+  that would validate the connection is itself in the vault and is installed only at the end of
+  the restore. Writes run under `umask 077`; the vault cache is a mode-600 `mktemp` file removed
+  by an `EXIT` trap.
+- `BW_SESSION` is never written to disk. Persisting it put the unlock key in
+  `~/.config/zsh/secrets`, which is uploaded back into the vault it unlocks.
+- Infrastructure-identifying values live in `~/.config/zsh/secrets` as variables (`JIRA_*`,
+  `NEXUS_SERVER_ID`, `WORK_K8S_*`, `WIN_USER`, the kubeconfig aliases), and in `~/.claude/local/`
+  as markdown for skills and commands.
 
-rtk comes from `.mise.toml`, graphify from `packages/uv-tools.txt` (PyPI `graphifyy`). Both
-register into `~/.claude/{settings.json,skills/}` — live runtime state, so registration goes
-through their CLIs rather than stow: the skill in `install.sh` step 11c, the hook lazily on
-first launch. rtk rewrites only the **Bash** tool; `Read`/`Grep`/`Glob` bypass it. `rtk gain`
-shows the savings.
+**Runtime state**
 
-The code graph builds itself. `stow/git/.githooks/post-commit` runs `graphify update` after
-every commit in every repo — an AST-only rebuild that is local, deterministic and costs no
-tokens. It is detached, so it never delays a commit; `GRAPHIFY_DISABLE_HOOK=1` opts out.
+- `~/.claude.json` (MCP servers) and `~/.claude/settings.json` (hooks) are written through CLIs,
+  never stowed. `settings.json` holds machine-local work context and stays untracked.
+- `~/.serena/serena_config.yml` carries absolute paths and a project list, so it is not stowed
+  either. `install.sh` appends the two Java settings and leaves the upstream comments alone.
+  Serena is Cursor-only (`--context ide`); Claude has its own `jdtls-lsp` plugin.
 
-Do **not** run `graphify hook install`: it writes `.git/hooks/post-commit`, which git ignores
-here because `core.hooksPath` points at `~/.githooks`.
+## AI assistant configuration
 
-Only the semantic pass over docs, PDFs and images needs the agent — run `/graphify .` when you
-want those in the graph too. `graphify claude install` adds an always-on nudge to one repo; soft
-mode (nudge toward `graphify query`) is the default, pinned by `GRAPHIFY_HOOK_STRICT=0` in
-`env.zsh`, and `--strict` blocks the first raw file read of a session instead.
+Skills and agents are authored once in `stow/claude/.claude/`; Cursor discovers them from
+`~/.claude`. `stow/cursor/` holds only `rules/*.mdc`, `commands/*.md`, and `mcp.json`.
+`check-ai-parity.sh`, run by `stow.sh`, fails on any `skills/` or `agents/` under it.
+`~/.cursor/local` symlinks to `~/.claude/local`. The `ai-config` skill owns the rest.
 
-### Keeping secrets out of the repository
+## Bootstrap — `install.sh`
 
-This repository is public and configures a machine that works against private infrastructure,
-so nothing organisation-specific may enter a tracked file. Values live in
-`~/.config/zsh/secrets` or `~/.claude/local/`; tracked files reference them by name. The rule
-and what counts as sensitive are in `CLAUDE.md`, mirrored for Cursor in `.cursor/rules/`.
+The order follows three constraints: TLS fails until the corporate CA is installed, WSL2 appends
+the Windows `PATH` (a Windows `bw.exe` can shadow the Linux `bw`), and every step must be safe to
+re-run on a half-bootstrapped machine.
 
----
+| Step | Does |
+|------|------|
+| **1. APT** | `packages/apt.txt`, including `npm` — `bw` must exist before mise |
+| **2. WSL PATH guard** | Non-System32 `/mnt/c/` on `PATH` → copies `host/wsl.conf` to `/etc/wsl.conf` and exits; run `wsl --shutdown`, then re-run |
+| **3. BW CLI** | `@bitwarden/cli` and `tree-sitter-cli` via npm into `~/.npm-global` |
+| **4. Secrets + certs** | Offers `bw-restore.sh`, which also installs the corporate CA; TLS validates normally from here |
+| **5. Oh-My-Zsh** | OMZ, `zsh-autosuggestions`, `zsh-syntax-highlighting`, Powerlevel10k |
+| **6. GitHub binaries** | `jirlab`, pinned to a commit and SHA256-verified; `cursor-agent` from Cursor's installer (the npm package of that name is unrelated) |
+| **7. Default shell** | `chsh` to zsh |
+| **8. mise** | Runtimes and CLI tools from `.mise.toml` |
+| **9. SDKMAN** | Upstream installer with `rcupdate=false` — `.zshrc` already sources it. Then the newest Temurin 21 (`JAVA_MAJOR`, resolved from the SDKMAN API, which lists only the latest patch per major) and Maven |
+| **10. Stow** | `stow.sh` |
+| **11. tmux TPM** | Clones TPM |
+| **12. Git identity** | `~/.gitconfig_local` from `GIT_USER_NAME`/`GIT_USER_EMAIL`, or a prompt |
+| **13. MCP servers** | `~/.claude/bin/install-mcp-servers.sh` registers into `~/.claude.json` |
+| **14. uv tools** | `packages/uv-tools.txt` — including `serena-agent`, Cursor's code intelligence |
+| **15. Post-install** | `addcerts.sh` (Java truststore — SDKMAN JDK), `Lazy! sync`, Serena's Java settings (after Mason has jdtls), tmux plugins, `repos-restore.sh` |
 
-## Quick start
+Every step follows one pattern — a presence guard, `run` (or `curl_pipe` for upstream installers)
+so `--dry-run` holds:
 
 ```bash
-git clone https://github.com/balazsando/dotfiles ~/dotfiles
-cd ~/dotfiles
-bash install.sh
-exec zsh
+step "Step name"
+if <already-done-guard>; then
+  skip "reason"
+else
+  run <command>
+  ok "success message"
+fi
 ```
-
----
-
-## What `install.sh` does
-
-| Step | Description |
-|------|-------------|
-| **1. APT packages** | System deps from `packages/apt.txt` (includes `npm` for early BW install) |
-| **2. WSL PATH guard** | Detects Windows PATH contamination; applies `host/wsl.conf` and exits for restart if needed |
-| **3. BW CLI** | Installs `@bitwarden/cli` via npm — must precede mise to fetch VPN certs |
-| **4. Secrets + certs** | Restores `~/.config/zsh/secrets`, `~/.config/git/credentials`, kube configs, and `~/certs/` from Bitwarden; updates system CA store |
-| **5. Oh-My-Zsh** | Installs OMZ + `zsh-autosuggestions`, `zsh-syntax-highlighting`, Powerlevel10k |
-| **6. GitHub binaries** | Fetches `jirlab`, pinned to a commit and SHA256-verified |
-| **6b. cursor-agent** | Installs cursor-agent from Cursor's official installer |
-| **7. Default shell** | Sets zsh as the login shell via `chsh` |
-| **8. mise + tools** | Installs mise, then provisions all runtimes and CLI tools from `.mise.toml` |
-| **9. GNU Stow** | Symlinks all packages from `stow/` into `$HOME` |
-| **10. tmux TPM** | Clones Tmux Plugin Manager |
-| **11. Git identity** | Writes `~/.gitconfig_local` from BW secrets or interactive prompt |
-| **11b. MCP servers** | Registers MCP servers into `~/.claude.json` via the `claude` CLI |
-| **11c. Agent token tooling** | Installs uv tools from `packages/uv-tools.txt` and registers the `graphify` skill (the `rtk` hook is registered on first agent launch) |
-| **12. Post-install** | Imports Java certs (with per-cert confirmation), syncs Neovim plugins, installs tmux plugins, restores repos |
-
-See [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) for the rationale behind the step ordering.
-
----
-
-## Day-to-day usage
-
-```bash
-bash stow.sh           # re-stow after adding/moving dotfiles
-mise run stow          # same via mise task
-mise run sync          # git pull + restow
-mise run update-tools  # upgrade all mise-managed tools
-```
-
----
 
 ## Bitwarden secrets
 
-All sensitive files are stored as Bitwarden secure notes under the `dotfiles/` prefix.
+Secure notes under the `dotfiles/` prefix:
 
 | BW item | Destination |
 |---|---|
@@ -154,42 +138,36 @@ All sensitive files are stored as Bitwarden secure notes under the `dotfiles/` p
 | `dotfiles/kube/<filename>` | `~/.kube/<filename>` |
 | `dotfiles/certs/<filename>` | `~/certs/<filename>` |
 | `dotfiles/repos` | `$DOTFILES/repos.txt` |
-| `dotfiles/ai/<filename>` | `~/.claude/local/` (`~/.cursor/local` symlinks to it) |
+| `dotfiles/ai/<filename>` | `~/.claude/local/<filename>` |
+
+## Usage
 
 ```bash
-# Restore secrets manually
-bash ~/.local/share/dotfiles/scripts/bw-restore.sh
+git clone https://github.com/balazsando/dotfiles ~/dotfiles && cd ~/dotfiles
+bash install.sh && exec zsh                         # new machine
 
-# Upload before migrating
-zsh ~/.local/share/dotfiles/scripts/bw-upload.zsh
+bash stow.sh                                        # re-stow; -n for a dry run
+mise run sync                                       # git pull --ff-only + re-stow
+mise run update-tools                               # upgrade mise and uv tools
+sindex                                              # index this repo into Serena's symbol cache
+relocate ~/.config/somefile --package zsh           # move a $HOME file into a package
+bash sync.sh                                        # before migrating: wsl.conf, repos, BW upload
+bash ~/.local/share/dotfiles/scripts/bw-restore.sh  # restore secrets
+zsh ~/.local/share/dotfiles/scripts/bw-upload.zsh   # upload secrets
 ```
 
-`bw-restore.sh` and `bw-upload.zsh` are the **only** two Bitwarden entry points — nothing else
-talks to the vault.
-
-Machine-specific values that would otherwise identify internal infrastructure
-(`JIRA_*` ids and workflow names, `NEXUS_SERVER_ID`, `WORK_K8S_*`, `WIN_USER`, and the
-kubeconfig-switching aliases) live in `~/.config/zsh/secrets` and are consumed as
-variables by the tracked config. The AI overlay
-(`dotfiles/ai/*`) carries the equivalent context for skills and agents as markdown, since
-markdown has no variable expansion.
-
----
-
-## Git identity
-
-User name and email are stored in `~/.gitconfig_local` (not versioned) and included by `.gitconfig` at runtime.
+Git identity lives in `~/.gitconfig_local`, untracked and included by `.gitconfig`:
 
 ```bash
 git config --file ~/.gitconfig_local user.name  "Your Name"
 git config --file ~/.gitconfig_local user.email "you@example.com"
 ```
 
----
+New package: create `stow/<package>/` mirroring the path from `$HOME`, add the files, run
+`bash stow.sh`.
 
-## Adding new dotfiles
+## Known limitations
 
-1. Create `stow/<package-name>/` mirroring the target path from `$HOME`.
-2. Place config files inside.
-3. Run `bash stow.sh` — auto-discovery handles the rest.
-
+- `wsl.conf` changes need a full WSL restart; `install.sh` cannot continue past it.
+- Bitwarden sessions expire; a bootstrap resumed after a long pause needs `bw unlock` again.
+- `repos-restore.sh` skips repos it cannot clone (VPN-gated) — check its warnings.

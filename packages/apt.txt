@@ -1,5 +1,5 @@
 # apt.txt — System-level packages installed by install.sh
-# CLI tools (bat, fd, ripgrep, jq, zoxide, gh) are managed by mise — NOT listed here.
+# CLI tools (bat, fd, ripgrep, zoxide, gh) are managed by mise — NOT listed here.
 
 # ─── Build & system essentials ───────────────────────────────────────────────
 build-essential

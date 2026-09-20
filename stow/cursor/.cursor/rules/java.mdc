@@ -10,9 +10,9 @@ alwaysApply: false
 
 Read before writing or changing Java, Spring, or Maven files — do not rely on memory:
 
-- `~/.claude/skills/java-standards/SKILL.md`
-- `~/.claude/skills/clean-code/SKILL.md`
-- `~/.claude/skills/hexagonal-architecture/SKILL.md` when the work is ports, adapters, or layering
+- `java-standards`
+- `clean-code`
+- `hexagonal-architecture` when the work is ports, adapters, or layering
 
 Load the project's own architecture skill instead where it has one. Project conventions beat
 skill defaults.

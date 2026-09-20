@@ -10,8 +10,8 @@ node               = "lts"
 python             = "latest"
 go                 = "latest"
 # rust               = "latest"
-java               = "21"
-maven              = "latest"
+# java               = "21"
+# maven              = "latest"
 kotlin             = "latest"
 
 # ─── Python tooling ───────────────────────────────────────────────────────────
@@ -34,9 +34,6 @@ gh                 = "latest"
 
 # ─── File manager ─────────────────────────────────────────────────────────────
 "aqua:gokcehan/lf" = "latest"
-
-# ─── AI agent token tooling ───────────────────────────────────────────────────
-"github:rtk-ai/rtk" = "latest"
 
 # ─── Container / Kubernetes ───────────────────────────────────────────────────
 lazydocker         = "latest"

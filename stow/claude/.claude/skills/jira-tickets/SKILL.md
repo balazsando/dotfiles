@@ -6,9 +6,8 @@ argument-hint: "ticket key, or the ticket to create"
 
 # Jira tickets
 
-Single owner of everything that talks to a Jira MCP server. Agents and commands that need ticket
-data follow this file instead of calling the MCP their own way. Writing Go or HTTP code against
-the REST API is a different job — that is `jira-api`.
+Single owner of everything that talks to a Jira MCP server. Commands that need ticket data follow
+this file instead of calling the MCP their own way.
 
 ## Conventions are machine-local
 
@@ -57,7 +56,7 @@ Never invent a custom-field value. Never create a second ticket when the user al
 
 ## Grounding
 
-Every statement in a ticket traces to something read — the ticket, a link, the knowledge base, or
-the code. A section that cannot be filled from a source says so ("no test plan found in ticket or
-repo"); it is never filled with a plausible guess. Return the key and
+Every statement in a ticket traces to something read — the ticket, a link, the documentation
+repositories, or the code. A section that cannot be filled from a source says so ("no test plan
+found in ticket or repo"); it is never filled with a plausible guess. Return the key and
 `$JIRA_URL/browse/<KEY>` after any write.

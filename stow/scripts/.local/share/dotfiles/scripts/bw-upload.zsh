@@ -2,8 +2,8 @@
 # bw-upload.zsh — Upload sensitive dotfiles secrets to Bitwarden
 #
 # Uploads the following as Bitwarden secure notes (upsert — safe to re-run):
-#   ~/.zsh_secrets                           → "dotfiles/zsh_secrets"
-#   ~/.git-credentials                       → "dotfiles/git-credentials"
+#   ~/.config/zsh/secrets                    → "dotfiles/zsh_secrets"
+#   ~/.config/git/credentials                → "dotfiles/git-credentials"
 #   ~/.kube/config-*.yml, config-*.yaml      → "dotfiles/kube/<filename>"
 #   ~/certs/*.crt, *.pem                     → "dotfiles/certs/<filename>"
 #
@@ -167,20 +167,20 @@ main() {
     log_warn "repos.txt not found — skipping"
   fi
 
-  # ── .zsh_secrets ─────────────────────────────────────────────────────────
+  # ── zsh secrets ──────────────────────────────────────────────────────────
   log_step "Uploading ~/.config/zsh/secrets"
   if [[ -f "$HOME/.config/zsh/secrets" ]]; then
     bw_upsert_note "dotfiles/zsh_secrets" "$HOME/.config/zsh/secrets"
   else
-    log_warn "~/.zsh_secrets not found — skipping"
+    log_warn "~/.config/zsh/secrets not found — skipping"
   fi
 
-  # ── .git-credentials ─────────────────────────────────────────────────────
+  # ── git credentials ──────────────────────────────────────────────────────
   log_step "Uploading ~/.config/git/credentials"
   if [[ -f "$HOME/.config/git/credentials" ]]; then
     bw_upsert_note "dotfiles/git-credentials" "$HOME/.config/git/credentials"
   else
-    log_warn "~/.git-credentials not found — skipping"
+    log_warn "~/.config/git/credentials not found — skipping"
   fi
 
   # ── AI overlay ───────────────────────────────────────────────────────────
@@ -220,7 +220,7 @@ main() {
 
   print "\n${C_BOLD}${C_GREEN}✔ Upload complete!${C_RESET}"
   print "  Items stored as Bitwarden secure notes under the ${C_CYAN}dotfiles/${C_RESET} prefix."
-  print "  Run ${C_CYAN}scripts/bw-restore.zsh${C_RESET} on a new machine to restore them."
+  print "  Run ${C_CYAN}bash ~/.local/share/dotfiles/scripts/bw-restore.sh${C_RESET} on a new machine to restore them."
 }
 
 main "$@"

@@ -73,6 +73,21 @@
         "GRAFANA_URL": "${env:GRAFANA_URL_PROD}",
         "GRAFANA_SERVICE_ACCOUNT_TOKEN": "${env:GRAFANA_MCP_TOKEN_PROD}"
       }
+    },
+    "serena": {
+      "command": "serena",
+      "args": [
+        "start-mcp-server",
+        "--context",
+        "ide",
+        "--project-from-cwd",
+        "--open-web-dashboard",
+        "false"
+      ],
+      "env": {
+        "PATH": "${env:HOME}/.sdkman/candidates/java/current/bin:${env:PATH}",
+        "JAVA_HOME": "${env:HOME}/.sdkman/candidates/java/current"
+      }
     }
   }
 }
