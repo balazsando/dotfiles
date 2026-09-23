@@ -24,8 +24,9 @@ Reference: [Google Engineering Practices](https://google.github.io/eng-practices
 
 ## Naming, Comments, Tests
 
-The bar is the `clean-code` skill (names, tests) and the documentation rule in
-`~/.claude/CLAUDE.md` (comments). Review against those rather than a second list here.
+The bar is the `clean-code` skill (names, tests) and the documentation contract (`CLAUDE.md` in
+Claude, the `documentation` rule in Cursor) for comments. Review against those rather than a
+second list here.
 
 Only these are review-process questions the rules do not cover:
 

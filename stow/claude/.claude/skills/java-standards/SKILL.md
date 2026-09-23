@@ -43,5 +43,12 @@ formatter owns, and never reformat lines the change does not otherwise touch.
 
 ## Tests
 
+Strict, no exceptions:
+
+- Business logic → unit test. Adapters → integration test. Acceptance tests only where Cucumber
+  is on the classpath.
+- POJOs, getters, setters, constructors, configuration, and plain delegation → no test.
+- One behaviour, one test, at one level; never cover it twice.
+
 Writing them: [references/tests.md](./references/tests.md) — the test skeleton to copy, plus what
 gets a test at all. Changing production code does not require that depth; writing a test does.

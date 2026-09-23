@@ -7,8 +7,9 @@ argument-hint: "file, function, or snippet to evaluate or improve"
 # Clean Code
 
 House rules, after *Clean Code* (Robert C. Martin). Language skills (`java-standards`) and the
-project's conventions win where they are more specific. Comments: the documentation rule in
-`~/.claude/CLAUDE.md` — rename or extract instead of explaining.
+project's conventions win where they are more specific. Comments: the documentation contract
+(`CLAUDE.md` in Claude, the `documentation` rule in Cursor) — rename or extract instead of
+explaining.
 
 ## Names
 

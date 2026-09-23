@@ -33,7 +33,8 @@ read last.
 1. **Knowledge that is true regardless of who asks?** → skill.
 2. **A workflow the user starts by name?** → command.
 3. **Work that needs its own context window or tool fence?** → agent, spawned by a command in the
-   same change. None are authored here: multi-agent orchestration cost more than it saved, so add
+   same change. None are authored here: the bots spawn generic subagents per `change-delivery`
+   `references/bot-run.md`; elsewhere multi-agent orchestration cost more than it saved, so add
    one only against a measured gain.
 4. **Changes what to load in a situation?** → one `CLAUDE.md` table row. Cursor picks skills
    from their `description`, so add a `.mdc` only to scope a skill to a file type (`globs`).
@@ -44,10 +45,11 @@ every request. Never copy the routing table into a Cursor rule, and never add an
 whose only content is "load skill X".
 
 What earns a line anywhere: house preferences (formatting, naming, architecture, tooling
-choices) and knowledge the model would otherwise get wrong. Not textbook content it already
-knows, not a restated contract, and not a way of working — the only process forced on every
-turn is YAGNI, accuracy, and token efficiency, in that order. When two layers say the same
-thing, delete it from the on-demand one.
+choices) and knowledge the model would otherwise get wrong, stated as what to do. Not textbook
+content, a restated contract, a way of working, or the correction of a past mistake. The only
+process forced on every turn is YAGNI, accuracy, and token efficiency, in that order. Change a
+file by rewriting the passage, not appending to it; reread a file that grew for lines to cut.
+When two layers say the same thing, delete it from the on-demand one.
 
 A command takes external data from the skill that owns it (`sonarqube-validation`,
 `app-bug-detection`, `jira-tickets`), never from the MCP server directly, and branch, build and
@@ -72,6 +74,9 @@ Cursor-specific, and nothing else:
   `java`, `neovim`.
 - `commands/*.md` — no `argument-hint`, no arguments placeholder ("the text after
   `/<command>`" instead), and `~/.cursor/local/` paths; otherwise identical to the Claude copy.
+  A Cursor command never cites `CLAUDE.md` or a `~/.claude/` path — it names the Cursor rule
+  (`git`, `documentation`) instead. Shared skills name both (`CLAUDE.md` in Claude, the `git`
+  rule in Cursor). `check-ai-parity.sh` fails on a violation.
 - `mcp.json` — same server list, `${env:VAR}` instead of `${VAR}`, plus `serena` (Cursor's Java
   code intelligence; Claude uses its native `jdtls-lsp` plugin).
 

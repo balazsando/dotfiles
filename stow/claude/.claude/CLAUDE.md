@@ -66,8 +66,8 @@ missing, ask rather than guess.
 ## Git operations
 
 **Committing and history rewriting are prohibited.** The only exceptions are `/deliver`,
-`/sonar-fix`, and `/bug-fix` while they are running. Reading history, diffs, status, blame, logs,
-and branch state is always allowed.
+`/sonar-bot`, `/bugfix-bot`, and `/renovate-bot` while they are running. Reading history, diffs,
+status, blame, logs, and branch state is always allowed.
 
 Prohibited outside those commands: `git commit` (including `--amend`); staging or unstaging
 (`git add`, `git rm --cached`, `git restore --staged`, index edits); any history-altering command

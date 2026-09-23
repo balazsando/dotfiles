@@ -1,13 +1,13 @@
 ---
 name: app-bug-detection
-description: "Finding production bugs: triaging errors and exceptions from logs, investigating what is failing in prod, and the data-collection step of /bug-fix. Reads error-level Loki logs for this project's service via the grafana-prod MCP server and attributes each stack trace to a class and line in the repository."
+description: "Finding production bugs: triaging errors and exceptions from logs, investigating what is failing in prod, and the data-collection step of /bugfix-bot. Reads error-level Loki logs for this project's service via the grafana-prod MCP server and attributes each stack trace to a class and line in the repository."
 argument-hint: "[--since <duration>] [--service <name>] [--limit <n>]"
 ---
 
 # Application Bug Detection
 
 Turn production logs into a ranked list of application bugs with a suspect class and line.
-Detection and reporting only — fixing belongs to `/bug-fix`.
+Detection and reporting only — fixing belongs to `/bugfix-bot`.
 
 ## Hard limits
 
