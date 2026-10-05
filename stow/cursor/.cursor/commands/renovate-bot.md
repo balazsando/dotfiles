@@ -4,15 +4,17 @@ description: "Update third-party dependencies in three groups, one merge request
 
 Keep third-party dependencies and build plugins current.
 
-Load `change-delivery` with its `references/bot-run.md`. This command carries the git commit
-exception: branches `chore/renovate-bot-<group>-<YYYYMMDD>`, pushed, with merge requests.
+Load `change-delivery` with its `references/bot-run.md`. In-scope build files are the Java rows
+in `~/.cursor/local/work-repos.md`. This command carries the git commit exception: branches
+`chore/renovate-bot-<group>-<YYYYMMDD>`, pushed, with merge requests.
 
 1. **Start** — `bot-run.md` §Start.
-2. **Collect** — each third-party version declared in the build files, literal or property. A
-   BOM or parent is one entry; its managed versions move with it. Find the newest stable release
-   of each: `https://repo1.maven.org/maven2/<group/as/path>/<artifact>/maven-metadata.xml` in
-   parallel for Maven and Gradle, `go list -u -m all`, `npm outdated`. Read the release notes of
-   each update that is not a patch.
+2. **Collect** — if the current tree is not a Java row in that file, ask which checkout. Then
+   each third-party version declared in the build files, literal or property. A BOM or parent is
+   one entry; its managed versions move with it. Find the newest stable release of each:
+   `https://repo1.maven.org/maven2/<group/as/path>/<artifact>/maven-metadata.xml` in parallel for
+   Maven and Gradle, `go list -u -m all`, `npm outdated`. Read the release notes of each update
+   that is not a patch.
 3. **Group**:
    - **`bump`**, no limit — no source change needed. One commit.
    - **`deprecation`**, at most 10 — replaces deprecated or removed calls, nothing more. One

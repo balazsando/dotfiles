@@ -29,9 +29,12 @@ fall back to guessing at code quality, and do not silently skip the check.
 Resolve the project key in this order, stopping at the first hit:
 
 1. A key or name given by the caller (command argument, user message)
-2. `sonar.projectKey` in `sonar-project.properties`, `pom.xml`, `build.gradle*`, `.gitlab-ci.yml`
-3. Maven `groupId:artifactId`
-4. The repository slug from `git remote get-url origin`
+2. The checkout's row in `~/.claude/local/work-repos.md` (Cursor: `~/.cursor/local/work-repos.md`).
+   **None** in that row means no Sonar project — stop, do not guess. **Unknown** → confirm with
+   `projects`. Missing file → skip this step.
+3. `sonar.projectKey` in `sonar-project.properties`, `pom.xml`, `build.gradle*`, `.gitlab-ci.yml`
+4. Maven `groupId:artifactId`
+5. The repository slug from `git remote get-url origin`
 
 Confirm the candidate with `projects`, or with `components` (`qualifiers: ["TRK"]`, `query`) when
 the project list is long. State the key and name before acting on any finding. Ask when two

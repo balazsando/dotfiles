@@ -55,4 +55,13 @@ do
       vim.b[args.buf].autoformat = false
     end,
   })
+
+  vim.api.nvim_create_autocmd({ "InsertLeave", "TextChanged" }, {
+    pattern = "*",
+    callback = function()
+      if vim.bo.modified and vim.bo.buftype == "" then
+        vim.cmd("silent write")
+      end
+    end,
+  })
 end

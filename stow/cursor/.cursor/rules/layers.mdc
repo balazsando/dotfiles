@@ -9,6 +9,7 @@ Project rules override these; repository documentation (`/docs`, `README.md`, AD
 both. Project conventions beat skill defaults. When no skill applies, say so rather than
 inventing a process.
 
-Machine-local specifics — Jira project keys, boards, documentation repositories, cluster names —
-live in `~/.cursor/local/`, unversioned (symlinked to `~/.claude/local/`). Read the file a
-command or skill names; if it is missing, ask rather than guess.
+Machine-local specifics — Jira project keys, boards, documentation repositories, cluster names,
+local checkouts and Sonar keys — live in `~/.cursor/local/`, unversioned (symlinked to
+`~/.claude/local/`). Read the file a command or skill names (`work-repos.md` for `~/repos`); if
+it is missing, ask rather than guess.

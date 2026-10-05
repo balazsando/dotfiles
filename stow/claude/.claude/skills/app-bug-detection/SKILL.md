@@ -25,6 +25,11 @@ or the call fails, report that detection could not run; do not fall back to gues
 
 ## 2. Resolve the service name
 
+In-scope implementations are the Java rows in `~/.claude/local/work-repos.md` (Cursor:
+`~/.cursor/local/work-repos.md`). If the current tree is not one of those rows, ask which
+checkout — do not query logs against docs, Helm, deploy, or practice trees. Missing file → ask.
+Honour any per-row scope note in that file.
+
 `SERVICE-NAME` is the `<description>` of the project's `pom.xml` — the `<project><description>`
 element, not a dependency's, and not `<name>` or `<artifactId>`. In a multi-module build take the
 module under investigation, otherwise the root pom. Use `--service` when given instead.

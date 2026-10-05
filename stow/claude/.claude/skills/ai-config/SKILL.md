@@ -96,7 +96,8 @@ A `SKILL.md` over roughly 200 lines is doing two jobs. Move the long tail to
 ## Machine-local overlay
 
 Organisation-specific values — project keys, board and sprint ids, documentation repositories,
-cluster names — live in `~/.claude/local/*.md`, restored from Bitwarden, never tracked.
+cluster names, local checkouts and Sonar keys — live in `~/.claude/local/*.md`, restored from
+Bitwarden, never tracked.
 `~/.cursor/local` symlinks to it. Skills and commands name the file and say what to do when it is
 missing; they never inline its contents. The dotfiles repo is public — see its project
 `CLAUDE.md`.

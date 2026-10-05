@@ -6,8 +6,9 @@ argument-hint: "[--since <duration>] [--service <name>] [--limit <n>]"
 Fix production bugs, one merge request per group. `$ARGUMENTS` passes through to detection.
 
 Load `app-bug-detection` (all log access) and `change-delivery` with its `references/bot-run.md`.
-This command carries the git commit exception: branches `fix/bugfix-bot-<group>-<YYYYMMDD>`,
-pushed, with merge requests.
+In-scope implementations are the Java rows in `~/.claude/local/work-repos.md`. This command
+carries the git commit exception: branches `fix/bugfix-bot-<group>-<YYYYMMDD>`, pushed, with
+merge requests.
 
 1. **Start** — `bot-run.md` §Start.
 2. **Collect** — `app-bug-detection` with `$ARGUMENTS`. Keep application bugs whose suspect line

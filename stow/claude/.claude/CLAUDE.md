@@ -57,9 +57,9 @@ The goal is not to say less. The goal is to say nothing unnecessary.
 
 ## Machine-local overlay
 
-Machine-local specifics — Jira project keys, boards, documentation repositories, cluster names —
-live in `~/.claude/local/`, unversioned. Read the file a command or skill names; if it is
-missing, ask rather than guess.
+Machine-local specifics — Jira project keys, boards, documentation repositories, cluster names,
+local checkouts and Sonar keys — live in `~/.claude/local/`, unversioned. Read the file a command
+or skill names (`work-repos.md` for `~/repos`); if it is missing, ask rather than guess.
 
 ---
 
