@@ -6,7 +6,8 @@
 # stow/claude/.claude/, and must NOT exist under stow/cursor/.cursor/ — a same-named copy
 # there takes precedence and silently shadows the shared original, reintroducing drift.
 #
-# Exit 1 and name the offenders if any skill or agent exists in the cursor tree.
+# Exit 1 and name the offenders if any skill or agent exists in the cursor tree, or a Cursor
+# command cites CLAUDE.md or a ~/.claude/ path.
 # Called by stow.sh; also runnable standalone.
 
 set -euo pipefail
@@ -30,11 +31,16 @@ for layer in skills agents; do
   done < <(find "$dir" -mindepth 1 -maxdepth 1 -printf '%f\n' 2>/dev/null)
 done
 
+while IFS= read -r hit; do
+  echo "✗ $hit — a Cursor command cites a Claude-only file; name the Cursor rule instead"
+  violations=1
+done < <(grep -rnE 'CLAUDE\.md|~/\.claude/' "$CURSOR_TREE/commands" 2>/dev/null || true)
+
 if [[ "$violations" -eq 1 ]]; then
   echo ""
-  echo "Move the file(s) to stow/claude/.claude/ (Cursor discovers them from ~/.claude natively),"
-  echo "then re-run. See README.md → AI assistant configuration."
+  echo "Fix the file(s) above and re-run: skills and agents move to stow/claude/.claude/, Cursor"
+  echo "commands name the Cursor rule. See README.md → AI assistant configuration."
   exit 1
 fi
 
-echo "✔ AI config parity: no skills or agents under stow/cursor (shared from stow/claude)"
+echo "✔ AI config parity: no skills or agents under stow/cursor, no Claude-only citations in its commands"

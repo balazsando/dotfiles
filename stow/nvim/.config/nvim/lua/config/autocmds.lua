@@ -55,4 +55,42 @@ do
       vim.b[args.buf].autoformat = false
     end,
   })
+
+  vim.api.nvim_create_autocmd({ "InsertLeave", "TextChanged" }, {
+    pattern = "*",
+    callback = function()
+      if vim.bo.modified and vim.bo.buftype == "" and vim.uv.fs_stat(vim.api.nvim_buf_get_name(0)) then
+        vim.cmd("silent write")
+      end
+    end,
+  })
 end
+
+vim.api.nvim_create_autocmd("BufReadCmd", {
+  group = vim.api.nvim_create_augroup("pdf_as_text", { clear = true }),
+  pattern = "*.pdf",
+  callback = function(args)
+    local out = vim.fn.systemlist({ "pdftotext", "-layout", "-nopgbrk", args.file, "-" })
+    if vim.v.shell_error ~= 0 then
+      out = { "pdftotext failed: is poppler-utils installed?" }
+    end
+    vim.bo[args.buf].modifiable = true
+    vim.api.nvim_buf_set_lines(args.buf, 0, -1, false, out)
+    vim.bo[args.buf].buftype = "nofile"
+    vim.bo[args.buf].modifiable = false
+    vim.bo[args.buf].filetype = "text"
+  end,
+})
+
+vim.api.nvim_create_autocmd("BufReadCmd", {
+  group = vim.api.nvim_create_augroup("image_as_chafa", { clear = true }),
+  pattern = { "*.png", "*.jpg", "*.jpeg", "*.gif", "*.webp", "*.bmp", "*.tif", "*.tiff", "*.ico", "*.avif" },
+  callback = function(args)
+    local size = ("%dx%d"):format(vim.api.nvim_win_get_width(0), vim.api.nvim_win_get_height(0) - 1)
+    local ok, res = pcall(function()
+      return vim.system({ "chafa", "-f", "symbols", "-c", "full", "--animate=off", "--bg", "1e1e2e", "-s", size, args.file }):wait()
+    end)
+    local out = ok and res.code == 0 and res.stdout or "image: chafa missing or format unsupported\n"
+    vim.api.nvim_chan_send(vim.api.nvim_open_term(args.buf, {}), (out:gsub("\n", "\r\n")))
+  end,
+})

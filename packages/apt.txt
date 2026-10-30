@@ -31,6 +31,9 @@ p7zip-full
 unzip
 zip
 xclip
+poppler-utils
+chafa
+graphviz
 
 # ─── Network & remote ────────────────────────────────────────────────────────
 openssh-client

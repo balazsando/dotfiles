@@ -1,0 +1,5 @@
+#!/usr/bin/env bash
+jar="$HOME/.local/share/plantuml/plantuml.jar"
+[[ -f "$jar" ]] || { echo "plantuml: $jar missing — re-run install.sh" >&2; exit 1; }
+command -v java >/dev/null || { echo "plantuml: java not found" >&2; exit 1; }
+exec java -Djava.awt.headless=true -jar "$jar" "$@"

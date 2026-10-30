@@ -12,16 +12,6 @@
         "NODE_EXTRA_CA_CERTS": "${env:NODE_EXTRA_CA_CERTS}"
       }
     },
-    "atlassian-rovo-mcp": {
-      "command": "npx",
-      "args": [
-        "mcp-remote@0.8.3",
-        "https://mcp.atlassian.com/v1/mcp"
-      ],
-      "env": {
-        "ATLASSIAN_API_KEY": "${env:ATLASSIAN_API_KEY}"
-      }
-    },
     "jira": {
       "command": "${env:HOME}/.local/share/dotfiles/scripts/jira-mcp.sh",
       "env": {
@@ -31,8 +21,25 @@
       }
     },
     "gitlab": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@zereight/mcp-gitlab"
+      ],
+      "env": {
+        "GITLAB_PERSONAL_ACCESS_TOKEN": "${env:GITLAB_TOKEN}",
+        "GITLAB_API_URL": "${env:GITLAB_API_URL}",
+        "GITLAB_READ_ONLY_MODE": "false",
+        "NODE_EXTRA_CA_CERTS": "${env:NODE_EXTRA_CA_CERTS}",
+        "GITLAB_TOOLSETS": "core,merge_requests,pipelines,variables,webhooks,users"
+      }
+    },
+    "postman": {
       "type": "http",
-      "url": "${env:GITLAB_MCP_URL}"
+      "url": "https://mcp.postman.com/mcp",
+      "headers": {
+        "Authorization": "Bearer ${env:POSTMAN_API_KEY}"
+      }
     },
     "grafana": {
       "command": "uvx",
@@ -72,6 +79,16 @@
       "env": {
         "GRAFANA_URL": "${env:GRAFANA_URL_PROD}",
         "GRAFANA_SERVICE_ACCOUNT_TOKEN": "${env:GRAFANA_MCP_TOKEN_PROD}"
+      }
+    },
+    "grafana-prod-connector": {
+      "command": "uvx",
+      "args": [
+        "mcp-grafana"
+      ],
+      "env": {
+        "GRAFANA_URL": "${env:GRAFANA_URL_PRODC}",
+        "GRAFANA_SERVICE_ACCOUNT_TOKEN": "${env:GRAFANA_MCP_TOKEN_PRODC}"
       }
     },
     "serena": {

@@ -4,11 +4,11 @@
 # Restores:
 #   ~/.config/zsh/secrets                    ← "dotfiles/zsh_secrets"
 #   ~/.config/git/credentials                ← "dotfiles/git-credentials"
-#   ~/.kube/config-*.yml, config-*.yaml      ← "dotfiles/kube/<filename>"
+#   ~/.kube/config-*.yaml                    ← "dotfiles/kube/<filename>"
 #   ~/certs/*.crt, *.pem                     ← "dotfiles/certs/<filename>"
 #   $DOTFILES/repos.txt                      ← "dotfiles/repos"
 #
-# NOTE: The main ~/.kube/config file is NOT restored (only additional configs).
+# NOTE: ~/.kube/config is not restored; kube-merge.sh builds it from the config-* files.
 # All files and directories are optional. If any are missing, they are skipped.
 # Optionally installs certificates into the system trust store.
 #
@@ -278,6 +278,11 @@ main() {
   fi
 
   wait
+
+  if compgen -G "$HOME/.kube/config-*" >/dev/null; then
+    bash "$(dirname "${BASH_SOURCE[0]}")/kube-merge.sh" >/dev/null ||
+      log_warn "kube-merge failed — run it manually"
+  fi
 
   if compgen -G "$HOME/certs/*.crt" >/dev/null 2>&1 || \
      compgen -G "$HOME/certs/*.pem" >/dev/null 2>&1; then

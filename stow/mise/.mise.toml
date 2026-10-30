@@ -34,6 +34,8 @@ gh                 = "latest"
 
 # ─── File manager ─────────────────────────────────────────────────────────────
 "aqua:gokcehan/lf" = "latest"
+glow               = "latest"
+"aqua:AlexanderGrooff/mermaid-ascii" = "latest"
 
 # ─── Container / Kubernetes ───────────────────────────────────────────────────
 lazydocker         = "latest"

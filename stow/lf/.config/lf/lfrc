@@ -19,6 +19,13 @@ cmd unarchive ${{
   esac
 }}
 
+cmd open ${{
+  case "$f" in
+      *.pdf) $EDITOR "$f" ;;
+      *) ${OPENER:-xdg-open} "$f" ;;
+  esac
+}}
+
 cmd mkdir ${{
   printf "Directory Name: "
   read ans
@@ -31,6 +38,8 @@ cmd mkfile ${{
   $EDITOR $ans
 }}
 
+cmd wincd &lf -remote "send $id cd \"/mnt/c/Users/$WIN_USER/$1\""
+
 cmd reloc ${{
   zsh -ic 'relocate "$1"' _ "$f"
 }}
@@ -38,11 +47,12 @@ cmd reloc ${{
 map R reloc
 map au unarchive
 map gr cd ~/repos
-map gv cd ~/videos
+map gv wincd Videos
 map gc cd ~/.config
-map gD cd ~/Documents
-map gd cd ~/Downloads
-map gp cd ~/Pictures
+map gD wincd Documents
+map gd wincd Downloads
+map gp wincd Pictures
+map gH wincd
 map mf mkfile
 map md mkdir
-map i $~/.config/lf/previewer "$f" | less -R
+map i $~/.config/lf/previewer "$f" "$(tput cols)" "$(tput lines)" | less -RS

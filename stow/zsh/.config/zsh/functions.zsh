@@ -35,14 +35,22 @@ ver() {
   line=$(grep '^-Drevision=' "$file") || return 0
   ver="${line#-Drevision=}"
   ver="${ver// /}"
-  if command -v clip.exe >/dev/null 2>&1; then
-    printf '%s' "$ver" | clip.exe
-  elif command -v wl-copy >/dev/null 2>&1; then
-    printf '%s' "$ver" | wl-copy
-  elif command -v xclip >/dev/null 2>&1; then
-    printf '%s' "$ver" | xclip -selection clipboard
-  fi
+  printf '%s' "$ver" | _clip
   printf '\033[0;36m%s\033[0m\n' "$ver"
+}
+
+# _clip — copy stdin to the system clipboard, if one is available
+_clip() {
+  local winclip=/mnt/c/Windows/System32/clip.exe
+  if [[ -x "$winclip" ]]; then
+    "$winclip" 2>/dev/null
+  elif command -v wl-copy >/dev/null 2>&1; then
+    wl-copy 2>/dev/null
+  elif command -v xclip >/dev/null 2>&1; then
+    xclip -selection clipboard 2>/dev/null
+  else
+    cat >/dev/null
+  fi
 }
 
 # jirlab — TUI wrapper that handles post-exit directory navigation
@@ -68,6 +76,15 @@ jwtdecode() {
   payload="${payload//-/+}"
   payload="${payload//_//}"
   printf '%s' "$payload" | base64 -d | jq .
+}
+
+# checksum — print (and clipboard-copy) the base64-encoded binary MD5 of a file (Content-MD5 style)
+checksum() {
+  local sum
+  setopt local_options pipe_fail
+  sum=$(openssl dgst -md5 -binary "${1:?usage: checksum <file>}" | openssl enc -base64) || return
+  printf '%s' "$sum" | _clip
+  printf '%s\n' "$sum"
 }
 
 # fv — fuzzy file finder → open in nvim
@@ -111,4 +128,17 @@ fk() {
     --preview 'echo {}' \
     --bind 'ctrl-k:execute-silent(echo {} | awk "{print \$2}" | xargs -r kill -9)+abort')
   [[ -n "$pids" ]] && echo "$pids" | awk '{print $2}' | xargs -r kill
+}
+
+# springnew — scaffold a Spring Boot Maven project from start.spring.io into ./<name>
+springnew() {
+  local name="$1"
+  [[ -n "$name" ]] || { echo "usage: springnew <artifactId>" >&2; return 1; }
+  [[ ! -e "$name" ]] || { echo "springnew: '$name' already exists" >&2; return 1; }
+  local args=(-d type=maven-project -d language=java -d javaVersion=21
+    -d groupId="${SPRING_GROUP_ID:-com.example}" -d artifactId="$name" -d name="$name"
+    -d baseDir="$name" -d dependencies=web,actuator)
+  [[ -n "$SPRING_BOOT_VERSION" ]] && args+=(-d bootVersion="$SPRING_BOOT_VERSION")
+  curl -fsS https://start.spring.io/starter.zip "${args[@]}" -o "/tmp/$name.zip" \
+    && unzip -q "/tmp/$name.zip" && rm -f "/tmp/$name.zip" && cd "$name"
 }

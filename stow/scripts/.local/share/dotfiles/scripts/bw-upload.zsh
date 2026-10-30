@@ -4,7 +4,7 @@
 # Uploads the following as Bitwarden secure notes (upsert — safe to re-run):
 #   ~/.config/zsh/secrets                    → "dotfiles/zsh_secrets"
 #   ~/.config/git/credentials                → "dotfiles/git-credentials"
-#   ~/.kube/config-*.yml, config-*.yaml      → "dotfiles/kube/<filename>"
+#   ~/.kube/config-*.yaml                    → "dotfiles/kube/<filename>"
 #   ~/certs/*.crt, *.pem                     → "dotfiles/certs/<filename>"
 #
 # NOTE: The main ~/.kube/config file is NOT uploaded (only additional configs).
@@ -202,8 +202,8 @@ main() {
   if [[ -d "$HOME/.kube" ]]; then
     log_step "Uploading additional kube configs from ~/.kube/"
     local kube_count=0
-    # Upload only config-*.yml / config-*.yaml files (skip main config)
-    for kube_file in "$HOME/.kube/config-"*.yml "$HOME/.kube/config-"*.yaml; do
+    # Upload only config-*.yaml files (skip main config)
+    for kube_file in "$HOME/.kube/config-"*.yaml; do
       [[ -f "$kube_file" ]] || continue
       local kube_item_name="dotfiles/kube/$(basename "$kube_file")"
       bw_upsert_note "$kube_item_name" "$kube_file"

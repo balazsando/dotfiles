@@ -55,9 +55,8 @@ is `underTest`; collaborators are plain `mock()` fields built in `@BeforeEach`; 
 
 ## Rules the skeleton cannot show
 
+- What gets a test, and at which level: `SKILL.md` → Tests.
 - Test observable behaviour, not implementation details.
-- Unit-test business logic; integration-test adapters.
-- POJOs, configuration classes and straightforward delegation get no test at all.
 - Mock external dependencies only.
 - Parameterise when several inputs prove the same behaviour, rather than copying the method.
 - A test that needs a comment beyond the markers to be understood is a smell.

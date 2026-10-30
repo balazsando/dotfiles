@@ -1,0 +1,37 @@
+#!/usr/bin/env bash
+src="${1:--}"
+[[ "$src" != - ]] && src=$(realpath "$src")
+shift
+root=$PWD
+[[ "$src" != - ]] && root=$(git -C "${src%/*}" rev-parse --show-toplevel 2>/dev/null || echo "${src%/*}")
+tmp=$(mktemp)
+trap 'rm -f "$tmp"' EXIT
+awk -v tmp="$tmp" -v root="$root" '
+  !lang && match($0, /^[ \t]*```[ \t]*(mermaid|plantuml|puml)[ \t]*$/) {
+    lang = $0
+    sub(/^[ \t]*```[ \t]*/, "", lang)
+    sub(/[ \t]*$/, "", lang)
+    buf = ""
+    next
+  }
+  lang && /^[ \t]*```[ \t]*$/ {
+    src = buf
+    if (lang == "mermaid") {
+      cmd = "mermaid-ascii -x 3 -y 2 -f \"" tmp "\" 2>/dev/null"
+    } else {
+      if (src !~ /@start/) src = "@startuml\n" src "@enduml\n"
+      cmd = "cd \"" root "\" && plantuml -tutxt -pipe < \"" tmp "\" 2>/dev/null"
+    }
+    printf "%s", src > tmp
+    close(tmp)
+    out = ""
+    while ((cmd | getline line) > 0) out = out line "\n"
+    if (close(cmd) == 0 && out != "") printf "```text\n%s```\n", out
+    else printf "```%s\n%s```\n", lang, buf
+    lang = ""
+    next
+  }
+  lang { buf = buf $0 "\n"; next }
+  { print }
+  END { if (lang) printf "```%s\n%s", lang, buf }
+' "$src" | glow -s "${GLOW_STYLE:-dark}" "$@" -

@@ -1,6 +1,6 @@
 ---
 name: jira-tickets
-description: "Operating on Jira tickets through the Jira and Atlassian Rovo MCP servers: reading an issue with its comments, links and remote links, writing a description or creating an issue, sprint placement, the tool-priority chain, and the approval gate before any write. Owns all ticket MCP access. Use when reading a ticket for requirements or when creating or updating one."
+description: "Operating on Jira tickets through the Jira MCP server and REST v2: reading an issue with its comments, links and remote links, the active sprint, releases and worklogs; writing a description, comment, labels, status, worklog or a new issue; sprint placement, and the approval gate before any write. Owns all ticket MCP access. Use when reading a ticket for requirements or when creating or updating one."
 argument-hint: "ticket key, or the ticket to create"
 ---
 
@@ -24,12 +24,15 @@ Connection details come from the environment: `$JIRA_URL`, `$JIRA_EMAIL`, `$JIRA
 
 Take only what the caller asked for; a full issue dump is expensive and mostly irrelevant.
 
-| Need | Jira MCP | Rovo MCP fallback |
-| --- | --- | --- |
-| Issue fields | `jira_get_issue` | `getJiraIssue` |
-| Comments | `jira_get_issue_comments` | — |
-| Linked issues | `jira_get_issue_links` | — |
-| External links | — | `getJiraIssueRemoteIssueLinks` |
+| Need | Tool |
+| --- | --- |
+| Issue fields | `jira_get_issue` |
+| Comments | `jira_get_issue_comments` |
+| Linked issues | `jira_get_issue_links` |
+| External links | curl `GET $JIRA_URL/rest/api/2/issue/<KEY>/remotelink` |
+| Active sprint | `jira_get_sprints` (`$JIRA_BOARD_ID`, active), then `jira_get_sprint_issues` |
+| Releases | `jira_get_versions` |
+| Worklogs | `jira_get_issue_worklogs`, `jira_get_user_worklogs` |
 
 Read comments before concluding anything: a reopened ticket usually carries its real requirement
 there. Follow URLs found in the description or comments (Confluence, merge requests, dashboards)
@@ -41,16 +44,26 @@ only when they bear on the question asked.
 URL, the full proposed content, and one line on what changed. Then ask. Skip the gate only if the
 user said "just create it" / "update without review".
 
-| Need | First | Fallback |
-| --- | --- | --- |
-| Create an issue | `createJiraIssue` | curl with `$JIRA_EMAIL` / `$JIRA_TOKEN` |
-| Update fields or description | `jira_update_issue` | `editJiraIssue` |
-| Sprint or backlog placement | `jira_move_issues_to_sprint` | `editJiraIssue` with the sprint field |
-| Verify the result | `getJiraIssue` | `jira_get_issue` |
+| Need | Tool |
+| --- | --- |
+| Create an issue | `jira_create_issue`, without a formatted description |
+| Formatted description | curl `PUT $JIRA_URL/rest/api/2/issue/<KEY>`, body `{"fields":{"description":"<wiki markup>"}}` |
+| Comment with formatting or a link | curl `POST`/`PUT $JIRA_URL/rest/api/2/issue/<KEY>/comment[/<id>]`, body `{"body":"<wiki markup>"}` |
+| Plain comment | `jira_add_comment` |
+| Labels, fix versions, other fields | `jira_update_issue` (`labels: {add, remove}`) |
+| Status | `jira_get_transitions`, then `jira_transition_issue` |
+| Log work | `jira_add_worklog` |
+| Sprint or backlog placement | `jira_move_issues_to_sprint` / `jira_move_issues_to_backlog` |
+| Verify the result | `jira_get_issue` |
 
-If `createJiraIssue` fails on required custom fields, call `getJiraIssueTypeMetaWithFields` for
-the project and issue type and set only the fields it reports as required. If sprint placement
-fails both ways, report the created key and say it must be dragged into place by hand.
+The MCP stores `description` and comment bodies as plain text, so markup stays raw. Formatted text
+goes through REST v2 as wiki markup, never v3 ADF: same content, a fraction of the tokens.
+Authenticate with `-u "$JIRA_EMAIL:$JIRA_TOKEN"`. Wiki markup: `h2.` headings, `*` / `#` lists
+(`**` nests), `*bold*`, `{{code}}`, `{code}…{code}` blocks, `[text|url]` links.
+
+If `jira_create_issue` fails on required custom fields, call `jira_get_create_metadata` for the
+project and issue type and set only the fields it reports as required. If sprint placement
+fails, report the created key and say it must be dragged into place by hand.
 
 Never invent a custom-field value. Never create a second ticket when the user already gave a key.
 

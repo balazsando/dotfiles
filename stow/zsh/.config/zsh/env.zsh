@@ -7,6 +7,8 @@ export GOPATH="$HOME/go"
 export REPOS_DIR="$HOME/repos"
 export EDITOR=nvim
 export VISUAL=nvim
+export GLOW_STYLE="$HOME/.config/glow/catppuccin-mocha.json"
+export CLAUDE_CODE_DISABLE_MOUSE_CLICKS=0
 
 # --- Node TLS ---
 # Node ignores the OS trust store, so the corporate chain must be passed

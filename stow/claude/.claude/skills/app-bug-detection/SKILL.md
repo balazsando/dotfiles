@@ -1,13 +1,13 @@
 ---
 name: app-bug-detection
-description: "Finding production bugs: triaging errors and exceptions from logs, investigating what is failing in prod, and the data-collection step of /bug-fix. Reads error-level Loki logs for this project's service via the grafana-prod MCP server and attributes each stack trace to a class and line in the repository."
+description: "Finding production bugs: triaging errors and exceptions from logs, investigating what is failing in prod, and the data-collection step of /bugfix-bot. Reads error-level Loki logs for this project's service via the grafana-prod MCP server and attributes each stack trace to a class and line in the repository."
 argument-hint: "[--since <duration>] [--service <name>] [--limit <n>]"
 ---
 
 # Application Bug Detection
 
 Turn production logs into a ranked list of application bugs with a suspect class and line.
-Detection and reporting only — fixing belongs to `/bug-fix`.
+Detection and reporting only — fixing belongs to `/bugfix-bot`.
 
 ## Hard limits
 
@@ -24,6 +24,11 @@ Server: `grafana-prod`. Resolve the Loki datasource UID once with `list_datasour
 or the call fails, report that detection could not run; do not fall back to guessing at bugs.
 
 ## 2. Resolve the service name
+
+In-scope implementations are the Java rows in `~/.claude/local/work-repos.md` (Cursor:
+`~/.cursor/local/work-repos.md`). If the current tree is not one of those rows, ask which
+checkout — do not query logs against docs, Helm, deploy, or practice trees. Missing file → ask.
+Honour any per-row scope note in that file.
 
 `SERVICE-NAME` is the `<description>` of the project's `pom.xml` — the `<project><description>`
 element, not a dependency's, and not `<name>` or `<artifactId>`. In a multi-module build take the

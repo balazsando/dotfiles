@@ -12,6 +12,7 @@ if [ -d "$file" ]; then
 fi
 
 ext="${file##*.}"
+ext="${ext,,}"
 
 case "$ext" in
 zip)
@@ -23,8 +24,30 @@ zip)
 rar)
   unrar l "$file" | bat --style=plain --color=always 2>/dev/null
   ;;
+md|markdown|mdc)
+  mdview "$file" -w "${2:-80}" 2>/dev/null || echo "markdown: glow not installed"
+  ;;
+mmd|mermaid)
+  mermaid-ascii -x 3 -y 2 -f "$file" 2>/dev/null || echo "mermaid: diagram type has no text rendering"
+  ;;
+puml|plantuml|pu|iuml)
+  pumlview "$file"
+  ;;
+drawio)
+  echo "draw.io diagram, pages:"
+  grep -o '<diagram [^>]*name="[^"]*"' "$file" | sed 's/.*name="\([^"]*\)"/  \1/'
+  ;;
+png|jpg|jpeg|gif|webp|bmp|tif|tiff|svg|ico|avif)
+  chafa -f symbols -c full --animate=off --bg 1e1e2e -s "${2:-80}x${3:-40}" "$file" 2>/dev/null || echo "image: chafa missing or format unsupported"
+  ;;
+pdf)
+  pdftotext -layout -nopgbrk -l 5 "$file" - 2>/dev/null || echo "pdf: no text layer, or poppler-utils missing"
+  ;;
 *)
-
-  bat --style=plain --color=always "$file" 2>/dev/null
+  if [ ! -s "$file" ] || grep -qI '' "$file"; then
+    bat --style=plain --color=always "$file" 2>/dev/null
+  else
+    echo "binary: $(du -h "$file" | cut -f1)"
+  fi
   ;;
 esac

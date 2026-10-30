@@ -3,7 +3,7 @@
 Personal dotfiles for Debian/Ubuntu/WSL2, managed with
 [GNU Stow](https://www.gnu.org/software/stow/) and [mise](https://mise.jdx.dev/).
 
-[![Version](https://img.shields.io/badge/version-2.0.0-blue)](CHANGELOG.md)
+[![Version](https://img.shields.io/badge/version-2.1.0-blue)](CHANGELOG.md)
 
 The repository is public. What may enter a tracked file is ruled by `CLAUDE.md`, mirrored for
 Cursor in `.cursor/rules/no-leaks.mdc`.
@@ -14,10 +14,11 @@ Cursor in `.cursor/rules/no-leaks.mdc`.
 dotfiles/
 ├── stow/                   # GNU Stow packages — each maps to $HOME
 │   ├── bat/                # bat config + themes
-│   ├── bin/                # Standalone binaries (win32yank.exe for the WSL clipboard)
+│   ├── bin/                # Standalone tools: win32yank.exe (WSL clipboard), mdview, plantuml, pumlview (text previews)
 │   ├── claude/             # Claude Code: CLAUDE.md, commands, skills, MCP
 │   ├── cursor/             # Cursor: rules, commands, MCP (skills/agents shared from claude/)
 │   ├── git/                # .gitconfig, .githooks, .config/git/ignore
+│   ├── glow/               # glow theme (selected by GLOW_STYLE)
 │   ├── java/               # Maven settings, Eclipse formatter
 │   ├── lf/                 # lf file manager
 │   ├── mise/               # .mise.toml — runtimes, CLI tools, tasks
@@ -103,7 +104,7 @@ re-run on a half-bootstrapped machine.
 | **3. BW CLI** | `@bitwarden/cli` and `tree-sitter-cli` via npm into `~/.npm-global` |
 | **4. Secrets + certs** | Offers `bw-restore.sh`, which also installs the corporate CA; TLS validates normally from here |
 | **5. Oh-My-Zsh** | OMZ, `zsh-autosuggestions`, `zsh-syntax-highlighting`, Powerlevel10k |
-| **6. GitHub binaries** | `jirlab`, pinned to a commit and SHA256-verified; `cursor-agent` from Cursor's installer (the npm package of that name is unrelated) |
+| **6. GitHub binaries** | `jirlab`, pinned to a commit and SHA256-verified; the PlantUML jar, pinned to 1.2026.6 (newer releases cannot render dividers inside groups as text) and SHA256-verified; `cursor-agent` from Cursor's installer (the npm package of that name is unrelated) |
 | **7. Default shell** | `chsh` to zsh |
 | **8. mise** | Runtimes and CLI tools from `.mise.toml` |
 | **9. SDKMAN** | Upstream installer with `rcupdate=false` — `.zshrc` already sources it. Then the newest Temurin 21 (`JAVA_MAJOR`, resolved from the SDKMAN API, which lists only the latest patch per major) and Maven |
@@ -135,7 +136,7 @@ Secure notes under the `dotfiles/` prefix:
 |---|---|
 | `dotfiles/zsh_secrets` | `~/.config/zsh/secrets` |
 | `dotfiles/git-credentials` | `~/.config/git/credentials` |
-| `dotfiles/kube/<filename>` | `~/.kube/<filename>` |
+| `dotfiles/kube/config-<short>.yaml` | `~/.kube/config-<short>.yaml`; `kube-merge.sh` then builds `~/.kube/config` from them, one context per file named `<short>` (never uploaded) |
 | `dotfiles/certs/<filename>` | `~/certs/<filename>` |
 | `dotfiles/repos` | `$DOTFILES/repos.txt` |
 | `dotfiles/ai/<filename>` | `~/.claude/local/<filename>` |

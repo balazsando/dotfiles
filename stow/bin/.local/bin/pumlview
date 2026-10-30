@@ -1,0 +1,11 @@
+#!/usr/bin/env bash
+file=$(realpath "${1:?usage: pumlview <file>}") || exit 1
+dir=$(dirname "$file")
+root=$(git -C "$dir" rev-parse --show-toplevel 2>/dev/null || echo "$dir")
+if out=$(cd "$root" && plantuml -tutxt -pipe <"$file" 2>/dev/null); then
+  printf '%s\n' "$out"
+  exit 0
+fi
+echo "plantuml: no text rendering for this diagram"
+printf '%s\n' "$out" | grep -m1 -oE '(cannot include|Syntax Error).*' | sed 's/[[:space:]]*$//; s/^/  /'
+exit 1

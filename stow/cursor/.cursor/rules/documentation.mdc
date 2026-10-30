@@ -1,5 +1,5 @@
 ---
-description: Documentation — no comments except contract docs and test markers; /docs and README.md
+description: Documentation — no comments except contract docs and test markers; /docs and README.md hold only what code cannot tell
 alwaysApply: true
 ---
 
@@ -9,3 +9,7 @@ alwaysApply: true
   contracts when the signature does not already convey the intent; `// given`, `// when`,
   `// then` markers in tests.
 - Documentation lives in `/docs` and `README.md`.
+- Documentation records what the code cannot tell: decisions, deliberate oddities, cross-cutting
+  rules, user-visible behaviour. Never list classes, packages, endpoints, scripts, or tests.
+- Update a doc only when a change alters a rule, decision, or name it states. New classes, new
+  endpoints, and behaviour-preserving refactors need no doc change.

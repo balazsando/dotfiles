@@ -6,8 +6,9 @@ Both assistants run the same server list; each registers it its own way.
 
 **Claude Code.** Servers are registered at user scope in `~/.claude.json`, managed by the
 `claude mcp` CLI — never hand-edit it. The source of truth is `~/.claude/mcp-servers.json`, one
-config per server, applied with `~/.claude/bin/install-mcp-servers.sh`. A server added to the
-file but never applied is not registered. Java intelligence is the `jdtls-lsp` plugin, which
+config per server, applied with `~/.claude/bin/install-mcp-servers.sh`, which also removes a
+registered server the file no longer lists. A server added to the file but never applied is not
+registered. Java intelligence is the `jdtls-lsp` plugin, which
 runs Mason's `jdtls` from `PATH`.
 
 **Cursor.** `~/.cursor/mcp.json`, read directly; restart the agent to apply. Same server list,
@@ -15,10 +16,17 @@ runs Mason's `jdtls` from `PATH`.
 configs are maintained separately and need not match line for line, but the *shared* server list
 stays in step when one is added or removed.
 
-Registered: `sonarqube`, `jira`, `atlassian-rovo-mcp`, `gitlab`, and four distinct Grafana
-instances — `grafana` (the default non-prod instance, `$GRAFANA_URL`), `grafana-prep` and
-`grafana-prep-connector` (pre-prod), and `grafana-prod` (production, read-only; the only one
-`app-bug-detection` queries). Cursor-only: `serena`.
+Registered: `sonarqube`, `jira`, `gitlab` (`@zereight/mcp-gitlab` with `$GITLAB_TOKEN`, not
+GitLab's own remote server, which has no events, files or branches; `GITLAB_TOOLSETS` preloads
+merge requests, pipelines, CI/CD variables, webhooks and user events, others load per session
+through `discover_tools`; never `api`, which bypasses the server's safety checks), `postman`
+(remote, Full tool set — `/validation-request` needs its folder tools — `$POSTMAN_API_KEY`), and
+five distinct
+Grafana instances — `grafana` (the default non-prod
+instance, `$GRAFANA_URL`), `grafana-prep` and `grafana-prep-connector` (pre-prod), and
+`grafana-prod` (production, read-only; the only one `app-bug-detection` queries) and
+`grafana-prod-connector`. Cursor-only: `serena`. Atlassian's Rovo server and Cursor's Atlassian
+plugin are deliberately absent: `jira` plus REST v2 covers them (see `jira-tickets`).
 
 Serena reuses Mason's `jdtls` instead of downloading its own, through
 `ls_specific_settings.java.jdtls_path` and `lombok_path` in `~/.serena/serena_config.yml` —

@@ -1,6 +1,6 @@
 ---
 name: sonarqube-validation
-description: "All SonarQube work: validating a change after editing code, checking a quality gate, collecting a report for a project or set of files, and the data-collection step of /sonar-fix. Owns all sonarqube MCP access, project matching, report collection, and interpretation."
+description: "All SonarQube work: validating a change after editing code, checking a quality gate, collecting a report for a project or set of files, and the data-collection step of /sonar-bot. Owns all sonarqube MCP access, project matching, report collection, and interpretation."
 argument-hint: "[project key or name] [--severity ...] [--new-code] [--path <glob>]"
 ---
 
@@ -29,9 +29,12 @@ fall back to guessing at code quality, and do not silently skip the check.
 Resolve the project key in this order, stopping at the first hit:
 
 1. A key or name given by the caller (command argument, user message)
-2. `sonar.projectKey` in `sonar-project.properties`, `pom.xml`, `build.gradle*`, `.gitlab-ci.yml`
-3. Maven `groupId:artifactId`
-4. The repository slug from `git remote get-url origin`
+2. The checkout's row in `~/.claude/local/work-repos.md` (Cursor: `~/.cursor/local/work-repos.md`).
+   **None** in that row means no Sonar project — stop, do not guess. **Unknown** → confirm with
+   `projects`. Missing file → skip this step.
+3. `sonar.projectKey` in `sonar-project.properties`, `pom.xml`, `build.gradle*`, `.gitlab-ci.yml`
+4. Maven `groupId:artifactId`
+5. The repository slug from `git remote get-url origin`
 
 Confirm the candidate with `projects`, or with `components` (`qualifiers: ["TRK"]`, `query`) when
 the project list is long. State the key and name before acting on any finding. Ask when two
@@ -65,7 +68,7 @@ Default scope for a cleanup run: the project, narrowed by the caller's filters.
 - **Unanalysed is unknown, not clean.** No findings for code Sonar has not analysed yet proves
   nothing — say so instead of reporting a pass.
 - **Ownership.** Findings the current change introduced belong to the current change. Pre-existing
-  findings belong to `/sonar-fix` — list them, do not fix them in passing.
+  findings belong to `/sonar-bot` — list them, do not fix them in passing.
 - **Order.** Bugs → vulnerabilities → code smells, highest severity first (`BLOCKER` >
   `CRITICAL` > `MAJOR` > `MINOR` > `INFO`; impacts `HIGH` > `MEDIUM` > `LOW`).
 - **Gate.** `ERROR` is a failure — name each failing condition with its actual and required value.
@@ -76,5 +79,5 @@ Default scope for a cleanup run: the project, narrowed by the caller's filters.
 
 State, in this order: project key and name; branch; quality gate status with any failing
 conditions; findings attributable to the change (rule, severity, `file:line`, one line each);
-pre-existing findings as a count plus a pointer to `/sonar-fix`; and anything left unverified —
+pre-existing findings as a count plus a pointer to `/sonar-bot`; and anything left unverified —
 server unreachable, branch unanalysed, or an analysis older than the change.

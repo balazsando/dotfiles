@@ -5,6 +5,7 @@ alias aig='gh copilot'
 alias d="docker"
 alias k="kubectl"
 alias kctx="kubectx"
+alias kall="unset KUBECONFIG; k9s"
 alias kd="kubectl describe"
 alias kgp="kubectl get pods"
 alias kns="kubens"
@@ -21,6 +22,7 @@ alias mkeoff='eval $(minikube docker-env -u)'
 alias mks='minikube start'
 alias mkst='minikube stop'
 alias mkt='minikube tunnel'
+alias mvn='JAVA_TOOL_OPTIONS="-Djava.awt.headless=true $JAVA_TOOL_OPTIONS" mvn'
 alias pimp='nvim ~/.zshrc'
 alias re='source ~/.zshrc'
 alias sindex='serena project index'

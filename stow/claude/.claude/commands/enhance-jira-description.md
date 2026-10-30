@@ -51,4 +51,5 @@ An unavailable or inconclusive source is a stated gap, never a guess.
 ## Then
 
 Show the key, URL, current summary, the full proposed description, and one line on what was
-preserved, changed, and flagged. Write after the yes.
+preserved, changed, and flagged. Write after the yes, as a formatted description per
+`jira-tickets`.

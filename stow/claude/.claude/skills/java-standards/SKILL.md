@@ -33,15 +33,25 @@ never hide behaviour or complex logic.
 **Nullability.** `@NotNull` for non-null contracts, `@Nullable` only where null is genuinely
 allowed, `Optional` to model absence in a return type. Never leave nullability ambiguous.
 
-**Maven.** Shared versions in the parent's `dependencyManagement`; never repeat a version in a
-child module. Align versions across modules, avoid unnecessary transitives, and respect scope
-separation (`compile`, `test`, `provided`, `optional`).
+**Maven.** Prefer what Spring Boot ships (its starters and managed dependencies) over third-party
+alternatives. Never pin a version Spring Boot's dependency management already manages — omit
+`<version>` and let the Boot parent or BOM resolve it; override a managed version only for a
+documented reason. Versions Boot does not manage go in the parent's `dependencyManagement`; never
+repeat a version in a child module. Avoid unnecessary transitives, and respect scope separation
+(`compile`, `test`, `provided`, `optional`).
 
 **Formatting.** The Eclipse formatter owns it: `./formatter.xml` when the project has one,
 otherwise `~/.java/formatter.xml` — 4 spaces, 120 columns, LF. Never hand-reformat what the
 formatter owns, and never reformat lines the change does not otherwise touch.
 
 ## Tests
+
+Strict, no exceptions:
+
+- Business logic → unit test. Adapters → integration test. Acceptance tests only where Cucumber
+  is on the classpath.
+- POJOs, getters, setters, constructors, configuration, and plain delegation → no test.
+- One behaviour, one test, at one level; never cover it twice.
 
 Writing them: [references/tests.md](./references/tests.md) — the test skeleton to copy, plus what
 gets a test at all. Changing production code does not require that depth; writing a test does.

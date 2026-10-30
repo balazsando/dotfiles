@@ -49,6 +49,8 @@ Desktop.ini
 ### Personal tooling — not the project's business ###
 /.github/
 /.claude/**
+**/target/**
+.flattened-pom.xml
 /.serena/**
 **/.claude/settings.local.json
 CLAUDE.md

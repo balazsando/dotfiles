@@ -7,6 +7,46 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [2.1.0] — 2026-10-30
+
+Replaces the fix commands with unattended bots, adds Jira/Postman workflow commands, and makes
+diagrams, images, PDFs and Markdown previewable as text in lf and Neovim.
+
+### Added
+
+- **Bot commands**: `/bugfix-bot`, `/sonar-bot` and `/renovate-bot` each fix one class of problem
+  in risk-graded groups, one merge request per group. `/housekeep` audits the Java checkouts as one
+  system and commits approved cross-repo refactors locally. Their shared mechanics live in
+  `change-delivery/references/bot-run.md`, and all four carry the git commit exception.
+- `/log-work` fills the Jira time tracker from the user's own GitLab work;
+  `/validation-request` composes a Postman validation request from preprod logs and links it on the
+  ticket.
+- **Text previews**: `mdview`, `pumlview` and `plantuml` render Markdown (with Mermaid and PlantUML
+  blocks), PlantUML and draw.io as text; lf and Neovim also show images through `chafa` and PDFs
+  through `pdftotext`. The PlantUML jar is pinned to 1.2026.6 and SHA256-verified at bootstrap.
+  New packages: `poppler-utils`, `chafa`, `graphviz`, `glow`, `mermaid-ascii`.
+- `kube-merge.sh` builds `~/.kube/config` from the restored `config-*.yaml` files, one context per
+  file, so k9s and kubectx can switch between clusters; `bw-restore.sh` runs it.
+- Postman MCP server and a second Grafana (production connector) server for both assistants.
+- Shell helpers `checksum` and `springnew`, an `lf` open command and Windows-folder jumps, and
+  Neovim autosave plus the `claudecode` extra.
+- `check-ai-parity.sh` now also fails when a Cursor command cites `CLAUDE.md` or a `~/.claude/`
+  path.
+
+### Changed
+
+- `/deliver` is organised in phases (requirements, plan, build, validate, document), commits per
+  phase, and pushes only with `--mr`; `--ultra` runs every phase at ponytail ultra.
+- The GitLab MCP server runs locally as stdio instead of a remote URL. The Atlassian Rovo server is
+  gone, and `install-mcp-servers.sh` removes servers no longer in the list.
+- Clipboard helpers share `_clip`, which prefers the Windows `clip.exe` under WSL.
+- `/bug-fix` and `/sonar-fix` are replaced by `/bugfix-bot` and `/sonar-bot`.
+- Documentation rule tightened: docs record only what the code cannot tell.
+- Skills trimmed or extended to match the new commands (`java-standards`, `clean-code`,
+  `jira-tickets`, `sonarqube-validation`, `app-bug-detection`, `code-review-practices`).
+
+---
+
 ## [2.0.0] — 2026-09-20
 
 Retires the multi-agent delivery layer and the agent token tooling, cuts the skills down to what

@@ -94,6 +94,21 @@ else
   sudo install -m 755 "$tmp" /usr/local/bin/jirlab && rm -f "$tmp"
   ok "jirlab (verified)"
 fi
+PLANTUML_VERSION="1.2026.6"
+PLANTUML_SHA256="89948f14c93756c7a3fb7b69078ff37e8489fd79dd430c582b931e2f65358690"
+PLANTUML_JAR="$HOME/.local/share/plantuml/plantuml.jar"
+if echo "$PLANTUML_SHA256  $PLANTUML_JAR" | sha256sum -c --status - 2>/dev/null; then
+  skip "plantuml"
+elif $DRY_RUN; then
+  echo "  → would fetch plantuml $PLANTUML_VERSION and verify sha256"
+else
+  tmp=$(mktemp)
+  curl -fsSLo "$tmp" "https://github.com/plantuml/plantuml/releases/download/v$PLANTUML_VERSION/plantuml-$PLANTUML_VERSION.jar"
+  echo "$PLANTUML_SHA256  $tmp" | sha256sum -c --status - ||
+    { rm -f "$tmp"; echo "  ✗ plantuml checksum mismatch — refusing to install" >&2; exit 1; }
+  install -Dm 644 "$tmp" "$PLANTUML_JAR" && rm -f "$tmp"
+  ok "plantuml (verified)"
+fi
 if has cursor-agent; then
   skip "cursor-agent"
 else

@@ -1,12 +1,13 @@
 ---
 name: change-delivery
-description: "Mechanics shared by every command that changes code on a dedicated branch: preconditions, base-branch resolution, branch naming, build and test validation per build system, coverage expectation, commit rules, and the hand-back report. Load when running /deliver, /bug-fix, /sonar-fix, or any command that carries the git commit exception."
-argument-hint: "the command carrying the commit exception, and its branch prefix"
+description: "Mechanics shared by every command that changes code on a dedicated branch: preconditions, base-branch resolution, branch creation, build and test validation per build system, coverage expectation, commit rules, and the hand-back report. Load when running /deliver, /sonar-bot, /bugfix-bot, /renovate-bot, or any command that carries the git commit exception."
+argument-hint: "the command carrying the commit exception"
 ---
 
 # Change delivery
 
-Each command keeps its own policy; mechanics are here.
+Each command keeps its own policy and branch name; mechanics are here. The bots (`/sonar-bot`,
+`/bugfix-bot`, `/renovate-bot`) also read `references/bot-run.md`.
 
 ## 1. Preconditions (stop conditions)
 
@@ -30,23 +31,17 @@ If unset, take the first that exists: `develop`, `release`, the newest `release/
 ## 3. Branch
 
 Never edit or commit on a protected branch — the resolved base, `main`, `master`, `develop`,
-`release`, `release/*`. Every run works on its own branch, created before the first edit.
-Reuse the current branch instead only when it is not protected and its name carries the run's
-ticket key or matches its subject; say so.
+`release`, `release/*`. Every run works on its own branch, created before the first edit, named
+by the command.
 
 ```
-git switch -c <prefix>/<slug> --no-track origin/<base>
+git switch -c <branch> --no-track origin/<base>
 ```
 
 It starts at `origin/<base>` as fetched in §2, so it is already current — never branch from the
 local base ref or from the current branch. `--no-track` is required: a branch that tracks the
 base makes a bare `git pull` merge it and lets `git push` target it. Suffix `-2`, `-3` … when the
 name is taken.
-
-Prefix is `feature/`, `fix/` or `refactor/` — nothing else: `fix/` (`/bug-fix`), `refactor/`
-(`/sonar-fix`), whichever fits the change (`/deliver`). Start the slug with the ticket key when
-one is known (`feature/ABC-123-add-widget`) — the `prepare-commit-msg` hook only matches
-`[A-Z][A-Z0-9]+-[0-9]+` in the branch name. Slugify names containing spaces.
 
 ## 4. Validate
 
@@ -73,12 +68,12 @@ One commit per run unless the command says otherwise, body listing what changed 
 per issue. Stage the paths you changed by name: `git add -A` sweeps in workspace artifacts that
 must not ship.
 
-Subject and trailers per the git contract in `~/.claude/CLAUDE.md`. Never push and never open a
-merge request unless the invoking command says so explicitly.
+Subject and trailers per the git contract (`CLAUDE.md` in Claude, the `git` rule in Cursor). Never
+push and never open a merge request unless the invoking command says so explicitly.
 
 ## 6. Hand back
 
 Git status/diff and the last validation command are authoritative for files and the build
 result. Report once, in this order, only what those do not already show: work skipped and why,
 the run's branch and whether it was created or reused, the commit SHAs, whether anything was
-pushed, then any non-derivable exception. No narrative recap.
+pushed and the merge request URLs, then any non-derivable exception. No narrative recap.

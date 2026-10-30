@@ -57,17 +57,17 @@ The goal is not to say less. The goal is to say nothing unnecessary.
 
 ## Machine-local overlay
 
-Machine-local specifics — Jira project keys, boards, documentation repositories, cluster names —
-live in `~/.claude/local/`, unversioned. Read the file a command or skill names; if it is
-missing, ask rather than guess.
+Machine-local specifics — Jira project keys, boards, documentation repositories, cluster names,
+local checkouts and Sonar keys — live in `~/.claude/local/`, unversioned. Read the file a command
+or skill names (`work-repos.md` for `~/repos`); if it is missing, ask rather than guess.
 
 ---
 
 ## Git operations
 
 **Committing and history rewriting are prohibited.** The only exceptions are `/deliver`,
-`/sonar-fix`, and `/bug-fix` while they are running. Reading history, diffs, status, blame, logs,
-and branch state is always allowed.
+`/sonar-bot`, `/bugfix-bot`, `/renovate-bot`, and `/housekeep` while they are running. Reading
+history, diffs, status, blame, logs, and branch state is always allowed.
 
 Prohibited outside those commands: `git commit` (including `--amend`); staging or unstaging
 (`git add`, `git rm --cached`, `git restore --staged`, index edits); any history-altering command
@@ -99,3 +99,7 @@ shared branch without explicit authorization.
   contracts when the signature does not already convey the intent; `// given`, `// when`,
   `// then` markers in tests.
 - Documentation lives in `/docs` and `README.md`.
+- Documentation records what the code cannot tell: decisions, deliberate oddities, cross-cutting
+  rules, user-visible behaviour. Never list classes, packages, endpoints, scripts, or tests.
+- Update a doc only when a change alters a rule, decision, or name it states. New classes, new
+  endpoints, and behaviour-preserving refactors need no doc change.

@@ -1,6 +1,6 @@
 ---
 description: "Deliver a change from a Jira ticket or a plain-text task on its own branch, up to a merge request"
-argument-hint: "<TICKET-KEY | task> [clarification] [--no-docs]"
+argument-hint: "<TICKET-KEY | task> [clarification] [--no-docs] [--ultra] [--mr]"
 ---
 
 Deliver the change in `$ARGUMENTS`.
@@ -11,57 +11,50 @@ exception, on this run's own branch and nowhere else.
 
 ## Input
 
-A leading ticket key (`ABC-123`, or a bare number per `jira-tickets`) is the ticket; the rest of
-the text, minus flags, is the task or the clarification.
+A leading ticket key (`ABC-123`, or a bare number per `jira-tickets`) is the ticket; the rest,
+minus flags, is the task or a clarification. Nothing → ask.
 
-| Input | Criteria from | Ends with |
-| --- | --- | --- |
-| Ticket | the ticket | push and merge request |
-| Ticket + text | the ticket, refined by the text | push and merge request |
-| Text | the text | local commits; ask before pushing |
-| Nothing | ask | — |
+Text next to a ticket refines it for this run only and wins where it is more specific; ask when
+it contradicts a criterion or widens the scope. The ticket is never edited.
 
-**Clarification** refines the ticket for this run only; the ticket itself is never edited. Where
-the text is more specific, it wins. Where it contradicts a ticket criterion or widens the scope,
-ask before editing. State which criteria it changed.
+`--no-docs` skips Document. `--ultra` runs every phase at ponytail ultra. `--mr` pushes and opens
+a merge request; without it the run ends with local commits.
 
-## Rules
+## Phases
 
-- Never present an inference as a source. No testable criterion in any source, or the intent needs
-  a business decision → ask.
-- The design that fits the repository beats a blank-page one: smallest structure that satisfies
-  the criteria, no refactor they did not ask for.
-- Never weaken, skip or delete an existing test to make the code fit.
-- Ask before pushing to a shared branch and before commenting on an existing merge request.
+Run a phase only when the change needs it; name the skipped ones in one line.
 
-## Steps
+1. **Requirements** — the ticket with its comments and links, or the text. Read `/docs`,
+   `README.md` and the repositories in `~/.claude/local/doc-repos.md` only for a gap. State the
+   criteria and assumptions. No testable criterion, or a business decision needed → ask. A ticket
+   for another repository → pick it under `$REPOS_DIR` by component and labels; ask on a tie.
+2. **Plan** — only when the change is more than one obvious edit: the smallest design that fits
+   the repository, no refactor the criteria did not ask for.
+3. **Build** — `change-delivery` §1–3, then implement with the language skills the code needs.
+   Branch `<feature|fix|refactor|chore>/<slug>`, whichever fits; start the slug with the ticket
+   key when known (`feature/ABC-123-add-widget`) — the `prepare-commit-msg` hook only matches
+   `[A-Z][A-Z0-9]+-[0-9]+` in the branch name. Reuse the current branch instead only when it is
+   not protected and carries the ticket key or matches the subject; say so.
+4. **Validate** — a test per criterion (`atdd` for feature, API or domain tests), then
+   `change-delivery` §4 green with its coverage rule. Skipped only when the diff has nothing to
+   assert. Never weaken, skip or delete an existing test.
+5. **Document** — update `/docs` and `README.md` where they name a symbol, command, path or flag
+   the diff touched. Propose an ADR only for a high-impact or lock-in decision.
 
-1. **Repository** — with a ticket, when the current directory is not the right repo, match the
-   ticket's component and labels against the repositories under `$REPOS_DIR`; ask only when the
-   ranking is tied, or when `$REPOS_DIR` is unset. Without one, the current repository.
-2. **Preconditions and base branch** — `change-delivery` §1–2.
-3. **Criteria** — the ticket with its comments and links, or the text. Read further only where
-   those leave a gap: the repository's `/docs` and `README.md`, then the documentation
-   repositories in `~/.claude/local/doc-repos.md` (missing → say so). State the criteria and
-   assumptions before branching.
-4. **Branch** — `change-delivery` §3, before the first edit. With a ticket, the slug starts with
-   its key.
-5. **Tests** — for the criteria: `atdd` for feature, API or domain tests, `java-standards`
-   `references/tests.md` for Java. Skipped only when the diff has nothing to assert —
-   documentation, formatter output, configuration no runtime reads.
-6. **Implement** — with the language skills the code needs (`java-standards`, then `clean-code`,
-   for Java/Spring/Maven), until `change-delivery` §4 is green.
-7. **Documentation** — unless `--no-docs`, update `/docs` and `README.md` where they name a
-   symbol, command, path or flag the diff touched. Propose an ADR only for a high-impact or
-   lock-in decision; write it once the user confirms.
-8. **Commit** — `change-delivery` §5.
-9. **Push and merge request** — with a ticket, or when the user agrees: push the branch, open the
-   MR (GitLab MCP, or `glab`), link the ticket when there is one, and state criteria coverage and
-   assumptions.
-10. **Pipeline** — when pushed, watch it. Fix a failure with a new commit on the branch; never by
-    weakening a test.
+Ponytail runs `full`; switch to `ultra` for Build and Validate and back for Document, or stay
+`ultra` throughout with `--ultra`. No level waives a criterion, a test, coverage, or a doc update.
 
-## Done when
+## Commits
 
-Every criterion is met or waived by the user, the tests pass, and coverage is met or its shortfall
-justified. Report per `change-delivery` §6, plus the merge request URL.
+Build, Validate and Document each end with their own commit per `change-delivery` §5 — `feat-`,
+`fix-` or `refactor-` for Build, `test-` for Validate, `docs-` for Document. Each commit is atomic:
+one concern, and the build is green at that commit. A production fix found in Validate is
+its own `fix-` commit, never an amend.
+
+## Merge request
+
+With `--mr`: push, open the merge request (GitLab MCP, or `glab`) linking any ticket, and watch the
+pipeline — fix a failure with a new commit. Ask before pushing to a shared branch or commenting on
+an existing merge request.
+
+Report per `change-delivery` §6, plus criteria coverage and the merge request URL.

@@ -20,6 +20,13 @@ if ! command -v jq >/dev/null 2>&1; then
   exit 1
 fi
 
+for name in $(jq -r --slurpfile want "$SERVERS_FILE" \
+  '(.mcpServers // {}) | keys[] | select(. as $n | $want[0].mcpServers | has($n) | not)' \
+  "$HOME/.claude.json" 2>/dev/null); do
+  echo "Removing stale MCP server: $name"
+  claude mcp remove "$name" --scope user >/dev/null
+done
+
 # Expand ${HOME} here so the tracked file stays free of a baked-in home dir.
 for name in $(jq -r '.mcpServers | keys[]' "$SERVERS_FILE"); do
   json=$(jq -c --arg n "$name" --arg home "$HOME" \
