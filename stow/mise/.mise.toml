@@ -31,6 +31,8 @@ zoxide             = "latest"
 # ─── Git tools ────────────────────────────────────────────────────────────────
 lazygit            = "latest"
 gh                 = "latest"
+glab               = "latest"
+"github:rcieri/glab-tui" = { version = "latest", asset_pattern = "glab-tui-linux-amd64-musl.tar.gz" }
 
 # ─── File manager ─────────────────────────────────────────────────────────────
 "aqua:gokcehan/lf" = "latest"
@@ -71,6 +73,6 @@ mise run stow
 [tasks.update-tools]
 description = "Upgrade all mise-managed tools and uv tools to latest"
 run         = """
-mise upgrade
+env -u GITLAB_TOKEN mise upgrade
 if command -v uv >/dev/null; then uv tool upgrade --all; fi
 """

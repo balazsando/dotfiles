@@ -3,7 +3,7 @@
 Personal dotfiles for Debian/Ubuntu/WSL2, managed with
 [GNU Stow](https://www.gnu.org/software/stow/) and [mise](https://mise.jdx.dev/).
 
-[![Version](https://img.shields.io/badge/version-2.1.0-blue)](CHANGELOG.md)
+[![Version](https://img.shields.io/badge/version-2.2.0-blue)](CHANGELOG.md)
 
 The repository is public. What may enter a tracked file is ruled by `CLAUDE.md`, mirrored for
 Cursor in `.cursor/rules/no-leaks.mdc`.
@@ -18,8 +18,10 @@ dotfiles/
 │   ├── claude/             # Claude Code: CLAUDE.md, commands, skills, MCP
 │   ├── cursor/             # Cursor: rules, commands, MCP (skills/agents shared from claude/)
 │   ├── git/                # .gitconfig, .githooks, .config/git/ignore
+│   ├── glab-tui/           # glab-tui config (Catppuccin Mocha preset)
 │   ├── glow/               # glow theme (selected by GLOW_STYLE)
 │   ├── java/               # Maven settings, Eclipse formatter
+│   ├── lazygit/            # lazygit config (open the most recent repository)
 │   ├── lf/                 # lf file manager
 │   ├── mise/               # .mise.toml — runtimes, CLI tools, tasks
 │   ├── nvim/               # LazyVim
@@ -75,6 +77,31 @@ Do not "fix" these.
 - Infrastructure-identifying values live in `~/.config/zsh/secrets` as variables (`JIRA_*`,
   `NEXUS_SERVER_ID`, `WORK_K8S_*`, `WIN_USER`, the kubeconfig aliases), and in `~/.claude/local/`
   as markdown for skills and commands.
+
+**tmux sessions**
+
+- `tm` builds and attaches `main`, and builds `kd` and `km`, then kills every other session.
+  `main` has windows 1 terminal, 2 nvim, 3 lf, 4 lazygit, 5 k9s (context from `$TMUX_K9S_CONTEXT`), 0 jirlab.
+  `prefix r` reloads the config, resets the current defined session (running apps are killed),
+  creates missing ones and prunes the rest. `renumber-windows` is off so numbers stay fixed.
+- No project is hard-wired. nvim reopens the last directory given to `v <dir>` (home before the
+  first); lazygit starts in home and `notARepository: skip` makes it open its most recent
+  repository.
+- `kd` (deploy) and `km` (monitoring) have one window per environment: k9s on the left, the
+  environment repository's `values*.y*ml` in nvim on the right. `tmux-kube.sh` derives the
+  environments, kubeconfigs and paths at run time from the `d<env>`, `m<env>` and `k<env>[m]`
+  aliases in `~/.config/zsh/secrets`; nothing about them is tracked.
+- Numpad `KP0`-`KP9` select that window, but only if the terminal reports the numpad as keypad
+  keys rather than digits. Windows Terminal does not, and never does for `+`, `-` or `.`, so
+  `F2` / `F3` move to the previous / next window and `F4` to the next session. Alt letters are avoided: LazyVim and others use them.
+- Inside `main`, `v`/`vim`/`nvim` (no args), `lf`, `lg`, `k9s` and `jl` switch to windows 2, 3, 4, 5 and 0
+  (at the current dir) instead of starting a second copy; anywhere else, or when `main` is not
+  running, they run in place.
+- Every `cd <dir>` alias (from `secrets` or `aliases.zsh`) gets `v<alias>` (nvim) and `g<alias>`
+  (lazygit) twins, generated at shell start; in `main` they use the dedicated windows.
+- lf `e` / `q` jump to the nvim / terminal window at the current dir (`Q` quits lf). The `jirlab`
+  function does the same with the nav file: a bare dir goes to the terminal window, `vim:<dir>`,
+  `git:<dir>` to those windows, outside `main` it falls back to `cd`.
 
 **Runtime state**
 

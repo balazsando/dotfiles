@@ -3,8 +3,43 @@
 # addcerts — sourced for interactive use; actual logic lives in addcerts.sh
 addcerts() { bash "${DOTFILES:-$HOME/dotfiles}/stow/scripts/.local/share/dotfiles/scripts/addcerts.sh" "$@"; }
 
+# Inside tmux "main", these switch to their window
+_main_go() {
+  [[ -n "$TMUX" && "$(tmux display -p '#{session_name}')" == main ]] || return 1
+  ~/.local/share/dotfiles/scripts/tmux-main.sh go "$@" 2>/dev/null
+}
+v() {
+  if (( ! $# )); then _main_go vim "$PWD" || command nvim; return; fi
+  if [[ $# -eq 1 && -d $1 ]]; then _main_go vim "${1:a}" || command nvim "$@"; return; fi
+  local sock=${XDG_RUNTIME_DIR:-/tmp}/nvim-main.sock
+  if [[ -S $sock && -z ${@[(r)[-+]*]} && "$(tmux display -p '#{session_name}' 2>/dev/null)" == main ]] &&
+    command nvim --server "$sock" --remote "${@:a}" 2>/dev/null; then
+    tmux switch-client -t main:2
+  else
+    command nvim "$@"
+  fi
+}
+vim() { v "$@"; }
+nvim() { v "$@"; }
+lg() {
+  if [[ $# -eq 1 && -d $1 ]]; then
+    _main_go git "${1:a}" || (cd "$1" && command lazygit)
+  else
+    _main_go git "$PWD" || command lazygit "$@"
+  fi
+}
+k9s() {
+  (( $# )) && { command k9s "$@"; return; }
+  local ctx=
+  [[ $KUBECONFIG == */config-* ]] && ctx=${${KUBECONFIG:t}#config-} && ctx=${ctx%.*}
+  _main_go k9s $ctx || command k9s
+}
+
+jl() { _main_go jira || jirlab board; }
+
 # lfcd — lf file manager with cd-on-quit
 lfcd() {
+  _main_go lf "$PWD" && return
   local tmp dir
   tmp="$(mktemp)"
   command lf -last-dir-path="$tmp" "$@"
@@ -63,7 +98,10 @@ jirlab() {
   [[ -f "$nav_file" && ! -L "$nav_file" && -O "$nav_file" ]] || { rm -f "$nav_file"; return; }
   dir="$(<"$nav_file")"
   rm -f "$nav_file"
-  [[ -n "$dir" && -d "$dir" ]] && cd "$dir"
+  local target=term
+  [[ "$dir" =~ ^(term|vim|git): ]] && { target="${dir%%:*}"; dir="${dir#*:}"; }
+  [[ -n "$dir" && -d "$dir" ]] || return
+  _main_go "$target" "$dir" || cd "$dir"
 }
 
 # jwtdecode — decode and pretty-print a JWT payload
@@ -142,3 +180,9 @@ springnew() {
   curl -fsS https://start.spring.io/starter.zip "${args[@]}" -o "/tmp/$name.zip" \
     && unzip -q "/tmp/$name.zip" && rm -f "/tmp/$name.zip" && cd "$name"
 }
+
+# v<name> and g<name> twins for cd aliases
+for _n _v in ${(kv)aliases}; do
+  [[ $_v == 'cd '* ]] && alias "v$_n=v ${_v#cd }" "g$_n=lg ${_v#cd }"
+done
+unset _n _v

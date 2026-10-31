@@ -1,9 +1,6 @@
 #!/usr/bin/env bash
 # Starts mcp-jira-cloud using pre-configured JIRA_* environment variables.
 # JIRA_EMAIL, JIRA_TOKEN, and JIRA_URL must be set in the shell profile
-# (~/.config/zsh/secrets). Cursor/Claude MCP configs pass those through;
-# this script also loads secrets as a fallback for GUI launches that do
-# not inherit the interactive zsh environment.
 set -euo pipefail
 
 if [[ -z "${JIRA_TOKEN:-}" || -z "${JIRA_URL:-}" || -z "${JIRA_EMAIL:-}" ]]; then

@@ -44,7 +44,20 @@ cmd reloc ${{
   zsh -ic 'relocate "$1"' _ "$f"
 }}
 
+cmd tmux-go ${{
+  if [ "$(tmux display -p '#S' 2>/dev/null)" = main ]; then
+    ~/.local/share/dotfiles/scripts/tmux-main.sh go "$1" "$PWD"
+  elif [ "$1" = vim ]; then
+    nvim "$f"
+  else
+    lf -remote "send $id quit"
+  fi
+}}
+
 map R reloc
+map e tmux-go vim
+map q tmux-go term
+map Q quit
 map au unarchive
 map gr cd ~/repos
 map gv wincd Videos

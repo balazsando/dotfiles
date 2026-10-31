@@ -7,6 +7,41 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [2.2.0] — 2026-10-31
+
+Adds a fixed tmux workspace — `main`, `kd` and `km` sessions — and makes nvim, lf, lazygit, k9s and
+jirlab switch to their window instead of starting a second copy.
+
+### Added
+
+- **tmux sessions**: `tm` builds and attaches `main` (terminal, nvim, lf, lazygit, k9s, jirlab) and
+  builds `kd` / `km`, one window per environment with k9s beside the environment's values file in
+  nvim. Environments are read at run time from `~/.config/zsh/secrets`; none is tracked. `prefix r`
+  resets the current session, creates missing ones and prunes the rest.
+- **Window switching**: inside `main`, `v` / `vim` / `nvim`, `lf`, `lg`, `k9s` and `jl` jump to
+  their window at the current directory. Every `cd` alias also gets `v<alias>` and `g<alias>`
+  twins. lf `e` / `q` jump to the nvim / terminal window; `jirlab` can target a window.
+- Numpad `KP0`-`KP9` select a window; `F2` / `F3` move between windows and `F4` between sessions,
+  for terminals that do not report keypad keys.
+- `glab` and `glab-tui` (Catppuccin Mocha) via mise, with the `gl` alias, and a lazygit config that
+  opens the most recent repository.
+
+### Changed
+
+- tmux `renumber-windows` is off so window numbers stay fixed.
+- `update-tools` runs `mise upgrade` without `GITLAB_TOKEN`, so the GitLab-hosted tools resolve.
+- `lg`, `jl`, `v` and `vim` moved from aliases to functions in `functions.zsh`.
+- `env.zsh` derives `GITLAB_HOST` from `GITLAB_API_URL` and links the WSLg Wayland and X11 sockets
+  when they are missing.
+
+### Documentation
+
+- README documents the tmux sessions, window switching and key bindings.
+- Comments trimmed in the tmux scripts, `tmux.conf`, `functions.zsh`, `jira-mcp.sh` and
+  `kube-merge.sh`.
+
+---
+
 ## [2.1.0] — 2026-10-30
 
 Replaces the fix commands with unattended bots, adds Jira/Postman workflow commands, and makes

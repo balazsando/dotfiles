@@ -1,11 +1,6 @@
 #!/usr/bin/env bash
 # kube-merge.sh — Build ~/.kube/config from ~/.kube/config-*, one unique context per file,
 # so k9s (:ctx) and kubectx can switch between them. Re-runnable; the source files are untouched.
-#
-# Context name = the file's shortname (config-<name>.yaml -> <name>), the same as its shell alias
-# minus the leading "k". Several contexts per file: "<name>-<context>".
-# Clusters and users are prefixed per file, so equal names across files cannot collide.
-#
 # Usage: kube-merge.sh [-n]   (-n: list the contexts, write nothing)
 
 set -euo pipefail

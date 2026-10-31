@@ -3,15 +3,16 @@
 alias ai='cursor-agent'
 alias aig='gh copilot'
 alias d="docker"
+alias gl='glab-tui'
 alias k="kubectl"
 alias kctx="kubectx"
-alias kall="unset KUBECONFIG; k9s"
+alias tm='~/.local/share/dotfiles/scripts/tmux-main.sh attach'
+alias kall="unset KUBECONFIG; command k9s"
 alias kd="kubectl describe"
 alias kgp="kubectl get pods"
 alias kns="kubens"
 alias ld='lazydocker'
 alias lf='lfcd'
-alias lg='lazygit'
 alias l="eza -l --icons --git -a"
 alias ls="eza --icons --group-directories-first --color=auto --git -a"
 alias lt="eza --tree --level=2 --long --icons --git"
@@ -27,7 +28,6 @@ alias pimp='nvim ~/.zshrc'
 alias re='source ~/.zshrc'
 alias sindex='serena project index'
 alias wslconf-sync='zsh ~/.local/share/dotfiles/scripts/wslconf-sync.zsh'
-alias jl='jirlab board'
 
 # --- Work / project aliases --- ($WIN_USER from ~/.config/zsh/secrets)
 # The kubeconfig-switching aliases live in ~/.config/zsh/secrets — the config
