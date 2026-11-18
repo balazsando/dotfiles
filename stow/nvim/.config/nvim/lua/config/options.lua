@@ -12,15 +12,12 @@ vim.opt.scrolloff = 8 -- keep more lines visible when scrolling near edges
 
 vim.opt.clipboard = "unnamedplus"
 
+local osc52 = require("vim.ui.clipboard.osc52")
+local function local_paste()
+	return { vim.fn.split(vim.fn.getreg(""), "\n"), vim.fn.getregtype("") }
+end
 vim.g.clipboard = {
-	name = "win32yank-wsl",
-	copy = {
-		["+"] = "win32yank.exe -i --crlf",
-		["*"] = "win32yank.exe -i --crlf",
-	},
-	paste = {
-		["+"] = "win32yank.exe -o --lf",
-		["*"] = "win32yank.exe -o --lf",
-	},
-	cache_enabled = 0,
+	name = "osc52-copy-local-paste",
+	copy = { ["+"] = osc52.copy("+"), ["*"] = osc52.copy("*") },
+	paste = { ["+"] = local_paste, ["*"] = local_paste },
 }

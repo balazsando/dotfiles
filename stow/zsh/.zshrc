@@ -10,13 +10,14 @@ fi
 
 # --- Sensitive Tokens ---
 [[ -f ~/.config/zsh/secrets ]] && source ~/.config/zsh/secrets
+[[ -f ~/.config/zsh/local.zsh ]] && source ~/.config/zsh/local.zsh
 
 # --- Environment Variables ---
 source ~/.config/zsh/env.zsh
 
 # --- Oh My Zsh Core Config ---
 ZSH_THEME="powerlevel10k/powerlevel10k"
-plugins=(git kubectl zsh-autosuggestions zsh-syntax-highlighting)
+plugins=(git kubectl zsh-autosuggestions zsh-syntax-highlighting sudo)
 source $ZSH/oh-my-zsh.sh
 
 # --- Aliases & Functions ---
@@ -33,10 +34,10 @@ command -v fzf >/dev/null && source <(fzf --zsh)
 eval "$(zoxide init zsh)"
 typeset -U path
 
-# --- Auto-start tmux for interactive non-SSH shells ---
+# --- Auto-start tmux for interactive non-SSH shells; the main session only where local.zsh sets TMUX_MAIN=1 ---
 if command -v tmux >/dev/null 2>&1; then
   if [[ -o interactive ]] && [[ -z "$TMUX" ]] && [[ -z "$SSH_TTY" ]]; then
-    tmux attach 2>/dev/null || tmux
+    if [[ ${TMUX_MAIN:-0} == 1 ]]; then ~/.local/share/dotfiles/scripts/tmux-main.sh attach; else tmux; fi
   fi
 fi
 

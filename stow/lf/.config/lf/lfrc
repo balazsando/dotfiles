@@ -46,7 +46,8 @@ cmd reloc ${{
 
 cmd tmux-go ${{
   if [ "$(tmux display -p '#S' 2>/dev/null)" = main ]; then
-    ~/.local/share/dotfiles/scripts/tmux-main.sh go "$1" "$PWD"
+    if [ "$1" = vim ]; then arg=$f; else arg=$PWD; fi
+    ~/.local/share/dotfiles/scripts/tmux-main.sh go "$1" "$arg"
   elif [ "$1" = vim ]; then
     nvim "$f"
   else

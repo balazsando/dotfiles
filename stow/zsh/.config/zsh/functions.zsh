@@ -3,21 +3,20 @@
 # addcerts — sourced for interactive use; actual logic lives in addcerts.sh
 addcerts() { bash "${DOTFILES:-$HOME/dotfiles}/stow/scripts/.local/share/dotfiles/scripts/addcerts.sh" "$@"; }
 
+localenv() { local out; out=$(zsh "${DOTFILES:-$HOME/dotfiles}/stow/scripts/.local/share/dotfiles/scripts/localenv.zsh" "$@") && eval "$out"; }
+mvnt() { (localenv -e test && mvn "$@") }
+mvnppd() { (localenv -e preprod && mvn "$@") }
+
 # Inside tmux "main", these switch to their window
 _main_go() {
-  [[ -n "$TMUX" && "$(tmux display -p '#{session_name}')" == main ]] || return 1
+  [[ -z $_MAIN_HERE && -n "$TMUX" && "$(tmux display -p '#{session_name}')" == main ]] || return 1
   ~/.local/share/dotfiles/scripts/tmux-main.sh go "$@" 2>/dev/null
 }
+h() { _MAIN_HERE=1 "$@"; }
 v() {
   if (( ! $# )); then _main_go vim "$PWD" || command nvim; return; fi
   if [[ $# -eq 1 && -d $1 ]]; then _main_go vim "${1:a}" || command nvim "$@"; return; fi
-  local sock=${XDG_RUNTIME_DIR:-/tmp}/nvim-main.sock
-  if [[ -S $sock && -z ${@[(r)[-+]*]} && "$(tmux display -p '#{session_name}' 2>/dev/null)" == main ]] &&
-    command nvim --server "$sock" --remote "${@:a}" 2>/dev/null; then
-    tmux switch-client -t main:2
-  else
-    command nvim "$@"
-  fi
+  command nvim "$@"
 }
 vim() { v "$@"; }
 nvim() { v "$@"; }
@@ -123,6 +122,32 @@ checksum() {
   sum=$(openssl dgst -md5 -binary "${1:?usage: checksum <file>}" | openssl enc -base64) || return
   printf '%s' "$sum" | _clip
   printf '%s\n' "$sum"
+}
+
+# b64 — print (and clipboard-copy) the given text, or a file with -f, base64-encoded on one line
+b64() {
+  local enc
+  if [[ $1 == -f ]]; then
+    enc=$(base64 -w0 "${2:?usage: b64 -f <file>}") || return
+  else
+    local text="${1:?usage: b64 <text> | b64 -f <file>}"
+    enc=$(printf '%s' "$text" | base64 -w0) || return
+  fi
+  printf '%s' "$enc" | _clip
+  printf '%s\n' "$enc"
+}
+
+# deb64 — print (and clipboard-copy) the given base64 text, or a file with -f, decoded
+deb64() {
+  local dec
+  if [[ $1 == -f ]]; then
+    dec=$(base64 -d "${2:?usage: deb64 -f <file>}") || return
+  else
+    local text="${1:?usage: deb64 <base64> | deb64 -f <file>}"
+    dec=$(printf '%s' "$text" | base64 -d) || return
+  fi
+  printf '%s' "$dec" | _clip
+  printf '%s\n' "$dec"
 }
 
 # fv — fuzzy file finder → open in nvim

@@ -46,7 +46,10 @@ Nothing usable in either environment → report what was searched and stop.
 
 Start from the matching request in the BU folder's `Shipping/` subfolder for method, URL,
 headers, auth, and scripts, then take the body from the log sample, changed only as the ticket
-requires and scrubbed per the hard limits. Every environment-specific value is a variable that
+requires and scrubbed per the hard limits. Optional inspiration: jirlab's imported Postman folders
+in Posting's collection (`posting locate collection`, then `jirlab/<target>/<Postman folder path>/*.posting.yaml`)
+show how comparable requests are built, scripts included. They hold values resolved at import,
+so use them for shape only and copy no host, token, signature, or date from them. Every environment-specific value is a variable that
 exists in both the test and the preprod environment — check the key names only, never print
 values.
 

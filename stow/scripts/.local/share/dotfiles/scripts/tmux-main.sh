@@ -1,77 +1,187 @@
 #!/usr/bin/env bash
-# Usage: tmux-main.sh [-n] up | attach | reload | prune | back <n> | vim-dir | go <term|vim|lf|git|k9s|jira> [dir|context]
+# Usage: tmux-main.sh [-n] up | attach | reload | prune | split [-h|-v] | back <n> | vim-dir | go [-d] <term|vim|lf|git|k9s|jira> [dir|context]
 
-set -euo pipefail
+set -uo pipefail
 
+SELF="$HOME/.local/share/dotfiles/scripts/tmux-main.sh"
 SESSION=main
-KEEP="main kd km"
-KUBE="$HOME/.local/share/dotfiles/scripts/tmux-kube.sh"
-SOCK="${XDG_RUNTIME_DIR:-/tmp}/nvim-$SESSION.sock"
+KEEP="main"
+RT="${XDG_RUNTIME_DIR:-/tmp}"
+SOCK="$RT/nvim-$SESSION.sock"
+LOCK="$RT/tmux-$SESSION.lock"
+HDR="$RT/jirlab-header"
 STATE="${XDG_STATE_HOME:-$HOME/.local/state}/tmux-main-vim-dir"
+FAST=3
+MAXFAST=3
 DRY=0
 [[ ${1:-} == -n ]] && { DRY=1; shift; }
 
 die() { echo "tmux-main.sh: $*" >&2; exit 1; }
-t() { if ((DRY)); then echo "tmux $*"; else tmux "$@"; fi; }
+tmux() { command tmux "$@" 9>&-; }
+t() { if ((DRY)); then echo "tmux $*" >&2; else tmux "$@"; fi; }
 
 command -v tmux >/dev/null || die "tmux is not installed"
 
-keep() { echo "while :; do $2; $HOME/.local/share/dotfiles/scripts/tmux-main.sh back $1; done"; }
-
 declare -A NAME=([1]=terminal [2]=vim [3]=lf [4]=lazygit [5]=k9s [0]=jirlab)
-declare -A DIR=([1]="$HOME" [2]="$HOME" [3]="$HOME" [4]="$HOME" [5]="$HOME" [0]="$HOME")
-declare -A RUN=(
-  [1]=""
-  [2]="$(keep 2 "cd \"\$($HOME/.local/share/dotfiles/scripts/tmux-main.sh vim-dir)\"; rm -f $SOCK; command nvim --listen $SOCK .")"
-  [3]="command lf"
-  [4]="$(keep 4 lazygit)"
-  [5]="$(keep 5 "env -u KUBECONFIG k9s --context ${TMUX_K9S_CONTEXT:-}")"
-  [0]="$(keep 0 "jirlab board")"
-)
 
 alive() { tmux has-session -t "$SESSION" 2>/dev/null; }
 has_window() { tmux list-windows -t "$SESSION" -F '#I' 2>/dev/null | grep -qx "$1"; }
-fg_of() { tmux display-message -p -t "$SESSION:$1" '#{pane_current_command}'; }
-is_shell() { [[ $1 == zsh || $1 == bash || $1 == sh ]]; }
-
-type_line() {
-  t send-keys -t "$SESSION:$1" -l "$2"
-  t send-keys -t "$SESSION:$1" Enter
+opt() { tmux show-option -wqv -t "$SESSION:$1" "$2" 2>/dev/null; }
+pane_of() {
+  local p
+  p=$(opt "$1" @pane)
+  if [[ -n $p ]] && tmux display-message -p -t "$p" '#{pane_id}' >/dev/null 2>&1; then echo "$p"; else echo "$SESSION:$1"; fi
+}
+fg_of() { tmux display-message -p -t "$(pane_of "$1")" '#{pane_current_command}'; }
+is_shell() { [[ ${1#-} == zsh || ${1#-} == bash || ${1#-} == sh ]]; }
+healthy() { has_window "$1" && [[ $(opt "$1" @app) == running ]]; }
+ctx_of() { local c; c=$(opt 5 @ctx); echo "${c:-${TMUX_K9S_CONTEXT:-}}"; }
+known_ctx() {
+  command -v kubectl >/dev/null || return 0
+  env -u KUBECONFIG kubectl config get-contexts -o name 2>/dev/null | grep -qxF -- "$1"
+}
+startable() {
+  [[ $1 != 5 || -n $(ctx_of) ]] && return 0
+  echo "tmux-main.sh: TMUX_K9S_CONTEXT is not set (add it to ~/.config/zsh/secrets); skipping k9s" >&2
+  return 1
 }
 
-spawn() {
-  local w=$1 dir=$2 run=$3
-  if has_window "$w"; then
-    t kill-pane -a -t "$SESSION:$w"
-    t respawn-window -k -c "$dir" -t "$SESSION:$w"
-  else
-    t new-window -d -c "$dir" -t "$SESSION:$w"
+vim_dir() {
+  local d
+  d=$(cat "$STATE" 2>/dev/null || true)
+  [[ -f $d ]] && d=$(dirname "$d")
+  [[ -d $d ]] && echo "$d" || echo "$HOME"
+}
+vim_open() { local d; d=$(cat "$STATE" 2>/dev/null || true); [[ -f $d ]] && echo "$d" || echo .; }
+nvr() { timeout --foreground 3 nvim --server "$SOCK" --remote-send "$1" </dev/null >/dev/null 2>&1; }
+nvim_up() { timeout --foreground 2 nvim --server "$SOCK" --remote-expr 1 </dev/null >/dev/null 2>&1; }
+repo_of() { git -C "$1" rev-parse --show-toplevel 2>/dev/null || echo "$1"; }
+
+# While window 0's jirlab runs, the status bar of main is its header (4 rows read from $HDR), with the
+# session and window list right of the top row; otherwise main gets the global status line back.
+header() {
+  local i f
+  if [[ $1 == off ]]; then
+    rm -f "$HDR"
+    t set-option -u -t "$SESSION" status
+    t set-option -u -t "$SESSION" status-format
+    return 0
   fi
-  t rename-window -t "$SESSION:$w" "${NAME[$w]}"
-  t set-option -w -t "$SESSION:$w" automatic-rename off
-  if [[ -n $run ]]; then type_line "$w" "$run"; fi
+  f=$(printf %q "$HDR")
+  for i in 1 2 3; do t set-option -t "$SESSION" "status-format[$i]" "#(sed -n $((i + 1))p $f 2>/dev/null)"; done
+  t set-option -t "$SESSION" 'status-format[0]' "#(sed -n 1p $f 2>/dev/null)#[align=right]#[push-default]#{T:status-left}#[pop-default]#[default]#{W:#[range=window|#{window_index}]#{T:window-status-format}#[norange default],#[range=window|#{window_index}]#{T:window-status-current-format}#[norange default]}"
+  t set-option -t "$SESSION" status 4
 }
+
+# One instance of window $1's app, in the foreground.
+app() {
+  local c
+  case $1 in
+    2)
+      if [[ ${2:-} == split ]]; then command nvim
+      else cd "$(vim_dir)" && rm -f "$SOCK" && command nvim --listen "$SOCK" "$(vim_open)"; fi ;;
+    3) command lf ;;
+    4) command lazygit ;;
+    5)
+      c=$(ctx_of)
+      [[ -n $c ]] || { echo "TMUX_K9S_CONTEXT is not set (add it to ~/.config/zsh/secrets)" >&2; return 2; }
+      env -u KUBECONFIG k9s --context "$c" ;;
+    0)
+      [[ ${2:-} == split ]] && { jirlab board; return; }
+      header on
+      JIRLAB_HEADER_FILE=$HDR jirlab board || c=$?
+      header off
+      return "${c:-0}" ;;
+  esac
+}
+
+# After a normal quit: go back, but only if this window is the one being looked at.
+after_exit() {
+  local w=$1 ts act
+  if [[ $w == 2 ]]; then
+    ts=$(opt 2 @restart)
+    if [[ -n $ts ]]; then
+      tmux set-option -wu -t "$SESSION:2" @restart
+      (( $(date +%s) - ts < 30 )) && return 0
+    fi
+  fi
+  act=$(tmux display-message -p -t "$SESSION:$w" '#{window_active}' 2>/dev/null)
+  [[ $act == 1 ]] || return 0
+  if [[ $w == 0 ]]; then tmux select-window -t "$SESSION:1"
+  else tmux select-window -l -t "$SESSION" 2>/dev/null || tmux select-window -t "$SESSION:1"; fi
+}
+
+# Window supervisor: restarts the app after a normal quit; after $MAXFAST quick exits in a row
+# it gives up, leaves the error on screen and becomes a plain shell. It never loops.
+run() {
+  local w=$1 start rc fast=0
+  set -m
+  trap : INT
+  while :; do
+    start=$SECONDS; rc=0
+    app "$w" || rc=$?
+    if (( SECONDS - start < FAST )); then
+      (( ++fast >= MAXFAST )) && break
+      (( rc == 0 )) && after_exit "$w"
+    else
+      fast=0
+      after_exit "$w"
+    fi
+  done
+  tmux set-option -w -t "$SESSION:$w" @app failed
+  echo "tmux-main.sh: ${NAME[$w]} keeps exiting (last status $rc). This shell stays; the next 'go' retries it." >&2
+  exec "${SHELL:-bash}" -i
+}
+
+# Split pane: one run of the app, held open on failure so the error can be read.
+once() {
+  local rc=0
+  app "$1" split || rc=$?
+  (( rc == 0 )) && return 0
+  echo "tmux-main.sh: ${NAME[$1]} exited ($rc)" >&2
+  read -rsn1 -p "press a key"
+}
+
+# (Re)start window $1 under its supervisor. Only the supervised pane is touched, never user splits.
+launch() {
+  local w=$1 dir=${2:-$HOME} cmd p
+  [[ -d $dir ]] || dir=$HOME
+  cmd="$(printf %q "$SELF") run $w"
+  if has_window "$w"; then
+    p=$(pane_of "$w")
+    t respawn-pane -k -c "$dir" -t "$p" "$cmd"
+  else
+    p=$(t new-window -d -P -F '#{pane_id}' -c "$dir" -t "$SESSION:$w" -n "${NAME[$w]}" "$cmd")
+  fi
+  t set-option -w -t "$SESSION:$w" automatic-rename off
+  t set-option -w -t "$SESSION:$w" @app running
+  t set-option -wu -t "$SESSION:$w" @restart
+  [[ -z $p ]] || t set-option -w -t "$SESSION:$w" @pane "$p"
+}
+
+want() { healthy "$1" || { startable "$1" && launch "$1" "${2:-}"; }; }
 
 up() {
-  local w
-  [[ -n ${TMUX_K9S_CONTEXT:-} ]] || die "TMUX_K9S_CONTEXT is not set (add it to ~/.config/zsh/secrets)"
-  alive || t new-session -d -s "$SESSION" -n "${NAME[1]}" -c "${DIR[1]}"
-  for w in 1 2 3 4 5 0; do spawn "$w" "${DIR[$w]}" "${RUN[$w]}"; done
-  if alive; then
-    for w in $(tmux list-windows -t "$SESSION" -F '#I'); do
-      [[ -n ${NAME[$w]:-} ]] || t kill-window -t "$SESSION:$w"
-    done
-  fi
-  t set-option -w -t "$SESSION:5" @ctx "$TMUX_K9S_CONTEXT"
-  t select-window -t "$SESSION:0"
+  local w fresh=0
+  alive || { fresh=1; t new-session -d -s "$SESSION" -n "${NAME[1]}" -c "$HOME" || die "cannot create session '$SESSION'"; }
+  has_window 1 || t new-window -d -c "$HOME" -t "$SESSION:1" -n "${NAME[1]}"
+  t set-option -w -t "$SESSION:1" automatic-rename off
+  for w in 2 3 4 5 0; do
+    has_window "$w" || { startable "$w" && launch "$w"; }
+  done
+  if ((fresh)); then t select-window -t "$SESSION:0"; fi
+  return 0
 }
 
-kube_up() {
-  local s
-  for s in kd km; do
-    tmux has-session -t "$s" 2>/dev/null && continue
-    if ((DRY)); then "$KUBE" -n up "$s" || true; else "$KUBE" up "$s" || echo "tmux-main.sh: session $s not built" >&2; fi
-  done
+split() {
+  local flag=${1:--h} sess w
+  sess=$(tmux display-message -p '#S')
+  w=$(tmux display-message -p '#I')
+  if [[ $sess == "$SESSION" && $w != 1 && -n ${NAME[$w]:-} ]]; then
+    t split-window "$flag" -c '#{pane_current_path}' "$(printf %q "$SELF") once $w"
+  else
+    t split-window "$flag" -c '#{pane_current_path}'
+  fi
 }
 
 prune() {
@@ -84,96 +194,99 @@ prune() {
   done < <(tmux list-sessions -F '#S')
 }
 
-reload() {
-  local cur=
-  [[ -z ${TMUX:-} ]] || cur=$(tmux display-message -p '#S')
-  case $cur in
-    kd | km) "$KUBE" up "$cur" || true; alive || up ;;
-    *) up ;;
-  esac
-  kube_up
-  prune
-}
+reload() { alive || return 0; up; prune; }
 
 attach() {
-  alive || up
-  kube_up
+  up
   prune
-  if [[ -n ${TMUX:-} ]]; then t switch-client -t "$SESSION"; else exec tmux attach -t "$SESSION"; fi
+  if [[ -n ${TMUX:-} ]]; then t switch-client -t "$SESSION"
+  elif ((DRY)); then echo "tmux attach -t $SESSION" >&2
+  else exec tmux attach -t "$SESSION" 9>&-; fi
 }
 
 go() {
   alive || die "session '$SESSION' is not running (run: tmux-main.sh attach)"
-  local what=${1:?usage: tmux-main.sh go <term|vim|lf|git|k9s|jira> [dir|context]} arg=${2:-} w fg
+  local stay=0
+  [[ ${1:-} == -d ]] && { stay=1; shift; }
+  local what=${1:?usage: tmux-main.sh go [-d] <term|vim|lf|git|k9s|jira> [dir|context]} arg=${2:-} w
   case $what in
     term)
       w=1
       if [[ -n $arg ]]; then
-        fg=$(fg_of "$w")
-        if is_shell "$fg"; then type_line "$w" "cd $(printf %q "$arg")"; else t split-window -c "$arg" -t "$SESSION:$w"; fi
+        if is_shell "$(fg_of "$w")"; then
+          t send-keys -t "$SESSION:$w" C-u
+          t send-keys -t "$SESSION:$w" -l "cd $(printf %q "$arg")"
+          t send-keys -t "$SESSION:$w" Enter
+        else
+          t split-window -h -c "$arg" -t "$SESSION:$w"
+        fi
       fi
       ;;
     vim)
       w=2
-      if [[ -n $arg ]]; then
+      if [[ -z $arg ]]; then want 2
+      else
+        local prev dir=$arg
+        [[ -d $arg ]] || dir=$(dirname "$arg")
+        prev=$(vim_dir)
         ((DRY)) || { mkdir -p "${STATE%/*}"; printf %s "$arg" >"$STATE"; }
-        fg=$(fg_of "$w")
-        if [[ $fg == nvim ]]; then
-          if ((DRY)); then echo "nvim --server $SOCK --remote-send :cd $arg"; else
-            nvim --server "$SOCK" --remote-send "<C-\\><C-n>:cd ${arg// /\\ }<CR>"
+        if ! healthy 2; then launch 2
+        elif ((DRY)) || nvim_up; then
+          if [[ $prev != "$dir" ]]; then
+            t set-option -w -t "$SESSION:2" @restart "$(date +%s)"
+            ((DRY)) || nvr "<C-\\><C-n>:confirm qa<CR>" || launch 2
+          elif [[ -f $arg ]]; then
+            ((DRY)) || nvr "<C-\\><C-n>:edit ${arg// /\\ }<CR>" || true
           fi
-        elif is_shell "$fg"; then
-          type_line "$w" "cd $(printf %q "$arg") && ${RUN[2]}"
         fi
       fi
       ;;
-    lf)
-      w=3
-      [[ -z $arg ]] || spawn "$w" "$arg" "${RUN[3]}"
-      ;;
+    lf) if [[ -n $arg ]]; then launch 3 "$arg"; else want 3; fi ;;
     git)
-      w=4
-      spawn "$w" "${arg:-${DIR[4]}}" "${RUN[4]}"
+      local repo
+      repo=$(repo_of "${arg:-$HOME}")
+      if ! healthy 4 || [[ $(opt 4 @gitdir) != "$repo" ]]; then
+        launch 4 "${arg:-$HOME}"
+        t set-option -w -t "$SESSION:4" @gitdir "$repo"
+      fi
       ;;
     k9s)
       w=5
       if [[ -n $arg ]]; then
-        if [[ $(fg_of "$w") == k9s ]]; then
-          if [[ $(tmux show-option -wqv -t "$SESSION:$w" @ctx) != "$arg" ]]; then
-            t send-keys -t "$SESSION:$w" Escape
-            ((DRY)) || sleep 0.3
-            t send-keys -t "$SESSION:$w" -l ":ctx $arg"
-            t send-keys -t "$SESSION:$w" Enter
-          fi
-        else
-          spawn "$w" "${DIR[5]}" "$(keep 5 "env -u KUBECONFIG k9s --context $arg")"
+        known_ctx "$arg" || die "context '$arg' is not in ~/.kube/config (run kube-merge.sh)"
+        if ! healthy 5 || [[ $(opt 5 @ctx) != "$arg" ]]; then
+          t set-option -w -t "$SESSION:5" @ctx "$arg"
+          launch 5
         fi
-        t set-option -w -t "$SESSION:$w" @ctx "$arg"
+      else
+        want 5
       fi
       ;;
-    jira) w=0 ;;
+    jira) want 0 ;;
     *) die "unknown window '$what'" ;;
   esac
-  if [[ -n ${TMUX:-} ]] && ((! DRY)); then
-    src=$(tmux display-message -p '#S:#I')
-    [[ $src == "$SESSION:$w" ]] || tmux set-option -w -t "$SESSION:$w" @ret "$src"
-  fi
-  t switch-client -t "$SESSION:$w"
+  case $what in term) w=1 ;; vim) w=2 ;; lf) w=3 ;; git) w=4 ;; k9s) w=5 ;; jira) w=0 ;; esac
+  ((stay)) || t switch-client -t "$SESSION:$w"
 }
 
-back() {
-  local r
-  r=$(tmux show-option -wqv -t "$SESSION:${1:?window}" @ret 2>/dev/null || true)
-  tmux switch-client -t "${r:-$SESSION:1}" 2>/dev/null || tmux switch-client -t "$SESSION:1"
-}
+cmd=${1:-attach}
+case $cmd in
+  up|attach|reload|go)
+    exec 9>"$LOCK" || die "cannot open lock $LOCK"
+    flock -w 15 9 || die "another tmux-main.sh holds $LOCK" ;;
+esac
 
-case "${1:-attach}" in
+case $cmd in
   up) up ;;
   attach) attach ;;
-  vim-dir) d=$(cat "$STATE" 2>/dev/null || true); [[ -d $d ]] && echo "$d" || echo "$HOME" ;;
+  vim-dir) vim_dir ;;
+  vim-open) vim_open ;;
   reload) reload ;;
-  back) back "${2:-}" ;;
+  split) shift; split "$@" ;;
+  back) after_exit "${2:-}" ;;
+  run) run "${2:?window}" ;;
+  once) once "${2:?window}" ;;
   prune) prune ;;
   go) shift; go "$@" ;;
-  *) die "usage: tmux-main.sh [-n] up | attach | reload | prune | go <term|vim|lf|git|k9s|jira> [dir|context]" ;;
+  *) die "usage: tmux-main.sh [-n] up | attach | reload | prune | split [-h|-v] | go [-d] <term|vim|lf|git|k9s|jira> [dir|context]" ;;
 esac

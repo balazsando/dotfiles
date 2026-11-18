@@ -14,8 +14,8 @@ page versions it links. Community sources only when the official docs do not ans
 
 ## MCP servers
 
-Registered: `grafana` (default, non-prod), `grafana-prep` and `grafana-prep-connector`
-(pre-prod), `grafana-prod` (production). Prefer their tools over hand-rolled HTTP calls.
+Registered: `grafana` (default, non-prod), `grafana-test-connector` (test connector), `grafana-prep`
+and `grafana-prep-connector` (pre-prod), `grafana-prod` and `grafana-prod-connector` (production). Prefer their tools over hand-rolled HTTP calls.
 `grafana_api_request` covers what no dedicated tool does.
 
 - Reads (search, query, get, list) run freely.

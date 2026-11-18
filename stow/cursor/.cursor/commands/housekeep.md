@@ -3,7 +3,17 @@ description: "Audit the Java checkouts as one system — version drift, removabl
 ---
 
 Audit the Java rows of `~/.cursor/local/work-repos.md` as one system; missing file → ask. With a
-refactor goal in the text after `/housekeep`, also plan it across them.
+refactor goal (see Input), also plan it across them.
+
+## Input
+
+The text after `/housekeep` may hold `--regression`, a ticket and free text, each optional. A ticket (key such as
+`ABC-123`, a bare number per `jira-tickets`, or a Jira URL) is the refactor goal: read it first
+through `jira-tickets` (fields, comments, links), before any audit command. Its scope and
+acceptance criteria drive the plan: step 7 covers every criterion and names any it leaves
+uncovered. Text next to a ticket refines it for this run and wins where it is more specific; ask
+when it contradicts a criterion. No ticket: the text is the goal. Neither: audit only. The ticket
+is never edited.
 
 Steps 1–7 are read-only. After the user approves the plan, steps 8–9 carry the git commit
 exception: local commits only, never pushed.
@@ -49,8 +59,8 @@ every read-only command in parallel across checkouts.
      changes saves its quick-regression baseline: `QUICK_SAVE=<base> bin/regress quick <app>`,
      with the harness in `~/.cursor/local/work-repos.md`.
    - **Branch** — `change-delivery` §1–5 on `refactor/housekeep-<slug>-<YYYYMMDD>`, one slug
-     for the whole run. An existing branch is checked out and rebased onto `origin/<base>`; a
-     conflict aborts the rebase and skips that repository. One commit per concern —
+     for the whole run, the ticket key when there is one. An existing branch is checked out and
+     rebased onto `origin/<base>`; a conflict aborts the rebase and skips that repository. One commit per concern —
      `chore-unify dependency versions`, `chore-remove unused dependencies`, `refactor-…` per
      structural change — each green.
    - **Versions** — an upstream installs its branch under a unique version no pipeline publishes:

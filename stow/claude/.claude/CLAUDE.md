@@ -61,6 +61,10 @@ Machine-local specifics — Jira project keys, boards, documentation repositorie
 local checkouts and Sonar keys — live in `~/.claude/local/`, unversioned. Read the file a command
 or skill names (`work-repos.md` for `~/repos`); if it is missing, ask rather than guess.
 
+A question about a work project's domain — why it is built as it is, mappings, providers,
+release flow, programme decisions — starts at the knowledge base `doc-repos.md` names: read its
+`README.md` and follow the links before reading code or guessing.
+
 ---
 
 ## Git operations

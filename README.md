@@ -3,7 +3,7 @@
 Personal dotfiles for Debian/Ubuntu/WSL2, managed with
 [GNU Stow](https://www.gnu.org/software/stow/) and [mise](https://mise.jdx.dev/).
 
-[![Version](https://img.shields.io/badge/version-2.2.0-blue)](CHANGELOG.md)
+[![Version](https://img.shields.io/badge/version-2.3.0-blue)](CHANGELOG.md)
 
 The repository is public. What may enter a tracked file is ruled by `CLAUDE.md`, mirrored for
 Cursor in `.cursor/rules/no-leaks.mdc`.
@@ -14,17 +14,19 @@ Cursor in `.cursor/rules/no-leaks.mdc`.
 dotfiles/
 ├── stow/                   # GNU Stow packages — each maps to $HOME
 │   ├── bat/                # bat config + themes
-│   ├── bin/                # Standalone tools: win32yank.exe (WSL clipboard), mdview, plantuml, pumlview (text previews)
+│   ├── bin/                # Standalone tools: mdview, plantuml, pumlview (text previews)
 │   ├── claude/             # Claude Code: CLAUDE.md, commands, skills, MCP
 │   ├── cursor/             # Cursor: rules, commands, MCP (skills/agents shared from claude/)
 │   ├── git/                # .gitconfig, .githooks, .config/git/ignore
 │   ├── glab-tui/           # glab-tui config (Catppuccin Mocha preset)
 │   ├── glow/               # glow theme (selected by GLOW_STYLE)
 │   ├── java/               # Maven settings, Eclipse formatter
+│   ├── k9s/                # k9s skin (selected by K9S_SKIN)
 │   ├── lazygit/            # lazygit config (open the most recent repository)
 │   ├── lf/                 # lf file manager
 │   ├── mise/               # .mise.toml — runtimes, CLI tools, tasks
 │   ├── nvim/               # LazyVim
+│   ├── ponytail/           # ponytail default level (Claude + Cursor hooks)
 │   ├── posting/            # Posting HTTP client
 │   ├── scripts/            # Operational scripts → ~/.local/share/dotfiles/scripts/
 │   ├── tmux/               # tmux
@@ -32,6 +34,7 @@ dotfiles/
 ├── host/                   # Machine-specific config — copied, never symlinked
 │   ├── wsl.conf            # → /etc/wsl.conf on WSL2
 │   └── work-wsl/           # Work-machine WSL overrides
+├── cheatsheets/            # Personal reference notes (Markdown), not stowed
 ├── packages/
 │   ├── apt.txt             # APT packages
 │   └── uv-tools.txt        # Python CLI tools installed as uv tools
@@ -80,28 +83,59 @@ Do not "fix" these.
 
 **tmux sessions**
 
-- `tm` builds and attaches `main`, and builds `kd` and `km`, then kills every other session.
+- Every interactive shell outside tmux and SSH starts tmux. With `TMUX_MAIN=1` it runs `tm`,
+  otherwise a plain new session. The flag is set in `~/.config/zsh/local.zsh`, an optional
+  per-machine file that is never tracked or synced, so only machines that opt in (work) build
+  `main`; `tm` still works by hand everywhere, and `prefix r` heals `main` only while it runs. There is no session restore, so a
+  deformed `main` is healed on the next start. `tm` creates only the missing windows of `main`
+  (existing ones and their panes are left alone), attaches, then kills every other session.
   `main` has windows 1 terminal, 2 nvim, 3 lf, 4 lazygit, 5 k9s (context from `$TMUX_K9S_CONTEXT`), 0 jirlab.
-  `prefix r` reloads the config, resets the current defined session (running apps are killed),
-  creates missing ones and prunes the rest. `renumber-windows` is off so numbers stay fixed.
+  `prefix r` reloads the config, heals `main` the same way (running apps survive), prunes the rest.
+  `Alt-d` splits a pane and starts the window's app in the new one (a second lf, lazygit, nvim,
+  k9s, jirlab); closing it closes the pane. `renumber-windows` is off so numbers stay fixed.
+- While window 0's jirlab runs, `main`'s status bar is jirlab's header (logo, health pulse and system
+  meters, four rows) on every window, with the session (red while the prefix is pending) and window list right of
+  the top row, and window 0 shows jirlab
+  without it. jirlab writes the rows to `$XDG_RUNTIME_DIR/jirlab-header` (`JIRLAB_HEADER_FILE`) and
+  refreshes the status bar when they change. When it exits or the window has failed, `main` gets the
+  normal one-line status back. Split jirlab panes and jirlab outside `main` keep their own header.
 - No project is hard-wired. nvim reopens the last directory given to `v <dir>` (home before the
-  first); lazygit starts in home and `notARepository: skip` makes it open its most recent
-  repository.
-- `kd` (deploy) and `km` (monitoring) have one window per environment: k9s on the left, the
-  environment repository's `values*.y*ml` in nvim on the right. `tmux-kube.sh` derives the
-  environments, kubeconfigs and paths at run time from the `d<env>`, `m<env>` and `k<env>[m]`
-  aliases in `~/.config/zsh/secrets`; nothing about them is tracked.
-- Numpad `KP0`-`KP9` select that window, but only if the terminal reports the numpad as keypad
-  keys rather than digits. Windows Terminal does not, and never does for `+`, `-` or `.`, so
-  `F2` / `F3` move to the previous / next window and `F4` to the next session. Alt letters are avoided: LazyVim and others use them.
+  first); a different directory restarts nvim clean (`:confirm qa`), the same one keeps its buffers;
+  `v <file>` always runs in place; lazygit starts in home and `notARepository: skip` makes it open its most recent
+  repository. Sending lazygit to the repository it already shows keeps it running; another repository relaunches it.
+- Numpad `0`-`6` select windows 0-6, `7` / `9` move to the previous / next window and `8` to the next session (with no other session it opens one at the current dir, named after it): Windows Terminal types a digit for the numpad, so its `settings.json` (outside this repo) maps `numpad0`-`numpad9` to `\eOp`-`\eOy`, which tmux binds as `KP0`-`KP9`. Alt letters are avoided: LazyVim and others use them.
 - Inside `main`, `v`/`vim`/`nvim` (no args), `lf`, `lg`, `k9s` and `jl` switch to windows 2, 3, 4, 5 and 0
   (at the current dir) instead of starting a second copy; anywhere else, or when `main` is not
-  running, they run in place.
+  running, they run in place. Prefix with `h` (`h lf`, `h lg <dir>`, `h vfoo`) to run in place inside `main` too.
 - Every `cd <dir>` alias (from `secrets` or `aliases.zsh`) gets `v<alias>` (nvim) and `g<alias>`
   (lazygit) twins, generated at shell start; in `main` they use the dedicated windows.
-- lf `e` / `q` jump to the nvim / terminal window at the current dir (`Q` quits lf). The `jirlab`
-  function does the same with the nav file: a bare dir goes to the terminal window, `vim:<dir>`,
+- Quitting nvim, lazygit, k9s or jirlab in `main` returns to the window that was active before it,
+  however it was reached (numpad, `lg`, lf); the terminal window is only the fallback. Each app runs
+  under a supervisor (`tmux-main.sh run`) that restarts it after a quit; three exits within 3 s in a
+  row make it give up, leave the error on screen and become a plain shell (`@app failed`). `v`, `lg`,
+  `k9s`, `jl` and lf then relaunch it, so a failed window is retried, never looped on or a dead end.
+  Relaunch replaces only the supervised pane, never splits; `tm` creates missing windows but never
+  restarts an existing one; concurrent starts are serialised by a lock.
+- lf `e` / `q` jump to the nvim / terminal window at the current dir (`Q` quits lf). The terminal window's
+  active pane at a shell prompt gets its input line cleared and `cd`; if it runs another app
+  (e.g. `claude`), a new pane is split open at that dir instead. The `jirlab` function
+  does the same with the nav file: a bare dir goes to the terminal window, `vim:<dir>`,
   `git:<dir>` to those windows, outside `main` it falls back to `cd`.
+
+**Posting TLS**
+
+- `stow/posting/.config/posting/config.yaml` sets `ssl.ca_bundle` to the system bundle. Posting's
+  HTTP client is Python's, which ships its own certificate list and ignores the OS store, so
+  internal hosts fail verification until the config says otherwise. It lives in the config, not
+  in the shell, so every way of starting Posting (jirlab, a tmux window, a script) is covered.
+
+**Posting focus**
+
+- `stow/posting/.local/bin/posting-focus` wraps Posting instead of patching it: it runs Posting
+  under the uv tool's own Python and replaces the collection tree's mount hook, so a uv upgrade
+  never loses the change. With `JIRLAB_POSTING_FOCUS` set (jirlab sets it after an import) the
+  tree collapses and opens only on that folder, with its login request (else the first) opened; unset, or on a name mismatch, Posting starts as
+  usual. jirlab falls back to plain `posting` when the wrapper is missing.
 
 **Runtime state**
 
@@ -139,7 +173,7 @@ re-run on a half-bootstrapped machine.
 | **11. tmux TPM** | Clones TPM |
 | **12. Git identity** | `~/.gitconfig_local` from `GIT_USER_NAME`/`GIT_USER_EMAIL`, or a prompt |
 | **13. MCP servers** | `~/.claude/bin/install-mcp-servers.sh` registers into `~/.claude.json` |
-| **14. uv tools** | `packages/uv-tools.txt` — including `serena-agent`, Cursor's code intelligence |
+| **14. uv tools** | `packages/uv-tools.txt` — including `serena-agent` (Cursor's code intelligence) and `posting` (HTTP TUI) |
 | **15. Post-install** | `addcerts.sh` (Java truststore — SDKMAN JDK), `Lazy! sync`, Serena's Java settings (after Mason has jdtls), tmux plugins, `repos-restore.sh` |
 
 Every step follows one pattern — a presence guard, `run` (or `curl_pipe` for upstream installers)

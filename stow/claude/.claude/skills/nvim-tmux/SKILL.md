@@ -10,4 +10,4 @@ Config is `~/.config/tmux/tmux.conf` (stowed from `stow/tmux/`), not `~/.tmux.co
 `C-a`; `prefix r` reloads. Root-table bindings: `M-arrow` switches panes, `M-d` splits along the
 longer side, `M-w` kills the pane. `default-terminal` is `screen-256color` with RGB via
 `terminal-overrides` — keep Neovim's `termguicolors` consistent with it. Plugins through TPM,
-including `tmux-resurrect`, `tmux-continuum` and `tmux-sessionx` (`prefix s`).
+including `tmux-resurrect` (manual only) and `tmux-sessionx` (`prefix s`).

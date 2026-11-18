@@ -7,6 +7,65 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [2.3.0] — 2026-11-18
+
+Makes the `main` tmux session self-healing and opt-in per machine, drops the `kd` / `km` sessions,
+and adds Posting, local Vault environments and a Loki recovery command.
+
+### Added
+
+- **App supervisor**: each `main` window runs its app under `tmux-main.sh run`, which restarts it
+  after a quit and returns to the previously active window. Three exits within 3 s give up and
+  leave a shell with the error on screen; the next `v`, `lg`, `k9s`, `jl` or lf retries it.
+- `Alt-d` in `main` splits a pane running a second copy of the window's app; `h <cmd>` runs a
+  command in place inside `main` instead of switching windows.
+- While jirlab runs in window 0, its four-row header becomes `main`'s status bar.
+- Numpad `8` with no other session opens a new one at the current directory.
+- **Posting**: installed as a uv tool, its TLS uses the system CA bundle, and `posting-focus`
+  opens the collection on the folder jirlab imported (`JIRLAB_POSTING_FOCUS`) without patching
+  Posting.
+- `localenv -e test|preprod` (zsh and PowerShell) loads app and connector secrets from Vault into
+  the shell and a git-ignore-checked `.env.local`; `mvnt` / `mvnppd` run Maven with them.
+- `/loki-fix` (Claude and Cursor): break-glass recovery of a Loki whose volume is full.
+- `grafana-test-connector` MCP server for Claude and Cursor.
+- `k9s` package with a transparent Catppuccin Mocha skin (`K9S_SKIN`), lazygit Catppuccin theme,
+  `ponytail` package (default level), `b64` / `deb64`, `kmerge` alias, oh-my-zsh `sudo` plugin.
+- `/housekeep` accepts a Jira ticket as the refactor goal and names the branch after it.
+- `cheatsheets/` for personal reference notes, starting with Vim.
+
+### Changed
+
+- Shells outside tmux start `main` only when `~/.config/zsh/local.zsh` (untracked, per machine)
+  sets `TMUX_MAIN=1`; otherwise a plain tmux session.
+- `tm` and `prefix r` create only missing windows of `main` and leave running apps alone, instead
+  of resetting the session. Concurrent starts are serialised by a lock.
+- `kd` / `km` sessions and `tmux-kube.sh` removed; `main` is the only kept session.
+- `v <dir>` to a different directory restarts nvim clean; `v <file>` runs in place. lazygit only
+  relaunches when sent to a different repository; k9s validates the context first.
+- Numpad: `0`-`6` select windows, `7` / `9` previous / next window, `8` next session. `F2`-`F4`
+  bindings removed.
+- tmux-continuum dropped; tmux-resurrect is manual only.
+- nvim clipboard copies via OSC52 and pastes locally, replacing win32yank, which is removed from
+  `bin/`.
+- flash.nvim `f` / `t` char mode disabled.
+- The default Grafana MCP server reads `$GRAFANA_URL_TEST` / `$GRAFANA_MCP_TOKEN_TEST`; the
+  secrets file needs the renamed variables.
+- `JAVA_HOME` points at the SDKMAN current JDK; Windows PowerShell is on `PATH` under WSL.
+- `lt` lists five levels deep.
+
+### Fixed
+
+- The WSLg socket links no longer fail when a stale link exists.
+- `kube-merge.sh` is executable.
+
+### Documentation
+
+- AI rules point domain questions at the knowledge base named in `doc-repos.md`, and delivery runs
+  propose missing facts for it.
+- `/validation-request` may borrow request shape from jirlab's imported Posting collection.
+
+---
+
 ## [2.2.0] — 2026-10-31
 
 Adds a fixed tmux workspace — `main`, `kd` and `km` sessions — and makes nvim, lf, lazygit, k9s and

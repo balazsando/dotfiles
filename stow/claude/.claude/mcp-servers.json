@@ -51,8 +51,19 @@
         "mcp-grafana"
       ],
       "env": {
-        "GRAFANA_URL": "${GRAFANA_URL}",
-        "GRAFANA_SERVICE_ACCOUNT_TOKEN": "${GRAFANA_MCP_TOKEN}"
+        "GRAFANA_URL": "${GRAFANA_URL_TEST}",
+        "GRAFANA_SERVICE_ACCOUNT_TOKEN": "${GRAFANA_MCP_TOKEN_TEST}"
+      }
+    },
+    "grafana-test-connector": {
+      "type": "stdio",
+      "command": "uvx",
+      "args": [
+        "mcp-grafana"
+      ],
+      "env": {
+        "GRAFANA_URL": "${GRAFANA_URL_TESTC}",
+        "GRAFANA_SERVICE_ACCOUNT_TOKEN": "${GRAFANA_MCP_TOKEN_TESTC}"
       }
     },
     "grafana-prep": {

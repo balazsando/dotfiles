@@ -1,0 +1,52 @@
+#!/usr/bin/env bash
+# Runs Posting with its collection tree collapsed except the folder named by $JIRLAB_POSTING_FOCUS
+# (a path of folder names below the collection root, "/"-separated). Without it, or when the tree
+# does not match, Posting starts as usual. The cursor lands on the folder's login request, else its first,
+# and opens it. Posting itself is not modified, so uv upgrades keep working.
+set -euo pipefail
+
+posting="$(command -v posting)" || { echo "posting-focus: posting is not on PATH (uv tool install posting)" >&2; exit 127; }
+python="$(dirname "$(readlink -f "$posting")")/python"
+[[ -x $python ]] || { echo "posting-focus: no python next to $posting" >&2; exit 127; }
+
+read -r -d '' code <<'PY' || true
+import os, sys
+from posting.__main__ import cli
+from posting.collection import Collection, RequestModel
+from posting.widgets.collection.browser import CollectionTree
+
+focus = [p for p in os.environ.get("JIRLAB_POSTING_FOCUS", "").split("/") if p]
+original = CollectionTree.on_mount
+
+def focus_tree(tree):
+    node = tree.root
+    for part in focus:
+        node = next((c for c in node.children if isinstance(c.data, Collection) and c.data.name == part), None)
+        if node is None:
+            return
+    tree.root.collapse_all()
+    tree.root.expand()
+    walk = node
+    while walk is not None:
+        walk.expand()
+        walk = walk.parent
+    requests = [c for c in node.children if isinstance(c.data, RequestModel)]
+    target = next((c for c in requests if "login" in (c.data.name or "").lower()), requests[0] if requests else node)
+    tree.call_after_refresh(open_node, tree, target)
+
+def open_node(tree, node):
+    tree.move_cursor(node)
+    if node.data is not None and not isinstance(node.data, Collection):
+        tree.select_node(node)
+
+def on_mount(self):
+    original(self)
+    if focus:
+        self.call_after_refresh(focus_tree, self)
+
+CollectionTree.on_mount = on_mount
+sys.argv[0] = "posting"
+cli()
+PY
+
+exec "$python" -c "$code" "$@"

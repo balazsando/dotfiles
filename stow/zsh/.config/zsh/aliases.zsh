@@ -10,12 +10,13 @@ alias tm='~/.local/share/dotfiles/scripts/tmux-main.sh attach'
 alias kall="unset KUBECONFIG; command k9s"
 alias kd="kubectl describe"
 alias kgp="kubectl get pods"
+alias kmerge='~/.local/share/dotfiles/scripts/kube-merge.sh'
 alias kns="kubens"
 alias ld='lazydocker'
 alias lf='lfcd'
 alias l="eza -l --icons --git -a"
 alias ls="eza --icons --group-directories-first --color=auto --git -a"
-alias lt="eza --tree --level=2 --long --icons --git"
+alias lt="eza --tree --level=5 --long --icons --git"
 alias mk="minikube"
 alias mkdb='minikube dashboard'
 alias mke='eval $(minikube docker-env)'

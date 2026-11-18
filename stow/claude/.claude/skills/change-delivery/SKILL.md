@@ -77,3 +77,7 @@ Git status/diff and the last validation command are authoritative for files and 
 result. Report once, in this order, only what those do not already show: work skipped and why,
 the run's branch and whether it was created or reused, the commit SHAs, whether anything was
 pushed and the merge request URLs, then any non-derivable exception. No narrative recap.
+
+Last, any domain fact the run uncovered that the knowledge base in `doc-repos.md` lacks or
+contradicts — a quirk, a decision, a source conflict — as a proposed line with its target page.
+Propose only; never edit that repository from a delivery run.

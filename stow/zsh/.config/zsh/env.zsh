@@ -8,6 +8,7 @@ export REPOS_DIR="$HOME/repos"
 export EDITOR=nvim
 export VISUAL=nvim
 export GLOW_STYLE="$HOME/.config/glow/catppuccin-mocha.json"
+export K9S_SKIN=catppuccin-mocha-transparent
 export CLAUDE_CODE_DISABLE_MOUSE_CLICKS=0
 [[ -n "$GITLAB_API_URL" ]] && export GITLAB_HOST=${${GITLAB_API_URL#*://}%%/*}
 
@@ -21,7 +22,9 @@ if [[ -r "$HOME/.local/share/dotfiles/scripts/node-ca.sh" ]]; then
 fi
 
 # --- PATH ---
-export PATH="$HOME/.local/share/nvim/mason/packages/jdtls:$HOME/.npm-global/bin:$GOPATH/bin:$HOME/.local/bin:$PATH"
+export JAVA_HOME="${SDKMAN_DIR:-$HOME/.sdkman}/candidates/java/current"
+export PATH="$JAVA_HOME/bin:$HOME/.local/share/nvim/mason/packages/jdtls:$HOME/.npm-global/bin:$GOPATH/bin:$HOME/.local/bin:$PATH"
+[[ -d /mnt/c/Windows/System32/WindowsPowerShell/v1.0 ]] && path+=(/mnt/c/Windows/System32/WindowsPowerShell/v1.0)
 
 # --- fzf ---
 export FZF_DEFAULT_OPTS="
@@ -35,6 +38,6 @@ export FZF_DEFAULT_OPTS="
 "
 
 [[ -S /mnt/wslg/runtime-dir/wayland-0 && ! -e /run/user/$UID/wayland-0 ]] &&
-  ln -s /mnt/wslg/runtime-dir/wayland-0 /run/user/$UID/wayland-0
+  ln -sfn /mnt/wslg/runtime-dir/wayland-0 /run/user/$UID/wayland-0
 [[ -S /mnt/wslg/.X11-unix/X0 && ! -e /tmp/.X11-unix/X0 ]] &&
-  ln -s /mnt/wslg/.X11-unix/X0 /tmp/.X11-unix/X0
+  ln -sfn /mnt/wslg/.X11-unix/X0 /tmp/.X11-unix/X0

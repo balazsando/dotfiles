@@ -21,9 +21,9 @@ GitLab's own remote server, which has no events, files or branches; `GITLAB_TOOL
 merge requests, pipelines, CI/CD variables, webhooks and user events, others load per session
 through `discover_tools`; never `api`, which bypasses the server's safety checks), `postman`
 (remote, Full tool set — `/validation-request` needs its folder tools — `$POSTMAN_API_KEY`), and
-five distinct
+six distinct
 Grafana instances — `grafana` (the default non-prod
-instance, `$GRAFANA_URL`), `grafana-prep` and `grafana-prep-connector` (pre-prod), and
+instance, `$GRAFANA_URL_TEST`), `grafana-test-connector` (`$GRAFANA_URL_TESTC`), `grafana-prep` and `grafana-prep-connector` (pre-prod), and
 `grafana-prod` (production, read-only; the only one `app-bug-detection` queries) and
 `grafana-prod-connector`. Cursor-only: `serena`. Atlassian's Rovo server and Cursor's Atlassian
 plugin are deliberately absent: `jira` plus REST v2 covers them (see `jira-tickets`).
