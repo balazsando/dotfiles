@@ -13,7 +13,8 @@ Prohibited outside those commands: `git commit` (including `--amend`); staging o
 (`git add`, `git rm --cached`, `git restore --staged`, index edits); any history-altering command
 (`rebase`, `reset --hard`, `cherry-pick`, `revert`, `filter-branch`, `push --force`); creating,
 deleting, or moving tags and branches. If asked to commit outside those exceptions, decline and
-leave the changes unstaged for the user.
+leave the changes unstaged for the user. The `git-guard` hook enforces this: git writes run
+only inside a delivery worktree (`change-delivery` §3).
 
 **Commit message format.** Write the subject as `category-message` and nothing else
 (`feat-add widget`, `fix-bw upload session handling`). The `prepare-commit-msg` hook expands it to

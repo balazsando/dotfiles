@@ -10,7 +10,7 @@
 # Limit WSL2 VM memory to prevent Windows from being starved.
 # Rule of thumb: ~50% of total RAM, or leave 6–8 GB for Windows.
 # Default: up to 80% of total host RAM (can cause Windows memory pressure).
-memory=8GB
+memory=12GB
 
 # Swap file size. Set to 0 to disable (useful if you manage swap inside WSL).
 # Default: 25% of memory value
@@ -32,12 +32,6 @@ dnsTunneling=true
 # Automatic proxy: inherit Windows proxy settings (critical for corporate envs)
 autoProxy=true
 
-# ─── Filesystem ───────────────────────────────────────────────────────────────
-# Sparse VHD: the virtual disk file shrinks when you delete large files.
-# Without this, the VHD only grows, never reclaims space on Windows.
-# Requires WSL 2.2.0+ (check: wsl --version)
-sparseVhd=true
-
 # ─── Firewall ─────────────────────────────────────────────────────────────────
 # Allow host-side firewall rules to apply to WSL2 traffic.
 firewall=true
@@ -50,3 +44,9 @@ firewall=true
 # Auto-reclaim memory from the WSL2 VM when Linux frees it.
 # Prevents the VM from hogging RAM after a big build completes.
 autoMemoryReclaim=gradual
+
+# ─── Filesystem ───────────────────────────────────────────────────────────────
+# Sparse VHD: the virtual disk file shrinks when you delete large files.
+# Without this, the VHD only grows, never reclaims space on Windows.
+# Applies to new VHDs only; existing: wsl --manage <distro> --set-sparse true
+sparseVhd=true

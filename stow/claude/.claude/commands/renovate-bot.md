@@ -21,10 +21,10 @@ in `~/.claude/local/work-repos.md`. This command carries the git commit exceptio
      commit per dependency.
    - **`migration`**, at most 3 — a migration across the code. Its own subagent, branch and merge
      request each; the group is `migration-<artifact>`, the dependency's artifact id slugified.
-4. **Run** — `bot-run.md`, keeping each worktree instead of removing it. Subject `chore-…`;
+4. **Run** — `bot-run.md`. Subject `chore-…`;
    body each dependency with old → new version.
 
-Before Start, every existing `chore/renovate-bot-*` branch moves into its own worktree
-(`git worktree add ../<repo>-worktrees/<branch> <branch>`, checkout switched back to the default
-branch) and, when behind `origin/<base>`, is rebased onto it there; a conflict aborts the rebase
-and is reported. Pushing a rebased branch needs `--force-with-lease` — ask first.
+Before Start, each open `chore/renovate-bot-*` merge request whose branch is behind
+`origin/<base>` is rebased onto it in a worktree per `change-delivery` §3
+(`git worktree add --no-track -B <branch> "$wt" origin/<branch>`); a conflict aborts the rebase and
+is reported. Pushing it needs `--force-with-lease` — ask first. Clean up per §6 either way.

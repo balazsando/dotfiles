@@ -3,7 +3,7 @@
 Personal dotfiles for Debian/Ubuntu/WSL2, managed with
 [GNU Stow](https://www.gnu.org/software/stow/) and [mise](https://mise.jdx.dev/).
 
-[![Version](https://img.shields.io/badge/version-2.3.0-blue)](CHANGELOG.md)
+[![Version](https://img.shields.io/badge/version-2.4.0-blue)](CHANGELOG.md)
 
 The repository is public. What may enter a tracked file is ruled by `CLAUDE.md`, mirrored for
 Cursor in `.cursor/rules/no-leaks.mdc`.
@@ -15,7 +15,7 @@ dotfiles/
 ├── stow/                   # GNU Stow packages — each maps to $HOME
 │   ├── bat/                # bat config + themes
 │   ├── bin/                # Standalone tools: mdview, plantuml, pumlview (text previews)
-│   ├── claude/             # Claude Code: CLAUDE.md, commands, skills, MCP
+│   ├── claude/             # Claude Code: CLAUDE.md, commands, skills, MCP, settings base, hooks
 │   ├── cursor/             # Cursor: rules, commands, MCP (skills/agents shared from claude/)
 │   ├── git/                # .gitconfig, .githooks, .config/git/ignore
 │   ├── glab-tui/           # glab-tui config (Catppuccin Mocha preset)
@@ -43,6 +43,7 @@ dotfiles/
 ├── install.sh              # Bootstrap — run once on a new machine
 ├── stow.sh                 # Idempotent re-stow
 ├── check-ai-parity.sh      # Guard: no skills/agents under stow/cursor
+├── check-ai-hooks.sh       # Self-check: git-guard and wt-prune
 ├── sync.sh                 # Pre-migration export (wsl.conf, repos, BW secrets)
 ├── CHANGELOG.md            # Keep a Changelog, SemVer
 ├── VERSION                 # Current version, mirrored by the badge above
@@ -139,8 +140,14 @@ Do not "fix" these.
 
 **Runtime state**
 
-- `~/.claude.json` (MCP servers) and `~/.claude/settings.json` (hooks) are written through CLIs,
-  never stowed. `settings.json` holds machine-local work context and stays untracked.
+- `~/.claude.json` (MCP servers) and `~/.claude/settings.json` are live state, written through
+  scripts, never stowed. `settings.json` is merged from the tracked `settings.base.json` (model,
+  plugins, permissions, hooks) and `~/.claude/local/settings.local.json` (machine-local work
+  context such as `autoMode`, carried by Bitwarden with the AI overlay). Cursor's `hooks.json` is
+  merged the same way. Change the base, then re-run `~/.claude/bin/install-settings.sh`.
+- Delivery worktrees live under `~/.local/state/worktrees/`, outside `$REPOS_DIR`. A
+  `git-guard` hook blocks git writes anywhere else; `wt-prune.sh` removes idle, clean ones at
+  session start.
 - `~/.serena/serena_config.yml` carries absolute paths and a project list, so it is not stowed
   either. `install.sh` appends the two Java settings and leaves the upstream comments alone.
   Serena is Cursor-only (`--context ide`); Claude has its own `jdtls-lsp` plugin.
@@ -161,7 +168,7 @@ re-run on a half-bootstrapped machine.
 | Step | Does |
 |------|------|
 | **1. APT** | `packages/apt.txt`, including `npm` — `bw` must exist before mise |
-| **2. WSL PATH guard** | Non-System32 `/mnt/c/` on `PATH` → copies `host/wsl.conf` to `/etc/wsl.conf` and exits; run `wsl --shutdown`, then re-run |
+| **2. WSL PATH guard** | Non-System32 `/mnt/c/` on `PATH` → copies `host/wsl.conf` to `/etc/wsl.conf` and exits; run `wsl --shutdown`, then re-run. Then copies `host/work-wsl/.wslconfig` to the Windows home when it differs |
 | **3. BW CLI** | `@bitwarden/cli` and `tree-sitter-cli` via npm into `~/.npm-global` |
 | **4. Secrets + certs** | Offers `bw-restore.sh`, which also installs the corporate CA; TLS validates normally from here |
 | **5. Oh-My-Zsh** | OMZ, `zsh-autosuggestions`, `zsh-syntax-highlighting`, Powerlevel10k |
@@ -172,7 +179,7 @@ re-run on a half-bootstrapped machine.
 | **10. Stow** | `stow.sh` |
 | **11. tmux TPM** | Clones TPM |
 | **12. Git identity** | `~/.gitconfig_local` from `GIT_USER_NAME`/`GIT_USER_EMAIL`, or a prompt |
-| **13. MCP servers** | `~/.claude/bin/install-mcp-servers.sh` registers into `~/.claude.json` |
+| **13. MCP servers, AI settings** | `~/.claude/bin/install-mcp-servers.sh` registers into `~/.claude.json`; `install-settings.sh` merges settings, installs the Claude marketplaces and plugins, the ponytail checkout, and the Cursor hooks |
 | **14. uv tools** | `packages/uv-tools.txt` — including `serena-agent` (Cursor's code intelligence) and `posting` (HTTP TUI) |
 | **15. Post-install** | `addcerts.sh` (Java truststore — SDKMAN JDK), `Lazy! sync`, Serena's Java settings (after Mason has jdtls), tmux plugins, `repos-restore.sh` |
 

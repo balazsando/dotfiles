@@ -44,7 +44,7 @@
         "Authorization": "Bearer ${POSTMAN_API_KEY}"
       }
     },
-    "grafana": {
+    "grafana-test": {
       "type": "stdio",
       "command": "uvx",
       "args": [

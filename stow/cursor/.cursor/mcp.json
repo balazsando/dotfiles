@@ -41,7 +41,7 @@
         "Authorization": "Bearer ${env:POSTMAN_API_KEY}"
       }
     },
-    "grafana": {
+    "grafana-test": {
       "command": "uvx",
       "args": [
         "mcp-grafana"

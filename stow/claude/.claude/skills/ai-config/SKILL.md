@@ -106,7 +106,8 @@ missing; they never inline its contents. The dotfiles repo is public — see its
 
 ## Before finishing a change
 
-1. `bash check-ai-parity.sh`, then `bash stow.sh -n`.
+1. `bash check-ai-parity.sh`, then `bash stow.sh -n`; a hook script changed →
+   `bash check-ai-hooks.sh`.
 2. Command or mirrored rule changed → both copies. Skill added or renamed → `CLAUDE.md` table
    row. Agent added → the command that spawns it. Something removed → every reference in both
    trees.

@@ -21,3 +21,11 @@ vim.g.clipboard = {
 	copy = { ["+"] = osc52.copy("+"), ["*"] = osc52.copy("*") },
 	paste = { ["+"] = local_paste, ["*"] = local_paste },
 }
+
+vim.api.nvim_create_autocmd("ColorScheme", {
+  group = vim.api.nvim_create_augroup("visible_win_separator", { clear = true }),
+  pattern = "catppuccin*",
+  callback = function()
+    vim.api.nvim_set_hl(0, "WinSeparator", { fg = require("catppuccin.palettes").get_palette().overlay1 })
+  end,
+})

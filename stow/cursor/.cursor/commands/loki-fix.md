@@ -57,7 +57,7 @@ pod status and `level=error` lines.
 
 ## 5. Detach and report
 
-Make sure `loki-fsck` is gone. Report the environment, the space freed, the tables dropped, the
+Confirm `loki-fsck` is gone. Report the environment, the space freed, the tables dropped, the
 chunks removed and how many of them also overlapped a kept table, and the pod state. Report
 whether retention left anything older than the oldest table. Report the headroom:
 `retention_period` × the daily rate (chunk bytes freed ÷ days dropped), against the PVC size. If

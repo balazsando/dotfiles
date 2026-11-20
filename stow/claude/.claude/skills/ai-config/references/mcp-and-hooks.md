@@ -21,11 +21,11 @@ GitLab's own remote server, which has no events, files or branches; `GITLAB_TOOL
 merge requests, pipelines, CI/CD variables, webhooks and user events, others load per session
 through `discover_tools`; never `api`, which bypasses the server's safety checks), `postman`
 (remote, Full tool set — `/validation-request` needs its folder tools — `$POSTMAN_API_KEY`), and
-six distinct
-Grafana instances — `grafana` (the default non-prod
-instance, `$GRAFANA_URL_TEST`), `grafana-test-connector` (`$GRAFANA_URL_TESTC`), `grafana-prep` and `grafana-prep-connector` (pre-prod), and
-`grafana-prod` (production, read-only; the only one `app-bug-detection` queries) and
-`grafana-prod-connector`. Cursor-only: `serena`. Atlassian's Rovo server and Cursor's Atlassian
+six Grafana
+instances, app and connector per environment: `grafana-test` / `grafana-test-connector`,
+`grafana-prep` / `grafana-prep-connector`, `grafana-prod` / `grafana-prod-connector` (`$GRAFANA_URL_<ENV>`,
+`C` suffix for connector). `grafana-prod` is read-only and the only one `app-bug-detection`
+queries. Cursor-only: `serena`. Atlassian's Rovo server and Cursor's Atlassian
 plugin are deliberately absent: `jira` plus REST v2 covers them (see `jira-tickets`).
 
 Serena reuses Mason's `jdtls` instead of downloading its own, through
@@ -61,11 +61,16 @@ Write them in POSIX `sh`: `shopt` and other bash-only builtins fail there, and a
 does not make a file bash. Keep them fast — a slow or noisy hook gets bypassed reflexively, which
 is worse than no hook.
 
-Claude Code's own hooks would live in `~/.claude/settings.json`, which is **deliberately not
-tracked**: it holds machine- and repo-specific context that must not be published. Do not stow,
-copy, or quote it here.
+**Assistant hooks.** Claude's live `~/.claude/settings.json` is never stowed: it holds machine-local
+work context. The tracked part is `~/.claude/settings.base.json` (model, plugins, `permissions.deny`,
+hooks); `~/.claude/bin/install-settings.sh` merges it with `~/.claude/local/settings.local.json`
+(the untracked keys, extracted and uploaded by `bw-upload.zsh`), and merges the same hooks into
+`~/.cursor/hooks.json` beside ponytail's. The base owns every key it names; add a hook or a deny
+rule there, never in the live file. Scripts live in `~/.claude/bin/`, shared by both assistants:
 
-A hook whose registration cannot be tracked is a hook a new machine silently lacks, so prefer a
-rule in the skill that owns the subject over a hook that must be re-added by hand per machine.
-Cursor is the exception: `~/.cursor/hooks.json` holds no machine context, so a Cursor hook can be
-stowed like any other config.
+- `git-guard.sh` (Claude `PreToolUse` Bash, Cursor `beforeShellExecution`) — git writes only in a
+  delivery worktree; never `--no-verify` or a plain `--force` push. Exit 2 blocks in both.
+- `wt-prune.sh --hook` (session start) — removes delivery worktrees idle > 12 h and clean; keeps
+  and reports dirty ones.
+
+`check-ai-hooks.sh` at the repo root tests both; run it after changing either.

@@ -7,6 +7,7 @@
 #   ~/.kube/config-*.yaml                    ← "dotfiles/kube/<filename>"
 #   ~/certs/*.crt, *.pem                     ← "dotfiles/certs/<filename>"
 #   $DOTFILES/repos.txt                      ← "dotfiles/repos"
+#   ~/.claude/local/<filename>               ← "dotfiles/ai/<filename>"
 #
 # NOTE: ~/.kube/config is not restored; kube-merge.sh builds it from the config-* files.
 # All files and directories are optional. If any are missing, they are skipped.

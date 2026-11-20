@@ -6,6 +6,7 @@
 #   ~/.config/git/credentials                → "dotfiles/git-credentials"
 #   ~/.kube/config-*.yaml                    → "dotfiles/kube/<filename>"
 #   ~/certs/*.crt, *.pem                     → "dotfiles/certs/<filename>"
+#   ~/.claude/local/*.md, *.json             → "dotfiles/ai/<filename>"
 #
 # NOTE: The main ~/.kube/config file is NOT uploaded (only additional configs).
 # All files and directories are optional. If any are missing, they are skipped.
@@ -185,15 +186,21 @@ main() {
 
   # ── AI overlay ───────────────────────────────────────────────────────────
   # ~/.cursor/local is restored from the same items, so one side is enough.
+  # settings.json keys the tracked base does not own (autoMode) are work context.
+  local base="$HOME/.claude/settings.base.json"
+  if [[ -f "$HOME/.claude/settings.json" && -f "$base" && -d "$HOME/.claude/local" ]]; then
+    (umask 077; jq --slurpfile b "$base" 'with_entries(select(.key as $k | $b[0] | has($k) | not))' \
+      "$HOME/.claude/settings.json" >"$HOME/.claude/local/settings.local.json")
+  fi
   if [[ -d "$HOME/.claude/local" ]]; then
     log_step "Uploading AI overlay from ~/.claude/local/"
     local ai_count=0
-    for ai_file in "$HOME/.claude/local"/*.md; do
+    for ai_file in "$HOME/.claude/local"/*.(md|json)(N); do
       [[ -f "$ai_file" ]] || continue
       bw_upsert_note "dotfiles/ai/$(basename "$ai_file")" "$ai_file"
       ai_count=$((ai_count + 1))
     done
-    (( ai_count == 0 )) && log_warn "No .md files in ~/.claude/local/ — skipping"
+    (( ai_count == 0 )) && log_warn "No .md or .json files in ~/.claude/local/ — skipping"
   else
     log_warn "~/.claude/local/ not found — skipping AI overlay"
   fi

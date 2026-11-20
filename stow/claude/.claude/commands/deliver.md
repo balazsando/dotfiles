@@ -17,8 +17,9 @@ minus flags, is the task or a clarification. Nothing → ask.
 Text next to a ticket refines it for this run only and wins where it is more specific; ask when
 it contradicts a criterion or widens the scope. The ticket is never edited.
 
-`--no-docs` skips Document. `--ultra` runs every phase at ponytail ultra. `--mr` pushes and opens
-a merge request; without it the run ends with local commits.
+`--no-docs` skips Document. `--ultra` runs every phase at ponytail ultra. Every run works in its own
+worktree, removed at the end (`change-delivery` §3, §6). The run ends with local commits on a
+branch the report names; `--mr` also pushes it and opens a merge request.
 
 ## Phases
 
@@ -33,8 +34,8 @@ Run a phase only when the change needs it; name the skipped ones in one line.
 3. **Build** — `change-delivery` §1–3, then implement with the language skills the code needs.
    Branch `<feature|fix|refactor|chore>/<slug>`, whichever fits; start the slug with the ticket
    key when known (`feature/ABC-123-add-widget`) — the `prepare-commit-msg` hook only matches
-   `[A-Z][A-Z0-9]+-[0-9]+` in the branch name. Reuse the current branch instead only when it is
-   not protected and carries the ticket key or matches the subject; say so.
+   `[A-Z][A-Z0-9]+-[0-9]+` in the branch name. When the current branch is not protected and
+   carries the ticket key or matches the subject, reuse it per `change-delivery` §3; say so.
 4. **Validate** — a test per criterion (`atdd` for feature, API or domain tests), then
    `change-delivery` §4 green with its coverage rule. Skipped only when the diff has nothing to
    assert. Never weaken, skip or delete an existing test.
@@ -53,8 +54,7 @@ its own `fix-` commit, never an amend.
 
 ## Merge request
 
-With `--mr`: push, open the merge request (GitLab MCP, or `glab`) linking any ticket, and watch the
-pipeline — fix a failure with a new commit. Ask before pushing to a shared branch or commenting on
-an existing merge request.
+With `--mr`: push, open the merge request (GitLab MCP, or `glab`) linking any ticket, and report it
+ready for review — do not watch the pipeline. Ask before commenting on an existing merge request.
 
-Report per `change-delivery` §6, plus criteria coverage and the merge request URL.
+Report per `change-delivery` §7, plus criteria coverage and the merge request URL.

@@ -40,6 +40,20 @@ if is_wsl && printf %s "$PATH" | awk -v RS=: '
 fi
 ok "WSL PATH clean"
 
+if is_wsl; then
+  step "WSL .wslconfig"
+  cmd_exe=/mnt/c/Windows/System32/cmd.exe win_home=""
+  [[ -x $cmd_exe ]] && win_home="$(wslpath "$("$cmd_exe" /c 'echo %USERPROFILE%' 2>/dev/null | tr -d '\r')" 2>/dev/null)" || true
+  if [[ -z $win_home || ! -d $win_home ]]; then
+    skip "Windows home not reachable (interop off?) — copy host/work-wsl/.wslconfig by hand"
+  elif cmp -s "$DOTFILES/host/work-wsl/.wslconfig" "$win_home/.wslconfig"; then
+    ok ".wslconfig up to date"
+  else
+    run cp "$DOTFILES/host/work-wsl/.wslconfig" "$win_home/.wslconfig"
+    $DRY_RUN || ok ".wslconfig copied — run wsl --shutdown to apply"
+  fi
+fi
+
 # ── 3. Bitwarden CLI ──────────────────────────────────────────────────────────
 step "Bitwarden CLI"
 run npm config set prefix "$HOME/.npm-global"
@@ -211,6 +225,16 @@ if ! has claude || [[ ! -x "$mcp_install" ]]; then
   skip "claude CLI or install-mcp-servers.sh missing — MCP registration"
 else
   run bash "$mcp_install" || echo "  ⚠ MCP registration failed — re-run: $mcp_install"
+fi
+
+step "AI settings, plugins, hooks"
+ai_settings="$HOME/.claude/bin/install-settings.sh"
+if ! has claude || [[ ! -x "$ai_settings" ]]; then
+  skip "claude CLI or install-settings.sh missing — AI settings"
+elif $DRY_RUN; then
+  bash "$ai_settings" --dry-run
+else
+  bash "$ai_settings" || echo "  ⚠ AI settings failed — re-run: $ai_settings"
 fi
 
 # ── 14. uv tools ──────────────────────────────────────────────────────────────

@@ -1,0 +1,36 @@
+{
+  "model": "opus",
+  "effortLevel": "medium",
+  "modelSettings": {
+    "claude-opus-5": { "effortLevel": "high" },
+    "claude-sonnet-5": { "effortLevel": "medium" }
+  },
+  "theme": "dark-ansi",
+  "enabledPlugins": {
+    "jdtls-lsp@claude-plugins-official": true,
+    "ponytail@ponytail": true
+  },
+  "extraKnownMarketplaces": {
+    "ponytail": { "source": { "source": "github", "repo": "DietrichGebert/ponytail" } }
+  },
+  "permissions": {
+    "deny": [
+      "Read(~/.config/zsh/secrets)",
+      "Edit(~/.config/zsh/secrets)",
+      "Read(~/.config/git/credentials)",
+      "Read(~/.claude/.credentials.json)",
+      "Read(~/.ssh/id_*)",
+      "Read(~/.gnupg/**)",
+      "Read(~/.kube/**)",
+      "Read(~/.config/Bitwarden CLI/**)"
+    ]
+  },
+  "hooks": {
+    "SessionStart": [
+      { "hooks": [{ "type": "command", "command": "\"$HOME/.claude/bin/wt-prune.sh\" --hook" }] }
+    ],
+    "PreToolUse": [
+      { "matcher": "Bash", "hooks": [{ "type": "command", "command": "\"$HOME/.claude/bin/git-guard.sh\"" }] }
+    ]
+  }
+}

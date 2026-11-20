@@ -7,6 +7,59 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [2.4.0] — 2026-11-20
+
+Makes AI delivery runs parallel-safe in their own worktrees, enforces the git contract with a
+hook instead of prose, and brings the AI settings, plugins and hooks up on a fresh machine.
+
+### Added
+
+- **Delivery worktrees**: `/deliver`, the bots and `/housekeep` each work in their own worktree
+  under `~/.local/state/worktrees/`, branched from the host's default branch. Parallel runs never
+  touch the user's checkout, and repository scanners such as jirlab never list them. The local
+  branch stays for review, with or without `--mr`.
+- **`git-guard` hook** (Claude `PreToolUse`, Cursor `beforeShellExecution`): git writes run only
+  inside a delivery worktree.
+- **`wt-prune` at session start**: removes delivery worktrees idle for 12 h and clean; dirty ones
+  are kept and reported; a branch with nothing beyond the base is deleted.
+- **`install-settings.sh`**, run by `install.sh`: merges the tracked `settings.base.json` (model,
+  plugins, marketplaces, deny rules, hooks) into the live Claude settings, installs the ponytail
+  and jdtls-lsp plugins, and wires ponytail and the hooks into Cursor. Machine-local keys such as
+  `autoMode` travel through Bitwarden as `settings.local.json` in the AI overlay.
+- `check-ai-hooks.sh`: self-check for `git-guard` and `wt-prune`.
+- `install.sh` copies `host/work-wsl/.wslconfig` to the Windows home when it differs, and skips
+  with a message when WSL interop is off.
+- Neovim: Copilot (native extra, also for Java); `Tab` / `S-Tab` step through snippets and AI
+  suggestions with no preselected item; `<leader>e` focuses an open explorer; a visible window
+  separator under Catppuccin.
+
+### Changed
+
+- `/deliver` reuses a matching current branch by switching the clean checkout to the base and
+  moving the branch into a worktree. `--mr` reports the merge request ready for review instead of
+  watching the pipeline.
+- The bots collect in a detached worktree instead of detaching the user's checkout.
+  `/renovate-bot` rebases open bot merge requests in a temporary worktree and no longer keeps
+  worktrees.
+- `/housekeep` saves the regression baseline from `origin/<base>` and points the harness at the
+  worktree (`REGRESS_APP_DIR`), so the quick and full regression test the branch, not the
+  checkout.
+- The `grafana` MCP server is now `grafana-test`, matching the other five.
+- `.wslconfig`: 12 GB VM memory; `sparseVhd` noted as applying to new disks only.
+
+### Fixed
+
+- The Cursor `/validation-request` had lost the paragraph on jirlab's imported Posting requests.
+
+### Security
+
+- Claude's Read and Edit tools are denied the zsh secrets, git credentials, Claude credentials,
+  SSH private keys, GnuPG, kube configs and the Bitwarden CLI data.
+- `--no-verify` and a plain `--force` push are blocked for both assistants;
+  `--force-with-lease` stays.
+
+---
+
 ## [2.3.0] — 2026-11-18
 
 Makes the `main` tmux session self-healing and opt-in per machine, drops the `kd` / `km` sessions,

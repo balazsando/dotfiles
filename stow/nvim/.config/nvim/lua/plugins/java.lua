@@ -11,6 +11,11 @@ return {
 		},
 	},
 
+	{
+		"neovim/nvim-lspconfig",
+		opts = { servers = { copilot = { filetypes = { "java" } } } },
+	},
+
 	-- Wire neotest-java into neotest (provided by the test.core extra).
 	-- jdtls opts.test = false below frees <leader>tt/<leader>tr/<leader>tT
 	-- so neotest owns them in Java buffers too.
