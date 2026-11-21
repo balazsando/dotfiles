@@ -30,8 +30,8 @@ subagent:
 
 1. Creates its worktree per `SKILL.md` §3, from `<head>` instead of `origin/<base>`.
 2. Fixes each item with the smallest edit, loading the language skills the code needs.
-3. Validates per `SKILL.md` §4. Reverts an item that fails or proves harder than its group, and
-   hands it back.
+3. Validates per `SKILL.md` §4. Reverts an item that fails, proves harder than its group, or
+   survives three fix attempts, and hands it back.
 4. Commits per the command, pushes, and opens a merge request (GitLab MCP, or `glab`) titled with
    the group, its description listing each item and, where behaviour changes, what changes.
 5. Cleans up per `SKILL.md` §6 and returns the merge request URL and the dropped items.

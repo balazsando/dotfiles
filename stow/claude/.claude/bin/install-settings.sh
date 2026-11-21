@@ -2,7 +2,8 @@
 # Applies the tracked AI settings. ~/.claude/settings.json is live state, so it is merged, never
 # stowed: current ← ../settings.base.json ← ~/.claude/local/settings.local.json (machine-local keys,
 # restored by bw-restore.sh). Then the marketplaces and plugins the base lists, and the Cursor hooks
-# (ponytail, git-guard). Safe to re-run.   install-settings.sh [-n|--dry-run]
+# (ponytail, git-guard, leak-guard, dotfiles-check). Safe to re-run.
+#   install-settings.sh [-n|--dry-run]
 set -euo pipefail
 
 dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -45,7 +46,7 @@ for p in $(jq -r '.enabledPlugins // {} | to_entries[] | select(.value) | .key' 
   grep -q "❯ $p\$" <<<"$installed" && echo "  ✓ plugin $p" || run claude plugin install "$p" --scope user
 done
 
-# Cursor: ponytail hooks from its own checkout, then git-guard merged beside them.
+# Cursor: ponytail hooks from its own checkout, then ours merged beside them.
 [[ -d $HOME/.cursor ]] || { echo "  – ~/.cursor missing — Cursor hooks skipped"; exit 0; }
 if [[ -d $ponytail/.git ]]; then echo "  ✓ ponytail checkout"; else run git clone -q https://github.com/DietrichGebert/ponytail "$ponytail"; fi
 if command -v node >/dev/null; then
@@ -55,8 +56,12 @@ else
   echo "  – node not on PATH — ponytail Cursor hooks skipped"
 fi
 hooks='{"version":1,"hooks":{}}'; [[ -f $cursor_hooks ]] && hooks=$(<"$cursor_hooks")
-guard="\"$HOME/.claude/bin/git-guard.sh\""
-prune="\"$HOME/.claude/bin/wt-prune.sh\" --hook"
-write_json "$cursor_hooks" "$(jq --arg g "$guard" --arg p "$prune" '
-  def add($ev; $cmd): if any(.hooks[$ev][]?; .command == $cmd) then . else .hooks[$ev] += [{command: $cmd, timeout: 15}] end;
-  add("beforeShellExecution"; $g) | add("sessionStart"; $p)' <<<"$hooks")"
+bin="$HOME/.claude/bin"
+write_json "$cursor_hooks" "$(jq --arg b "$bin" '
+  def add($ev; $h): if any(.hooks[$ev][]?; .command == $h.command) then . else .hooks[$ev] += [{timeout: 15} + $h] end;
+  def q($s): "\"" + $b + "/" + $s + "\"";
+  add("beforeShellExecution"; {command: q("git-guard.sh")})
+  | add("beforeMCPExecution"; {command: q("git-guard.sh")})
+  | add("preToolUse"; {command: q("leak-guard.sh"), matcher: "Write"})
+  | add("stop"; {command: q("dotfiles-check.sh"), timeout: 120})
+  | add("sessionStart"; {command: (q("wt-prune.sh") + " --hook")})' <<<"$hooks")"

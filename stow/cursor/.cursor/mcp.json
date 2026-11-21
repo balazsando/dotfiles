@@ -31,7 +31,7 @@
         "GITLAB_API_URL": "${env:GITLAB_API_URL}",
         "GITLAB_READ_ONLY_MODE": "false",
         "NODE_EXTRA_CA_CERTS": "${env:NODE_EXTRA_CA_CERTS}",
-        "GITLAB_TOOLSETS": "core,merge_requests,pipelines,variables,webhooks,users"
+        "GITLAB_TOOLSETS": "core,merge_requests,pipelines,users"
       }
     },
     "postman": {
@@ -44,7 +44,10 @@
     "grafana-test": {
       "command": "uvx",
       "args": [
-        "mcp-grafana"
+        "mcp-grafana",
+        "--enabled-tools",
+        "search,datasource,prometheus,loki,dashboard,folder,tempo,navigation",
+        "--disable-write"
       ],
       "env": {
         "GRAFANA_URL": "${env:GRAFANA_URL_TEST}",
@@ -54,7 +57,10 @@
     "grafana-test-connector": {
       "command": "uvx",
       "args": [
-        "mcp-grafana"
+        "mcp-grafana",
+        "--enabled-tools",
+        "search,datasource,prometheus,loki,dashboard,folder,tempo,navigation",
+        "--disable-write"
       ],
       "env": {
         "GRAFANA_URL": "${env:GRAFANA_URL_TESTC}",
@@ -64,7 +70,9 @@
     "grafana-prep": {
       "command": "uvx",
       "args": [
-        "mcp-grafana"
+        "mcp-grafana",
+        "--enabled-tools",
+        "search,datasource,prometheus,loki,dashboard,folder,tempo,navigation"
       ],
       "env": {
         "GRAFANA_URL": "${env:GRAFANA_URL_PREP}",
@@ -74,7 +82,9 @@
     "grafana-prep-connector": {
       "command": "uvx",
       "args": [
-        "mcp-grafana"
+        "mcp-grafana",
+        "--enabled-tools",
+        "search,datasource,prometheus,loki,dashboard,folder,tempo,navigation"
       ],
       "env": {
         "GRAFANA_URL": "${env:GRAFANA_URL_PREPC}",
@@ -84,7 +94,10 @@
     "grafana-prod": {
       "command": "uvx",
       "args": [
-        "mcp-grafana"
+        "mcp-grafana",
+        "--enabled-tools",
+        "search,datasource,prometheus,loki,dashboard,folder,tempo,navigation",
+        "--disable-write"
       ],
       "env": {
         "GRAFANA_URL": "${env:GRAFANA_URL_PROD}",
@@ -94,7 +107,10 @@
     "grafana-prod-connector": {
       "command": "uvx",
       "args": [
-        "mcp-grafana"
+        "mcp-grafana",
+        "--enabled-tools",
+        "search,datasource,prometheus,loki,dashboard,folder,tempo,navigation",
+        "--disable-write"
       ],
       "env": {
         "GRAFANA_URL": "${env:GRAFANA_URL_PRODC}",

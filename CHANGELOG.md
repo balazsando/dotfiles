@@ -7,6 +7,44 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [2.5.0] — 2026-11-21
+
+Makes delivery runs prove what they claim, fixes bugs at their origin, moves more of the git and
+no-leak contracts from prose into hooks, and trims the MCP servers to the tools the skills use.
+
+### Added
+
+- **`leak-guard`**: blocks the terms listed in `~/.claude/local/leak-terms.md` from edits to this
+  repository (Claude `PreToolUse` Write/Edit, Cursor `preToolUse` Write) and, through a new
+  `pre-commit` hook, from staged changes. Its messages name the line number, never the term.
+- **`dotfiles-check` stop hook**: when AI config has uncommitted changes, runs the parity check,
+  the stow dry run and, after a hook change, the hook self-check; only a failing check's output
+  goes back to the agent.
+- **`commit-msg` hook**: in delivery worktrees, rejects a subject `prepare-commit-msg` could not
+  expand into `category-message` form. Manual commits elsewhere are untouched.
+- `check-ai-parity.sh` warns about a `SKILL.md` over 200 lines.
+
+### Changed
+
+- **`git-guard`** blocks `git add -A`, `--all` and `.`, and tooling attribution in merge requests,
+  through the GitLab MCP tools (Cursor `beforeMCPExecution` too) and `glab mr`. Attribution in
+  merge request descriptions was a prose rule only.
+- **Delivery validation**: the last green run must follow the last edit, reverts and formatter
+  included, so the committed tree is the tested one. A changed signature or shared behaviour also
+  builds its dependents (Maven `-amd`, Gradle `buildDependents`). Bots hand an item back after
+  three failed fix attempts.
+- **`/bugfix-bot`** traces each defect from the logged frame to where the bad value originates;
+  that is the fix site and decides the group, and an origin outside the repository is reported.
+  The regression test is built from the logged payload, and the repository is searched for the
+  same root cause.
+- **Reviews** recheck every finding against the code before reporting it, and skip pre-existing
+  issues, linter findings and lint-ignored lines. The checklist adds hidden failures and fail-open
+  defaults; `/mr-review` reads the callers of a changed signature and blames removed code.
+- **MCP servers**: GitLab preloads core, merge requests, pipelines and users (CI/CD variables
+  and webhooks dropped). Every Grafana server exposes only search, datasource, Prometheus, Loki,
+  dashboard, folder, Tempo and navigation tools; test and prod are read-only (`--disable-write`),
+  prep stays writable for dashboard prototyping.
+
 ## [2.4.0] — 2026-11-20
 
 Makes AI delivery runs parallel-safe in their own worktrees, enforces the git contract with a

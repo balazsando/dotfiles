@@ -70,12 +70,17 @@ a new test fail for the right reason. **Green** — the suite passes.
 | Go | `go test -run '^$' ./...` | `go test ./...` |
 | Node | the project's typecheck / test compile | `npm test` |
 
+A change to a signature or shared behaviour also builds the modules that depend on it: Maven
+`-amd` alongside `-am`, Gradle `:<module>:buildDependents`.
+
 - Formatting is part of the build, not a separate pass: run the project's formatter
   (`spotless:apply`, `gofmt`, `prettier`) **only** when the build requires it, and never as a
   change of its own.
 - Coverage ≥ 80 % on new or changed code where the project measures it, and only on a green bar.
   Below that, say the number and why it is justified — never pad with assertion-free tests.
 - Never commit unless the suite is green. Report the work as skipped.
+- The last Green run follows the last edit, reverts and formatter included: the tree committed is
+  the tree that passed.
 
 ## 5. Commit and push
 

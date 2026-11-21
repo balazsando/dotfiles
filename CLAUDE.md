@@ -23,6 +23,9 @@ outcome — do not commit it, stage it, write it "temporarily", or offer it as a
 print secret values into terminal output or reports while diagnosing either; name the variable
 instead. Scrollback is published too.
 
+`leak-guard` blocks the terms in `~/.claude/local/leak-terms.md` from edits and commits here.
+It only knows listed terms: when you meet a new one, ask the user to add it.
+
 Content already pushed is public regardless of a later fix. If you find a leak in history, say
 so and hand over the rewrite commands — the **Git operations** rules in `~/.claude/CLAUDE.md`
 still apply, so the rewrite is the user's to run.

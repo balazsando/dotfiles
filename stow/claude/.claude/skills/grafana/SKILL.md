@@ -17,11 +17,11 @@ page versions it links. Community sources only when the official docs do not ans
 Registered per environment, app and connector: `grafana-test` / `grafana-test-connector`,
 `grafana-prep` / `grafana-prep-connector`, `grafana-prod` / `grafana-prod-connector`. Prefer their
 tools over hand-rolled HTTP calls.
-`grafana_api_request` covers what no dedicated tool does.
+Each exposes only search, datasource, Prometheus, Loki, dashboard, folder, Tempo and navigation
+tools; anything else goes through the Grafana HTTP API.
 
 - Reads (search, query, get, list) run freely.
-- Writes (`update_dashboard`, `create_*`, `alerting_manage_*`, `update_*`, `delete_*`,
-  `install_plugin`) change a shared instance — confirm first and name the instance.
-- `grafana-prod` is read-only in practice.
+- Test and prod are read-only (`--disable-write`). Prep stays writable for prototyping
+  dashboards — a shared instance, so confirm every write on prep first.
 - Hand the user a `generate_deeplink` link instead of describing navigation.
 

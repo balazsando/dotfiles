@@ -1,0 +1,8 @@
+#!/bin/sh
+#
+# pre-commit hook — keeps leak-guard terms out of the public dotfiles repo.
+# A no-op in every other repository, and when the claude package is not stowed.
+
+guard="$HOME/.claude/bin/leak-guard.sh"
+[ -x "$guard" ] || exit 0
+exec "$guard" --staged

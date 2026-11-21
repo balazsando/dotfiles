@@ -17,6 +17,9 @@ severity rules. Also `java-standards` `references/tests.md` when the diff touche
    ticket → say the review runs without acceptance criteria.
 3. **Review** — `git diff <base>...<head>`. Each criterion: met, not met, or not verifiable. Then
    design, tests (behaviour, not implementation), the documentation rule, and code health.
+   Read the callers of each changed signature or shared behaviour; one the change breaks is a
+   finding. `git blame` removed code: a removal from a `fix` or security commit is MAJOR until
+   justified.
 4. **Report** — per `report-format.md`, unabridged.
 
 Findings are not fixes. To act on them, run `/deliver` with the ticket and the findings as

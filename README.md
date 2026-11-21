@@ -3,7 +3,7 @@
 Personal dotfiles for Debian/Ubuntu/WSL2, managed with
 [GNU Stow](https://www.gnu.org/software/stow/) and [mise](https://mise.jdx.dev/).
 
-[![Version](https://img.shields.io/badge/version-2.4.0-blue)](CHANGELOG.md)
+[![Version](https://img.shields.io/badge/version-2.5.0-blue)](CHANGELOG.md)
 
 The repository is public. What may enter a tracked file is ruled by `CLAUDE.md`, mirrored for
 Cursor in `.cursor/rules/no-leaks.mdc`.
@@ -43,7 +43,7 @@ dotfiles/
 ├── install.sh              # Bootstrap — run once on a new machine
 ├── stow.sh                 # Idempotent re-stow
 ├── check-ai-parity.sh      # Guard: no skills/agents under stow/cursor
-├── check-ai-hooks.sh       # Self-check: git-guard and wt-prune
+├── check-ai-hooks.sh       # Self-check: AI and git hooks
 ├── sync.sh                 # Pre-migration export (wsl.conf, repos, BW secrets)
 ├── CHANGELOG.md            # Keep a Changelog, SemVer
 ├── VERSION                 # Current version, mirrored by the badge above

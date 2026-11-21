@@ -34,7 +34,7 @@
         "GITLAB_API_URL": "${GITLAB_API_URL}",
         "GITLAB_READ_ONLY_MODE": "false",
         "NODE_EXTRA_CA_CERTS": "${NODE_EXTRA_CA_CERTS}",
-        "GITLAB_TOOLSETS": "core,merge_requests,pipelines,variables,webhooks,users"
+        "GITLAB_TOOLSETS": "core,merge_requests,pipelines,users"
       }
     },
     "postman": {
@@ -48,7 +48,10 @@
       "type": "stdio",
       "command": "uvx",
       "args": [
-        "mcp-grafana"
+        "mcp-grafana",
+        "--enabled-tools",
+        "search,datasource,prometheus,loki,dashboard,folder,tempo,navigation",
+        "--disable-write"
       ],
       "env": {
         "GRAFANA_URL": "${GRAFANA_URL_TEST}",
@@ -59,7 +62,10 @@
       "type": "stdio",
       "command": "uvx",
       "args": [
-        "mcp-grafana"
+        "mcp-grafana",
+        "--enabled-tools",
+        "search,datasource,prometheus,loki,dashboard,folder,tempo,navigation",
+        "--disable-write"
       ],
       "env": {
         "GRAFANA_URL": "${GRAFANA_URL_TESTC}",
@@ -70,7 +76,9 @@
       "type": "stdio",
       "command": "uvx",
       "args": [
-        "mcp-grafana"
+        "mcp-grafana",
+        "--enabled-tools",
+        "search,datasource,prometheus,loki,dashboard,folder,tempo,navigation"
       ],
       "env": {
         "GRAFANA_URL": "${GRAFANA_URL_PREP}",
@@ -81,7 +89,9 @@
       "type": "stdio",
       "command": "uvx",
       "args": [
-        "mcp-grafana"
+        "mcp-grafana",
+        "--enabled-tools",
+        "search,datasource,prometheus,loki,dashboard,folder,tempo,navigation"
       ],
       "env": {
         "GRAFANA_URL": "${GRAFANA_URL_PREPC}",
@@ -92,7 +102,10 @@
       "type": "stdio",
       "command": "uvx",
       "args": [
-        "mcp-grafana"
+        "mcp-grafana",
+        "--enabled-tools",
+        "search,datasource,prometheus,loki,dashboard,folder,tempo,navigation",
+        "--disable-write"
       ],
       "env": {
         "GRAFANA_URL": "${GRAFANA_URL_PROD}",
@@ -103,7 +116,10 @@
       "type": "stdio",
       "command": "uvx",
       "args": [
-        "mcp-grafana"
+        "mcp-grafana",
+        "--enabled-tools",
+        "search,datasource,prometheus,loki,dashboard,folder,tempo,navigation",
+        "--disable-write"
       ],
       "env": {
         "GRAFANA_URL": "${GRAFANA_URL_PRODC}",

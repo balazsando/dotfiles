@@ -31,6 +31,8 @@ READY | CHANGES REQUESTED — <one sentence>
 
 ## Rules
 
+- Before reporting, reread the code behind each finding; drop any it does not confirm. Never
+  report a pre-existing issue, what a linter catches (Sonar only under `--sonar`), or a line under a lint-ignore.
 - Every finding carries a `file:line`. A finding with no location is not actionable — drop it or
   turn it into a question.
 - An alternative you prefer is INFORMATIONAL unless the code is wrong.

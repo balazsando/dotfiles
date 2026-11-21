@@ -14,6 +14,8 @@ Reference: [Google Engineering Practices](https://google.github.io/eng-practices
 - Does the code do what the developer intended?
 - Is what was intended good for end-users and future developer-users?
 - Edge cases handled?
+- No hidden failure: catch-and-log-then-continue, a broad `catch (Exception)`, `null` or a default
+  returned on error, `Optional.orElse` masking a failed lookup, retries that run out silently?
 - No obvious bugs readable from the code?
 
 ## Complexity
@@ -54,6 +56,8 @@ Only these are review-process questions the rules do not cover:
 - **Broken Auth**: Auth checks present and correct? No hardcoded credentials?
 - **Sensitive Data**: No secrets, tokens, or PII logged or exposed?
 - **Access Control**: Authorization enforced at every relevant endpoint/function?
+- **Fail-open defaults**: No secret with a fallback (`${SECRET:dev}`, `System.getProperty(k, d)`),
+  CORS `*`, or a security flag that defaults to off?
 - **Cryptography**: Using well-known libraries? No homebrew crypto?
 - **Dependencies**: No newly introduced dependency with known vulnerabilities?
 - **Error handling**: Errors don't leak stack traces or internal details to users?

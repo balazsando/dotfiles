@@ -36,6 +36,13 @@ while IFS= read -r hit; do
   violations=1
 done < <(grep -rnE 'CLAUDE\.md|~/\.claude/' "$CURSOR_TREE/commands" 2>/dev/null || true)
 
+while IFS= read -r f; do
+  n=$(wc -l <"$f")
+  if ((n > 200)); then
+    echo "⚠ ${f#"$ROOT"/} has $n lines — move the long tail to references/ (ai-config §Size)"
+  fi
+done < <(find "$CLAUDE_TREE/skills" -name SKILL.md 2>/dev/null)
+
 if [[ "$violations" -eq 1 ]]; then
   echo ""
   echo "Fix the file(s) above and re-run: skills and agents move to stow/claude/.claude/, Cursor"

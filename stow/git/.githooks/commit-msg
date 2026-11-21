@@ -1,0 +1,17 @@
+#!/bin/sh
+#
+# commit-msg hook — rejects a subject prepare-commit-msg could not expand. Scoped to delivery
+# worktrees, where the assistants commit; manual commits elsewhere keep any format.
+
+root="${XDG_STATE_HOME:-$HOME/.local/state}/worktrees"
+case "$(git rev-parse --show-toplevel 2>/dev/null)" in
+  "$root"/*) ;;
+  *) exit 0 ;;
+esac
+
+subject=$(head -n 1 "$1" | tr -d '\r')
+echo "$subject" | grep -qE '^(Merge |Revert |fixup! |squash! )' && exit 0
+echo "$subject" | grep -qE '^([A-Z][A-Z0-9]+-[0-9]+ )?[^ ]+ \((feat|fix|docs|chore|refactor|style|test|deploy|typo|revert|version)\): .+' && exit 0
+
+echo "commit-msg: subject must be category-message (feat-add widget); got: $subject" >&2
+exit 1
